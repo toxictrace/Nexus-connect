@@ -1,6 +1,9 @@
 package com.toxictrace.nexusconnect.ui.screens
 
 import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,29 +21,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
+import androidx.core.content.ContextCompat
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.viewmodel.ContactSortMode
 import com.toxictrace.nexusconnect.viewmodel.MainViewModel
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ContactsScreen(viewModel: MainViewModel) {
-    val contacts     by viewModel.displayContacts.collectAsState()
-    val sortMode     by viewModel.sortMode.collectAsState()
+    val context       = LocalContext.current
+    val contacts      by viewModel.displayContacts.collectAsState()
+    val sortMode      by viewModel.sortMode.collectAsState()
     val selectedCount by viewModel.selectedCount.collectAsState()
-    var searchQuery  by remember { mutableStateOf("") }
+    var searchQuery   by remember { mutableStateOf("") }
 
-    val permissionState = rememberPermissionState(Manifest.permission.READ_CONTACTS) { granted ->
+    // Check permission once on composition
+    var hasPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasPermission = granted
         if (granted) viewModel.loadContacts()
     }
 
-    LaunchedEffect(Unit) {
-        if (!permissionState.status.isGranted) permissionState.launchPermissionRequest()
+    LaunchedEffect(hasPermission) {
+        if (hasPermission) viewModel.loadContacts()
+        else permLauncher.launch(Manifest.permission.READ_CONTACTS)
     }
 
     val filtered = contacts.filter {
@@ -50,7 +64,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // Search
+            // Search bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -63,9 +77,9 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor   = MaterialTheme.colorScheme.primary,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
 
@@ -79,23 +93,45 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 ContactSortMode.values().forEach { mode ->
                     FilterChip(
                         selected = sortMode == mode,
-                        onClick  = { viewModel.setSortMode(mode) },
-                        label    = { Text(mode.label) },
-                        colors   = FilterChipDefaults.filterChipColors(
+                        onClick = { viewModel.setSortMode(mode) },
+                        label = { Text(mode.label) },
+                        colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor     = Color.White
+                            selectedLabelColor = Color.White
                         )
                     )
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
-
-            if (!permissionState.status.isGranted) {
-                PermissionBanner { permissionState.launchPermissionRequest() }
+            if (!hasPermission) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            "Contacts permission required.",
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        TextButton(onClick = { permLauncher.launch(Manifest.permission.READ_CONTACTS) }) {
+                            Text("Grant")
+                        }
+                    }
+                }
             }
 
-            // List
+            Spacer(Modifier.height(8.dp))
+
+            // Contact list
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -113,7 +149,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
             }
         }
 
-        // Bottom bar — "Update Widget"
+        // Bottom action bar
         if (selectedCount > 0) {
             Surface(
                 modifier = Modifier
@@ -154,31 +190,6 @@ fun ContactsScreen(viewModel: MainViewModel) {
 }
 
 @Composable
-private fun PermissionBanner(onRequest: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
-        )
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                "Contacts permission required to show your contacts.",
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodySmall
-            )
-            TextButton(onClick = onRequest) { Text("Grant") }
-        }
-    }
-}
-
-@Composable
 private fun ContactItem(contact: Contact, onToggle: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -188,7 +199,7 @@ private fun ContactItem(contact: Contact, onToggle: () -> Unit) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
             else MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Row(
             modifier = Modifier
@@ -198,19 +209,20 @@ private fun ContactItem(contact: Contact, onToggle: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                Icons.Default.DragHandle,
-                contentDescription = "Drag",
+                Icons.Default.DragHandle, null,
                 tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
             Checkbox(
-                checked  = contact.isSelected,
+                checked = contact.isSelected,
                 onCheckedChange = { onToggle() }
             )
             ContactAvatar(contact = contact, size = 48)
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
                         contact.name,
                         style = MaterialTheme.typography.titleMedium,
@@ -223,7 +235,8 @@ private fun ContactItem(contact: Contact, onToggle: () -> Unit) {
                     }
                 }
                 contact.phoneNumber?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall,
+                    Text(it,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -234,33 +247,24 @@ private fun ContactItem(contact: Contact, onToggle: () -> Unit) {
 @Composable
 fun ContactAvatar(contact: Contact, size: Int = 40) {
     val initials = contact.name.split(" ")
-        .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }
-        .joinToString("")
-
+        .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     val colors = listOf(
         Color(0xFF1A3CA8), Color(0xFF7B3FA0), Color(0xFF007A6E),
         Color(0xFF8B2252), Color(0xFF2E7D32), Color(0xFFB85C00)
     )
-    val bg = colors[(contact.id % colors.size).toInt()]
-
     Box(
-        modifier = Modifier
-            .size(size.dp)
-            .clip(CircleShape)
-            .background(bg),
+        modifier = Modifier.size(size.dp).clip(CircleShape)
+            .background(colors[(contact.id % colors.size).toInt()]),
         contentAlignment = Alignment.Center
     ) {
-        // TODO: replace with AsyncImage(Coil) in next iteration
         if (contact.photoUri != null) {
             Icon(Icons.Default.Person, null, tint = Color.White,
                 modifier = Modifier.size((size * 0.6).dp))
         } else {
-            Text(
-                initials,
+            Text(initials,
                 style = if (size >= 44) MaterialTheme.typography.titleMedium
                         else MaterialTheme.typography.bodyMedium,
-                color = Color.White, fontWeight = FontWeight.Bold
-            )
+                color = Color.White, fontWeight = FontWeight.Bold)
         }
     }
 }

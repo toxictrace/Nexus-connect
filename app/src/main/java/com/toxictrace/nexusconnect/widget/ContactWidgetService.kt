@@ -1,6 +1,5 @@
 package com.toxictrace.nexusconnect.widget
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
@@ -9,8 +8,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.RectF
-import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.toxictrace.nexusconnect.R
@@ -24,8 +21,10 @@ import kotlinx.coroutines.runBlocking
 
 class ContactWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
-        val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-            AppWidgetManager.INVALID_APPWIDGET_ID)
+        val widgetId = intent.getIntExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID
+        )
         return ContactWidgetFactory(applicationContext, widgetId)
     }
 }
@@ -43,27 +42,27 @@ class ContactWidgetFactory(
     override fun onCreate() {}
 
     override fun onDataSetChanged() {
-        // Called on background thread — safe to do IO
         settings = runBlocking { settingsRepo.settings.first() }
-
         val allContacts = contactsRepo.loadContacts()
         val selectedIds = runBlocking { settingsRepo.getSelectedContactIds() }
 
-        contacts = if (selectedIds.isEmpty()) {
-            // Fallback: show starred contacts
-            allContacts.filter { it.isStarred }.take(settings.maxContacts)
-        } else {
-            // Show contacts in user-defined order
-            selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
-                .take(settings.maxContacts)
+        contacts = when {
+            selectedIds.isNotEmpty() ->
+                selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
+                    .take(settings.maxContacts)
+            settings.filterFavorites ->
+                allContacts.filter { it.isStarred }.take(settings.maxContacts)
+            else ->
+                allContacts.take(settings.maxContacts)
         }
     }
 
-    override fun onDestroy() {
-        contacts = emptyList()
-    }
-
+    override fun onDestroy() { contacts = emptyList() }
     override fun getCount(): Int = contacts.size
+    override fun getViewTypeCount(): Int = 1
+    override fun getItemId(p: Int): Long = contacts.getOrNull(p)?.id ?: p.toLong()
+    override fun hasStableIds(): Boolean = true
+    override fun getLoadingView(): RemoteViews? = null
 
     override fun getViewAt(position: Int): RemoteViews {
         val contact = contacts.getOrNull(position)
@@ -71,85 +70,74 @@ class ContactWidgetFactory(
 
         val views = RemoteViews(context.packageName, R.layout.widget_tile)
 
-        // Set name
-        views.setTextViewText(R.id.tile_name, contact.name.split(" ").firstOrNull() ?: contact.name)
+        // First name only
+        views.setTextViewText(R.id.tile_name,
+            contact.name.split(" ").firstOrNull() ?: contact.name)
 
-        // Set photo or initials bitmap
-        val bitmap = loadContactPhoto(contact)
-        if (bitmap != null) {
-            views.setImageViewBitmap(R.id.tile_photo, bitmap)
-        } else {
-            views.setImageViewBitmap(R.id.tile_photo, makeInitialsBitmap(contact))
-        }
+        // Photo or initials (max 150px to stay within RemoteViews 1MB limit)
+        val bitmap = loadPhoto(contact, 150) ?: makeInitials(contact, 150)
+        views.setImageViewBitmap(R.id.tile_photo, bitmap)
 
         // Messenger icon
-        val messengerIconRes = when (contact.priorityApp) {
+        views.setImageViewResource(R.id.tile_messenger_icon, when (contact.priorityApp) {
             PriorityApp.PHONE    -> android.R.drawable.ic_menu_call
-            PriorityApp.WHATSAPP -> android.R.drawable.ic_menu_send
+            PriorityApp.WHATSAPP -> android.R.drawable.ic_menu_share
             PriorityApp.TELEGRAM -> android.R.drawable.ic_menu_send
             PriorityApp.VIBER    -> android.R.drawable.ic_menu_call
-        }
-        views.setImageViewResource(R.id.tile_messenger_icon, messengerIconRes)
+        })
 
-        // Fill-in intent for click (merged with template PendingIntent)
+        // Click — applies to entire tile root
         val fillIn = Intent().apply {
             putExtra(ContactWidgetProvider.EXTRA_CONTACT_ID,    contact.id)
             putExtra(ContactWidgetProvider.EXTRA_CONTACT_PHONE, contact.phoneNumber ?: "")
             putExtra(ContactWidgetProvider.EXTRA_CONTACT_NAME,  contact.name)
         }
-        views.setOnClickFillInIntent(R.id.tile_photo, fillIn)
-        views.setOnClickFillInIntent(R.id.tile_name,  fillIn)
+        views.setOnClickFillInIntent(R.id.tile_root, fillIn)
 
         return views
     }
 
-    override fun getLoadingView(): RemoteViews? = null
-    override fun getViewTypeCount(): Int = 1
-    override fun getItemId(position: Int): Long = contacts.getOrNull(position)?.id ?: position.toLong()
-    override fun hasStableIds(): Boolean = true
-
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private fun loadContactPhoto(contact: Contact): Bitmap? {
+    private fun loadPhoto(contact: Contact, maxPx: Int): Bitmap? {
         val uri = contact.photoUri ?: return null
         return try {
-            context.contentResolver.openInputStream(uri)?.use { stream ->
-                BitmapFactory.decodeStream(stream)
+            // Pass 1: read bounds only
+            val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            context.contentResolver.openInputStream(uri)?.use { s ->
+                BitmapFactory.decodeStream(s, null, boundsOpts)
+            }
+            val sample = maxOf(1, maxOf(boundsOpts.outWidth, boundsOpts.outHeight) / maxPx)
+
+            // Pass 2: decode at reduced size
+            val decodeOpts = BitmapFactory.Options().apply { inSampleSize = sample }
+            context.contentResolver.openInputStream(uri)?.use { s ->
+                BitmapFactory.decodeStream(s, null, decodeOpts)
             }
         } catch (e: Exception) {
             null
         }
     }
 
-    private fun makeInitialsBitmap(contact: Contact): Bitmap {
-        val size = 200
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-
-        val bgColors = intArrayOf(
-            Color.parseColor("#1A3CA8"),
-            Color.parseColor("#7B3FA0"),
-            Color.parseColor("#007A6E"),
-            Color.parseColor("#8B2252"),
-            Color.parseColor("#2E7D32"),
-            Color.parseColor("#B85C00")
-        )
-        val bgColor = bgColors[(contact.id % bgColors.size).toInt()]
-
+    private fun makeInitials(contact: Contact, size: Int): Bitmap {
+        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.color = bgColor
+
+        val colors = intArrayOf(
+            0xFF1A3CA8.toInt(), 0xFF7B3FA0.toInt(), 0xFF007A6E.toInt(),
+            0xFF8B2252.toInt(), 0xFF2E7D32.toInt(), 0xFFB85C00.toInt()
+        )
+        paint.color = colors[(contact.id % colors.size).toInt()]
         canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
 
         val initials = contact.name.split(" ")
-            .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }
-            .joinToString("")
+            .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
 
         paint.color = Color.WHITE
-        paint.textSize = size * 0.35f
+        paint.textSize = size * 0.38f
         paint.textAlign = Paint.Align.CENTER
-        val y = size / 2f - (paint.descent() + paint.ascent()) / 2f
-        canvas.drawText(initials, size / 2f, y, paint)
-
-        return bitmap
+        canvas.drawText(initials, size / 2f, size / 2f - (paint.descent() + paint.ascent()) / 2f, paint)
+        return bmp
     }
 }

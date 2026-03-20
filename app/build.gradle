@@ -11,8 +11,8 @@ android {
         applicationId "com.toxictrace.nexusconnect"
         minSdk 26
         targetSdk 34
-        versionCode 11
-        versionName "0.11.0"
+        versionCode 13
+        versionName "0.13.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -70,9 +70,6 @@ dependencies {
 
     // DataStore
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
-
-    // Permissions
-    implementation 'com.google.accompanist:accompanist-permissions:0.32.0'
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
