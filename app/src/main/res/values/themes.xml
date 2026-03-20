@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.NexusConnect" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorOnPrimary">@color/colorOnPrimary</item>
-        <item name="colorSurface">@color/colorSurface</item>
-        <item name="colorOnSurface">@color/colorOnSurface</item>
-        <item name="android:colorBackground">@color/colorBackground</item>
-        <item name="android:windowBackground">@color/colorBackground</item>
-    </style>
-
-    <style name="Theme.NexusConnect.Dark" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="colorPrimary">#4D8BF0</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSurface">#1C1C1E</item>
-        <item name="colorOnSurface">#F5F5F5</item>
-        <item name="android:colorBackground">#121212</item>
-        <item name="android:windowBackground">#121212</item>
-    </style>
+    <style name="Theme.NexusConnect" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

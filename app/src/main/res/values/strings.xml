@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Nexus Connect</string>
-    <string name="tab_contacts">Contacts</string>
-    <string name="tab_layout">Layout</string>
-    <string name="tab_preferences">Preferences</string>
 </resources>
