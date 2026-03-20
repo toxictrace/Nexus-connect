@@ -3,6 +3,7 @@ package com.nexusconnect.widget.widget
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -27,7 +28,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
         if (intent.action == "com.nexusconnect.widget.ACTION_UPDATE_WIDGET") {
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(
-                android.content.ComponentName(context, ContactWidgetProvider::class.java)
+                ComponentName(context, ContactWidgetProvider::class.java)
             )
             onUpdate(context, manager, ids)
         }
@@ -35,9 +36,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
     companion object {
         fun updateWidget(context: Context, manager: AppWidgetManager, appWidgetId: Int) {
-            val repo = SettingsRepository(context)
-            val settings = repo.getSettings()
-
             val views = RemoteViews(context.packageName, R.layout.widget_contact_grid)
 
             val serviceIntent = Intent(context, ContactWidgetService::class.java).apply {
@@ -45,8 +43,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
             }
 
-            views.setRemoteAdapter(R.id.gvWidgetContacts, serviceIntent)
-            views.setEmptyView(R.id.gvWidgetContacts, R.id.tvWidgetEmpty)
+            views.setRemoteAdapter(R.id.gv_widget_contacts, serviceIntent)
+            views.setEmptyView(R.id.gv_widget_contacts, R.id.tv_widget_empty)
 
             val clickIntent = Intent(context, ContactWidgetProvider::class.java).apply {
                 action = "com.nexusconnect.widget.ACTION_CONTACT_CLICK"
@@ -57,7 +55,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 context, 0, clickIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             )
-            views.setPendingIntentTemplate(R.id.gvWidgetContacts, clickPendingIntent)
+            views.setPendingIntentTemplate(R.id.gv_widget_contacts, clickPendingIntent)
 
             manager.updateAppWidget(appWidgetId, views)
         }

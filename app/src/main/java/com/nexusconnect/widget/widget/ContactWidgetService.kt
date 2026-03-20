@@ -2,7 +2,6 @@ package com.nexusconnect.widget.widget
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.nexusconnect.widget.R
@@ -25,7 +24,6 @@ class ContactWidgetFactory(
     private val contacts = mutableListOf<com.nexusconnect.widget.data.models.ContactModel>()
 
     override fun onCreate() { loadContacts() }
-
     override fun onDataSetChanged() { loadContacts() }
 
     private fun loadContacts() {
@@ -43,16 +41,16 @@ class ContactWidgetFactory(
         val contact = contacts[position]
         val views = RemoteViews(context.packageName, R.layout.item_widget_tile)
 
-        views.setTextViewText(R.id.tvTileName, contact.name.split(" ").first())
+        views.setTextViewText(R.id.tv_tile_name, contact.name.split(" ").first())
 
         val initials = contact.name.split(" ")
             .take(2)
             .mapNotNull { it.firstOrNull()?.uppercaseChar() }
             .joinToString("")
-        views.setTextViewText(R.id.tvTileInitials, initials)
+        views.setTextViewText(R.id.tv_tile_initials, initials)
 
         val fillIntent = Intent().putExtra("contact_id", contact.id)
-        views.setOnClickFillInIntent(R.id.tileRoot, fillIntent)
+        views.setOnClickFillInIntent(R.id.tile_root, fillIntent)
 
         return views
     }

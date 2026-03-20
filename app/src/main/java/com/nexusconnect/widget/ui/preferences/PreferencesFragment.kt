@@ -1,7 +1,5 @@
 package com.nexusconnect.widget.ui.preferences
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -27,15 +25,11 @@ class PreferencesFragment : Fragment() {
 
     private val exportLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        uri?.let { writeExport(it) }
-    }
+    ) { uri -> uri?.let { writeExport(it) } }
 
     private val importLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let { readImport(it) }
-    }
+    ) { uri -> uri?.let { readImport(it) } }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,14 +80,13 @@ class PreferencesFragment : Fragment() {
     private fun setupClickActions() {
         binding.radioGroupClickAction.setOnCheckedChangeListener { _, checkedId ->
             val action = when (checkedId) {
-                R.id.radioShowDialog -> ClickAction.SHOW_DIALOG
-                R.id.radioDirectCall -> ClickAction.DIRECT_CALL
-                R.id.radioOpenProfile -> ClickAction.OPEN_PROFILE
+                R.id.radio_show_dialog -> ClickAction.SHOW_DIALOG
+                R.id.radio_direct_call -> ClickAction.DIRECT_CALL
+                R.id.radio_open_profile -> ClickAction.OPEN_PROFILE
                 else -> ClickAction.SHOW_DIALOG
             }
             saveSettings { it.copy(globalClickAction = action) }
         }
-
         binding.switchHaptic.setOnCheckedChangeListener { _, checked ->
             saveSettings { it.copy(hapticFeedback = checked) }
         }
@@ -118,14 +111,13 @@ class PreferencesFragment : Fragment() {
     private fun setupTheme() {
         binding.radioGroupTheme.setOnCheckedChangeListener { _, checkedId ->
             val theme = when (checkedId) {
-                R.id.radioLight -> AppTheme.LIGHT
-                R.id.radioDark -> AppTheme.DARK
-                R.id.radioSystem -> AppTheme.SYSTEM
+                R.id.radio_light -> AppTheme.LIGHT
+                R.id.radio_dark -> AppTheme.DARK
+                R.id.radio_system -> AppTheme.SYSTEM
                 else -> AppTheme.LIGHT
             }
             saveSettings { it.copy(theme = theme) }
         }
-
         binding.switchDynamicColors.setOnCheckedChangeListener { _, checked ->
             saveSettings { it.copy(dynamicColors = checked) }
         }
@@ -134,9 +126,9 @@ class PreferencesFragment : Fragment() {
     private fun setupAvatarStyle() {
         binding.radioGroupAvatar.setOnCheckedChangeListener { _, checkedId ->
             val style = when (checkedId) {
-                R.id.radioAvatarSystem -> AvatarStyle.SYSTEM_DEFAULT
-                R.id.radioAvatarInitials -> AvatarStyle.DYNAMIC_INITIALS
-                R.id.radioAvatarPhotos -> AvatarStyle.PHOTOS_ONLY
+                R.id.radio_avatar_system -> AvatarStyle.SYSTEM_DEFAULT
+                R.id.radio_avatar_initials -> AvatarStyle.DYNAMIC_INITIALS
+                R.id.radio_avatar_photos -> AvatarStyle.PHOTOS_ONLY
                 else -> AvatarStyle.DYNAMIC_INITIALS
             }
             saveSettings { it.copy(avatarStyle = style) }
