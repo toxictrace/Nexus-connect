@@ -8,6 +8,7 @@ data class Contact(
     val photoUri: Uri? = null,
     val phoneNumber: String? = null,
     val isSelected: Boolean = false,
+    val isStarred: Boolean = false,
     val sortOrder: Int = 0,
     val priorityApp: PriorityApp = PriorityApp.PHONE
 )

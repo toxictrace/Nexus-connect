@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Contact photo (full-bleed) -->
+    <ImageView
+        android:id="@+id/tile_photo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@android:drawable/ic_menu_my_calendar" />
+
+    <!-- Dark gradient scrim at bottom for name readability -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/tile_gradient_scrim" />
+
+    <!-- Contact name -->
+    <TextView
+        android:id="@+id/tile_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginBottom="18dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingHorizontal="4dp"
+        android:textColor="#FFFFFF"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <!-- Messenger icon badge (top-right corner) -->
+    <ImageView
+        android:id="@+id/tile_messenger_icon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="4dp"
+        android:src="@android:drawable/ic_menu_call" />
+
+</FrameLayout>

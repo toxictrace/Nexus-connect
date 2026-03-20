@@ -7,6 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.toxictrace.nexusconnect.data.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
@@ -44,6 +45,8 @@ class SettingsRepository(private val context: Context) {
         val DYNAMIC_COLORS = booleanPreferencesKey("dynamic_colors")
         val AVATAR_IDENTITY = stringPreferencesKey("avatar_identity")
         val ACCENT_COLOR_INDEX = intPreferencesKey("accent_color_index")
+        // Ordered list of selected contact IDs, stored as comma-separated string
+        val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
     }
 
     val settings: Flow<WidgetSettings> = context.dataStore.data
@@ -92,6 +95,20 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.DYNAMIC_COLORS] = update.dynamicColors
             prefs[Keys.AVATAR_IDENTITY] = update.avatarIdentity.name
             prefs[Keys.ACCENT_COLOR_INDEX] = update.accentColorIndex
+        }
+    }
+
+    /** Returns ordered list of selected contact IDs */
+    suspend fun getSelectedContactIds(): List<Long> {
+        val prefs = context.dataStore.data.first()
+        val raw = prefs[Keys.SELECTED_CONTACT_IDS] ?: return emptyList()
+        return raw.split(",").mapNotNull { it.toLongOrNull() }
+    }
+
+    /** Saves ordered list of selected contact IDs */
+    suspend fun saveSelectedContactIds(ids: List<Long>) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.SELECTED_CONTACT_IDS] = ids.joinToString(",")
         }
     }
 }
