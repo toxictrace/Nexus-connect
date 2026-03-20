@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/contactsFragment"
+        android:icon="@drawable/ic_person"
+        android:title="Contacts" />
+    <item
+        android:id="@+id/layoutFragment"
+        android:icon="@drawable/ic_grid"
+        android:title="Layout" />
+    <item
+        android:id="@+id/preferencesFragment"
+        android:icon="@drawable/ic_tune"
+        android:title="Preferences" />
+</menu>

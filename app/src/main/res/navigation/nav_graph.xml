@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/contactsFragment">
+
+    <fragment
+        android:id="@+id/contactsFragment"
+        android:name="com.nexusconnect.widget.ui.contacts.ContactsFragment"
+        android:label="Contacts" />
+
+    <fragment
+        android:id="@+id/layoutFragment"
+        android:name="com.nexusconnect.widget.ui.layout.LayoutFragment"
+        android:label="Layout" />
+
+    <fragment
+        android:id="@+id/preferencesFragment"
+        android:name="com.nexusconnect.widget.ui.preferences.PreferencesFragment"
+        android:label="Preferences" />
+
+</navigation>
