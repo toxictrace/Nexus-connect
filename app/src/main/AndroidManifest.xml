@@ -7,6 +7,17 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- Required on Android 11+ to detect installed messengers -->
+    <queries>
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+        <package android:name="com.viber.voip" />
+        <package android:name="com.viber.calls" />
+        <package android:name="org.telegram.messenger" />
+        <package android:name="org.telegram.messenger.web" />
+        <package android:name="org.thunderdog.challegram" />
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -31,7 +42,10 @@
             android:name=".widget.ContactChooserActivity"
             android:exported="false"
             android:theme="@style/Theme.NexusConnect.Transparent"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:taskAffinity="" />
 
         <receiver
             android:name=".widget.ContactWidgetProvider"

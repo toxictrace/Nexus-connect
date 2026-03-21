@@ -118,25 +118,31 @@ class ContactChooserActivity : ComponentActivity() {
         val c = phone.replace(Regex("[^+\\d]"), "")
         val i = Intent(Intent.ACTION_VIEW, Uri.parse("whatsapp://send?phone=$c")).apply {
             setPackage("com.whatsapp")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
         if (i.resolveActivity(packageManager) != null) startActivity(i)
-        else startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$c")))
+        else startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$c"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         finish()
     }
 
     private fun openViber(phone: String) {
         val c = phone.replace(Regex("[^+\\d]"), "")
         val i = Intent(Intent.ACTION_VIEW, Uri.parse("viber://contact?number=$c"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         if (i.resolveActivity(packageManager) != null) startActivity(i)
-        else startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://viber.com/0/")))
+        else startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://viber.com/0/"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         finish()
     }
 
     private fun openTelegram(phone: String) {
         val c = phone.replace(Regex("[^+\\d]"), "")
         val i = Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?phone=$c"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         if (i.resolveActivity(packageManager) != null) startActivity(i)
-        else startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/+$c")))
+        else startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/+$c"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         finish()
     }
 }
@@ -265,7 +271,9 @@ private fun ChooserSheet(
                     onClick = onWhatsApp
                 )
             }
-            if (isInstalled("com.viber.voip")) {
+            if (isInstalled("com.viber.voip") ||
+                isInstalled("com.viber.calls") ||
+                isInstalled("air.WL.android.viber")) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
                 CallOption(
                     icon = Icons.Default.PhoneAndroid,
@@ -277,7 +285,9 @@ private fun ChooserSheet(
             }
             if (isInstalled("org.telegram.messenger") ||
                 isInstalled("org.telegram.messenger.web") ||
-                isInstalled("org.thunderdog.challegram")) {
+                isInstalled("org.thunderdog.challegram") ||
+                isInstalled("im.molly.app") ||
+                isInstalled("org.telegram.plus")) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
                 CallOption(
                     icon = Icons.Default.Send,
