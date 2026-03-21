@@ -11,10 +11,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -184,95 +184,89 @@ private fun ChooserSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.fillMaxHeight(0.85f)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 32.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(bottom = 32.dp)
         ) {
             // Header
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier.size(64.dp).clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    if (photoUri != null) {
-                        AsyncImage(
-                            model = photoUri, contentDescription = name,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Text(
-                            name.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString(""),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Box(
+                        modifier = Modifier.size(64.dp).clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (photoUri != null) {
+                            AsyncImage(model = photoUri, contentDescription = name,
+                                contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                        } else {
+                            Text(
+                                name.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString(""),
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
-                }
-                Column {
-                    Text(name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text(phone, style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column {
+                        Text(name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(phone, style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
 
             // Stats
             if (stats.totalCalls > 0) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                item {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        StatItem(Icons.Default.Call, stats.totalCalls.toString(), "Calls")
-                        VerticalDivider(modifier = Modifier.height(44.dp))
-                        StatItem(Icons.Default.AccessTime, formatDuration(stats.totalDurationSec), "Total time")
-                        VerticalDivider(modifier = Modifier.height(44.dp))
-                        StatItem(
-                            icon = when (stats.lastCallType) {
-                                CallLog.Calls.INCOMING_TYPE -> Icons.Default.CallReceived
-                                CallLog.Calls.OUTGOING_TYPE -> Icons.Default.CallMade
-                                else -> Icons.Default.CallMissed
-                            },
-                            value = stats.lastCallDate?.let { formatDate(it) } ?: "—",
-                            label = "Last call",
-                            valueLines = 2
-                        )
+                        Row(modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly) {
+                            StatItem(Icons.Default.Call, stats.totalCalls.toString(), "Calls")
+                            VerticalDivider(modifier = Modifier.height(44.dp))
+                            StatItem(Icons.Default.AccessTime, formatDuration(stats.totalDurationSec), "Total time")
+                            VerticalDivider(modifier = Modifier.height(44.dp))
+                            StatItem(
+                                icon = when (stats.lastCallType) {
+                                    CallLog.Calls.INCOMING_TYPE -> Icons.Default.CallReceived
+                                    CallLog.Calls.OUTGOING_TYPE -> Icons.Default.CallMade
+                                    else -> Icons.Default.CallMissed
+                                },
+                                value = stats.lastCallDate?.let { formatDate(it) } ?: "—",
+                                label = "Last call", valueLines = 2
+                            )
+                        }
                     }
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp))
+            item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) }
 
             // Phone
-            CallOption(Icons.Default.Call, "Phone call", "Direct call", Color(0xFF1A3CA8), onDial)
+            item { CallOption(Icons.Default.Call, "Phone call", "Direct call", Color(0xFF1A3CA8), onDial) }
 
-            // WhatsApp
             if (hasWhatsApp) {
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
-                CallOption(Icons.Default.Message, "WhatsApp", "Open in WhatsApp", Color(0xFF25D366), onWhatsApp)
+                item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
+                item { CallOption(Icons.Default.Message, "WhatsApp", "Open in WhatsApp", Color(0xFF25D366), onWhatsApp) }
             }
-            // Viber
             if (hasViber) {
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
-                CallOption(Icons.Default.PhoneAndroid, "Viber", "Open in Viber", Color(0xFF7360F2), onViber)
+                item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
+                item { CallOption(Icons.Default.PhoneAndroid, "Viber", "Open in Viber", Color(0xFF7360F2), onViber) }
             }
-            // Telegram
             if (hasTelegram) {
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
-                CallOption(Icons.Default.Send, "Telegram", "Open in Telegram", Color(0xFF2AABEE), onTelegram)
+                item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
+                item { CallOption(Icons.Default.Send, "Telegram", "Open in Telegram", Color(0xFF2AABEE), onTelegram) }
             }
         }
     }
