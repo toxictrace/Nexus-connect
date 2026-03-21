@@ -6,11 +6,16 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import com.toxictrace.nexusconnect.R
+import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 
@@ -27,6 +32,11 @@ class ContactWidgetProvider : AppWidgetProvider() {
             R.id.tile_0,  R.id.tile_1,  R.id.tile_2,  R.id.tile_3,
             R.id.tile_4,  R.id.tile_5,  R.id.tile_6,  R.id.tile_7,
             R.id.tile_8,  R.id.tile_9,  R.id.tile_10, R.id.tile_11
+        )
+        private val PHOTO_IDS = intArrayOf(
+            R.id.photo_0,  R.id.photo_1,  R.id.photo_2,  R.id.photo_3,
+            R.id.photo_4,  R.id.photo_5,  R.id.photo_6,  R.id.photo_7,
+            R.id.photo_8,  R.id.photo_9,  R.id.photo_10, R.id.photo_11
         )
         private val NAME_IDS = intArrayOf(
             R.id.name_0,  R.id.name_1,  R.id.name_2,  R.id.name_3,
@@ -50,15 +60,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val filterFavorites = WidgetPrefs.getFilterFavorites(context)
             val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
 
-            Log.d(TAG, "selectedIds=${selectedIds.size} maxContacts=$maxContacts")
-
             val allContacts = try {
                 ContactsRepository(context).loadContacts()
             } catch (e: Exception) {
                 Log.e(TAG, "loadContacts failed: ${e.message}")
                 emptyList()
             }
-            Log.d(TAG, "allContacts=${allContacts.size}")
 
             val contacts = when {
                 selectedIds.isNotEmpty() ->
@@ -77,6 +84,15 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 val contact = contacts.getOrNull(idx)
                 if (contact != null) {
                     views.setViewVisibility(TILE_IDS[idx], View.VISIBLE)
+
+                    // Use setImageViewUri — no bitmap IPC, laucher loads photo itself
+                    if (contact.photoUri != null) {
+                        views.setImageViewUri(PHOTO_IDS[idx], contact.photoUri)
+                    } else {
+                        // Initials bitmap — small (40px) = ~6KB, safe for IPC
+                        views.setImageViewBitmap(PHOTO_IDS[idx], makeInitials(contact, 40))
+                    }
+
                     views.setTextViewText(NAME_IDS[idx],
                         contact.name.split(" ").firstOrNull() ?: contact.name)
 
@@ -103,6 +119,26 @@ class ContactWidgetProvider : AppWidgetProvider() {
             } catch (e: Exception) {
                 Log.e(TAG, "updateAppWidget FAILED: ${e.javaClass.simpleName}: ${e.message}")
             }
+        }
+
+        private fun makeInitials(contact: Contact, size: Int): Bitmap {
+            val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            val colors = intArrayOf(
+                0xFF1A3CA8.toInt(), 0xFF7B3FA0.toInt(), 0xFF007A6E.toInt(),
+                0xFF8B2252.toInt(), 0xFF2E7D32.toInt(), 0xFFB85C00.toInt()
+            )
+            paint.color = colors[(contact.id % colors.size).toInt()]
+            canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
+            val initials = contact.name.split(" ")
+                .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+            paint.color = Color.WHITE
+            paint.textSize = size * 0.38f
+            paint.textAlign = Paint.Align.CENTER
+            canvas.drawText(initials, size / 2f,
+                size / 2f - (paint.descent() + paint.ascent()) / 2f, paint)
+            return bmp
         }
     }
 
