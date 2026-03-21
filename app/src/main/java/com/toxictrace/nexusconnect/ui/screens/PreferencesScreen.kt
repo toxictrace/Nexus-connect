@@ -148,24 +148,46 @@ private fun ActionCard(title: String, subtitle: String, selected: Boolean, icon:
 private fun MessengerSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
     val context = LocalContext.current
 
-    // Only apps with launcher icon (excludes background services, system utilities)
+    // Apps that can handle tel: or messaging — real communication apps
     val allApps: List<AppInfo> = remember {
         val pm = context.packageManager
-        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        pm.queryIntentActivities(launcherIntent, 0)
-            .map { it.activityInfo.packageName }
-            .distinct()
-            .mapNotNull { pkg ->
-                runCatching {
-                    val info = pm.getApplicationInfo(pkg, 0)
-                    val label = pm.getApplicationLabel(info).toString()
-                    val iconBmp = runCatching {
-                        pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
-                    }.getOrNull()
-                    AppInfo(pkg, label, iconBmp)
+        val pkgs = mutableSetOf<String>()
+
+        // Apps that handle tel: URI
+        val telIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("tel:+1234567890"))
+        pm.queryIntentActivities(telIntent, 0).forEach { pkgs.add(it.activityInfo.packageName) }
+
+        // Apps that handle sms:
+        val smsIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("sms:+1234567890"))
+        pm.queryIntentActivities(smsIntent, 0).forEach { pkgs.add(it.activityInfo.packageName) }
+
+        // Apps that handle SEND text (messengers)
+        val sendIntent = Intent(Intent.ACTION_SEND).apply { type = "text/plain" }
+        pm.queryIntentActivities(sendIntent, 0).forEach { pkgs.add(it.activityInfo.packageName) }
+
+        // Apps that handle https:// (web-capable messengers like Telegram)
+        val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://t.me"))
+        pm.queryIntentActivities(webIntent, 0).forEach { pkgs.add(it.activityInfo.packageName) }
+
+        // Remove obvious non-messengers
+        val exclude = setOf(
+            "com.android.browser", "com.android.chrome", "com.google.android.youtube",
+            "com.google.android.gm", "com.android.email", "com.android.mms",
+            "com.miui.gallery", "com.android.camera", "com.android.settings",
+            "com.android.contacts", "com.google.android.contacts",
+            context.packageName // exclude ourselves
+        )
+
+        pkgs.minus(exclude).mapNotNull { pkg ->
+            runCatching {
+                val info = pm.getApplicationInfo(pkg, 0)
+                val label = pm.getApplicationLabel(info).toString()
+                val iconBmp = runCatching {
+                    pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
                 }.getOrNull()
-            }
-            .sortedBy { it.label.lowercase() }
+                AppInfo(pkg, label, iconBmp)
+            }.getOrNull()
+        }.sortedBy { it.label.lowercase() }
     }
 
     var showPickerFor by remember { mutableStateOf<String?>(null) } // "whatsapp" | "viber" | "telegram"
@@ -238,52 +260,70 @@ private fun MessengerRow(label: String, currentPkg: String, allApps: List<AppInf
 
 @Composable
 private fun AppPickerDialog(apps: List<AppInfo>, current: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
+    var search by remember { mutableStateOf("") }
+    val filtered = if (search.isBlank()) apps
+    else apps.filter { it.label.contains(search, ignoreCase = true) || it.packageName.contains(search, ignoreCase = true) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Choose app") },
         text = {
-            LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
-                // "None" option
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().clickable { onSelect("") }
-                            .padding(vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(modifier = Modifier.size(32.dp).clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                            contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp))
+            Column {
+                OutlinedTextField(
+                    value = search,
+                    onValueChange = { search = it },
+                    placeholder = { Text("Search...") },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
+                    trailingIcon = {
+                        if (search.isNotEmpty()) IconButton(onClick = { search = "" }) {
+                            Icon(Icons.Default.Clear, null)
                         }
-                        Text("None (auto)", modifier = Modifier.weight(1f))
-                        if (current.isBlank()) Icon(Icons.Default.Check, null,
-                            tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-                    }
-                    HorizontalDivider()
-                }
-                items(apps) { app ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth().clickable { onSelect(app.packageName) }
-                            .padding(vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        if (app.icon != null) {
-                            Image(bitmap = app.icon, contentDescription = null,
-                                modifier = Modifier.size(32.dp).clip(RoundedCornerShape(4.dp)))
-                        } else {
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                )
+                LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable { onSelect("") }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
                             Box(modifier = Modifier.size(32.dp).clip(RoundedCornerShape(4.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant))
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(app.label, style = MaterialTheme.typography.bodyMedium)
-                            Text(app.packageName, style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        if (current == app.packageName) {
-                            Icon(Icons.Default.Check, null,
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                                contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp))
+                            }
+                            Text("None (auto)", modifier = Modifier.weight(1f))
+                            if (current.isBlank()) Icon(Icons.Default.Check, null,
                                 tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                        }
+                        HorizontalDivider()
+                    }
+                    items(filtered) { app ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable { onSelect(app.packageName) }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            if (app.icon != null) {
+                                Image(bitmap = app.icon, contentDescription = null,
+                                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(4.dp)))
+                            } else {
+                                Box(modifier = Modifier.size(32.dp).clip(RoundedCornerShape(4.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant))
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(app.label, style = MaterialTheme.typography.bodyMedium)
+                                Text(app.packageName, style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            if (current == app.packageName) {
+                                Icon(Icons.Default.Check, null,
+                                    tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                            }
                         }
                     }
                 }

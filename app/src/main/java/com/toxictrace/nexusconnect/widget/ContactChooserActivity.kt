@@ -131,23 +131,23 @@ class ContactChooserActivity : ComponentActivity() {
 
     private fun openViber(phone: String, pkg: String) {
         val effectivePkg = pkg.ifBlank { "com.viber.voip" }
-        val c = phone.replace(Regex("[^+\\d]"), "")
-        // viber://chat opens chat directly (not profile)
-        val chatUri = Uri.parse("viber://chat?number=%2B$c")
-        val i = Intent(Intent.ACTION_VIEW, chatUri).apply {
+        // ACTION_DIAL with Viber package — most reliable, opens Viber dialer directly
+        val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")).apply {
             setPackage(effectivePkg)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
-        if (i.resolveActivity(packageManager) != null) {
-            startActivity(i)
-        } else {
-            // Fallback: tel: with package (opens Viber dialer)
-            val telIntent = Intent(Intent.ACTION_VIEW, Uri.parse("tel:$phone")).apply {
-                setPackage(effectivePkg)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            }
-            if (telIntent.resolveActivity(packageManager) != null) startActivity(telIntent)
+        if (dialIntent.resolveActivity(packageManager) != null) {
+            startActivity(dialIntent)
+            finish()
+            return
         }
+        // Fallback: viber://chat
+        val c = phone.replace(Regex("[^+\\d]"), "")
+        val chatIntent = Intent(Intent.ACTION_VIEW, Uri.parse("viber://chat?number=%2B$c")).apply {
+            setPackage(effectivePkg)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
+        if (chatIntent.resolveActivity(packageManager) != null) startActivity(chatIntent)
         finish()
     }
 
