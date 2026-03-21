@@ -11,22 +11,21 @@ import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 object ContactActionHandler {
 
     fun handle(context: Context, contactId: Long, phone: String?, name: String?) {
-        if (WidgetPrefs.getHapticFeedback(context)) HapticHelper.vibrate(context)
-
         when (WidgetPrefs.getClickAction(context)) {
             ClickAction.SHOW_DIALOG -> showChooser(context, contactId, phone, name)
-            ClickAction.DIRECT_CALL -> directCall(context, phone)
+            ClickAction.DIRECT_CALL -> startDirectCall(context, phone)
         }
     }
 
-    private fun directCall(context: Context, phone: String?) {
+    private fun startDirectCall(context: Context, phone: String?) {
         if (phone.isNullOrBlank()) return
-        val hasPermission = context.checkSelfPermission(Manifest.permission.CALL_PHONE) ==
-                PackageManager.PERMISSION_GRANTED
-        val action = if (hasPermission) Intent.ACTION_CALL else Intent.ACTION_DIAL
         context.startActivity(
-            Intent(action, Uri.parse("tel:$phone"))
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            Intent(context, DirectCallActivity::class.java).apply {
+                putExtra("phone", phone)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
+                         Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
+                         Intent.FLAG_ACTIVITY_NO_HISTORY)
+            }
         )
     }
 

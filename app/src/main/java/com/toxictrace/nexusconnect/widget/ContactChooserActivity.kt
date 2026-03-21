@@ -69,6 +69,8 @@ class ContactChooserActivity : ComponentActivity() {
         val telegramPkg  = WidgetPrefs.getMessengerTelegram(this)
 
         val hapticEnabled = WidgetPrefs.getHapticFeedback(this)
+        // Vibrate on open — most reliable place since we have full Activity context
+        if (hapticEnabled) HapticHelper.vibrate(this)
         val actContext = this
 
         setContent {
