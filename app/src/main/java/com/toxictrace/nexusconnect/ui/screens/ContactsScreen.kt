@@ -62,7 +62,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
         else list.filter { it.name.contains(searchQuery, ignoreCase = true) }
     }
 
-    Box(modifier = Modifier.fillMaxSize().imePadding()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
             // Search bar with clear button

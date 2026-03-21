@@ -96,7 +96,9 @@ fun NexusApp() {
         NavHost(
             navController = navController,
             startDestination = Screen.Layout.route,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier
+                .padding(top = paddingValues.calculateTopPadding())
+                .imePadding()
         ) {
             composable(Screen.Contacts.route) { ContactsScreen(viewModel = viewModel) }
             composable(Screen.Layout.route) { LayoutScreen(viewModel = viewModel) }
