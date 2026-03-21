@@ -24,6 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.core.content.ContextCompat
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.viewmodel.ContactSortMode
@@ -252,19 +255,33 @@ fun ContactAvatar(contact: Contact, size: Int = 40) {
         Color(0xFF1A3CA8), Color(0xFF7B3FA0), Color(0xFF007A6E),
         Color(0xFF8B2252), Color(0xFF2E7D32), Color(0xFFB85C00)
     )
+    val bg = colors[(contact.id % colors.size).toInt()]
+
     Box(
-        modifier = Modifier.size(size.dp).clip(CircleShape)
-            .background(colors[(contact.id % colors.size).toInt()]),
+        modifier = Modifier.size(size.dp).clip(CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        if (contact.photoUri != null) {
-            Icon(Icons.Default.Person, null, tint = Color.White,
-                modifier = Modifier.size((size * 0.6).dp))
-        } else {
-            Text(initials,
+        // Initials as background fallback
+        Box(
+            modifier = Modifier.fillMaxSize().background(bg),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                initials,
                 style = if (size >= 44) MaterialTheme.typography.titleMedium
                         else MaterialTheme.typography.bodyMedium,
-                color = Color.White, fontWeight = FontWeight.Bold)
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        // Real photo on top
+        if (contact.photoUri != null) {
+            AsyncImage(
+                model = contact.photoUri,
+                contentDescription = contact.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
