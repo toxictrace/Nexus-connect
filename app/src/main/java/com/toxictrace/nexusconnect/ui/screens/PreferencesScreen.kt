@@ -41,10 +41,6 @@ fun PreferencesScreen(viewModel: MainViewModel) {
             settings = settings,
             onUpdate = { updated -> viewModel.updateSettings { updated } }
         )
-        PriorityAppSection(
-            settings = settings,
-            onUpdate = { app -> viewModel.updateSettings { s -> s.copy(priorityApp = app) } }
-        )
         FeedbackSection(
             settings = settings,
             onUpdate = { enabled -> viewModel.updateSettings { s -> s.copy(hapticFeedback = enabled) } }
@@ -91,16 +87,14 @@ private fun ClickActionSection(settings: WidgetSettings, onUpdate: (WidgetSettin
         SectionHeader("GLOBAL ACTION", "Select the primary behavior when tapping a contact tile.")
         Spacer(Modifier.height(12.dp))
         val actions = listOf(
-            Triple(ClickAction.SHOW_DIALOG,  "Show selection dialog", "Prompt for app choice on every click"),
-            Triple(ClickAction.DIRECT_CALL,  "Direct Call",           "Dial the primary number immediately"),
-            Triple(ClickAction.OPEN_PROFILE, "Open Profile",          "View full contact details and history"),
+            Triple(ClickAction.SHOW_DIALOG, "Show selection dialog", "Choose how to call on every tap"),
+            Triple(ClickAction.DIRECT_CALL, "Direct Call",           "Call immediately without dialog"),
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             actions.forEach { (action, title, subtitle) ->
                 val icon: ImageVector = when (action) {
-                    ClickAction.SHOW_DIALOG  -> Icons.Default.GridView
-                    ClickAction.DIRECT_CALL  -> Icons.Default.Call
-                    ClickAction.OPEN_PROFILE -> Icons.Default.Person
+                    ClickAction.SHOW_DIALOG -> Icons.Default.GridView
+                    ClickAction.DIRECT_CALL -> Icons.Default.Call
                 }
                 ActionCard(
                     title = title, subtitle = subtitle,
@@ -152,55 +146,6 @@ private fun ActionCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             RadioButton(selected = selected, onClick = onClick)
-        }
-    }
-}
-
-@Composable
-private fun PriorityAppSection(settings: WidgetSettings, onUpdate: (PriorityApp) -> Unit) {
-    Column {
-        SectionHeader("PRIORITY APP", "Select the preferred communication channel.")
-        Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-            PriorityApp.values().forEach { app ->
-                val icon: ImageVector = when (app) {
-                    PriorityApp.PHONE    -> Icons.Default.Call
-                    PriorityApp.WHATSAPP -> Icons.Default.Message
-                    PriorityApp.TELEGRAM -> Icons.Default.Send
-                    PriorityApp.VIBER    -> Icons.Default.PhoneAndroid
-                }
-                AppChip(
-                    label = app.label,
-                    selected = settings.priorityApp == app,
-                    icon = icon,
-                    onClick = { onUpdate(app) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AppChip(
-    label: String, selected: Boolean, icon: ImageVector,
-    onClick: () -> Unit, modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.clip(RoundedCornerShape(16.dp)).clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-    ) {
-        Column(
-            modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Icon(icon, label,
-                tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(24.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall,
-                color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

@@ -9,21 +9,12 @@ data class Contact(
     val phoneNumber: String? = null,
     val isSelected: Boolean = false,
     val isStarred: Boolean = false,
-    val sortOrder: Int = 0,
-    val priorityApp: PriorityApp = PriorityApp.PHONE
+    val sortOrder: Int = 0
 )
-
-enum class PriorityApp(val label: String) {
-    PHONE("Phone"),
-    WHATSAPP("WhatsApp"),
-    TELEGRAM("Telegram"),
-    VIBER("Viber")
-}
 
 enum class ClickAction {
     SHOW_DIALOG,
-    DIRECT_CALL,
-    OPEN_PROFILE
+    DIRECT_CALL
 }
 
 enum class FilterMode {
@@ -36,6 +27,12 @@ enum class AvatarIdentity {
     SYSTEM_DEFAULT,
     DYNAMIC_INITIALS,
     PHOTOS_ONLY
+}
+
+enum class AppTheme {
+    LIGHT,
+    DARK,
+    SYSTEM
 }
 
 enum class AppTheme {
