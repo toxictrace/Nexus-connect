@@ -24,97 +24,91 @@ data class WidgetSettings(
     val hapticFeedback: Boolean = true,
     val theme: AppTheme = AppTheme.LIGHT,
     val dynamicColors: Boolean = true,
+    val accentColorIndex: Int = 0,
     val avatarIdentity: AvatarIdentity = AvatarIdentity.DEFAULT,
     val customAvatarUri: String = "",
     val showUnknownNumbers: Boolean = true,
-    val unknownNumbersDays: Int = 3
-    val accentColorIndex: Int = 0,
-    // Messenger package overrides (empty = auto-detect)
+    val unknownNumbersDays: Int = 3,
     val messengerWhatsApp: String = "",
     val messengerViber: String = "",
-    val messengerTelegram: String = "",
-    // Avatar for contacts without photo: "" = silhouette, "custom:URI" = user image
-    val customAvatarUri: String = ""
+    val messengerTelegram: String = ""
 )
 
 class SettingsRepository(private val context: Context) {
 
     private object Keys {
-        val COLUMNS           = intPreferencesKey("columns")
-        val TILE_HEIGHT       = intPreferencesKey("tile_height")
-        val MAX_CONTACTS      = intPreferencesKey("max_contacts")
-        val FILTER_FAVORITES  = booleanPreferencesKey("filter_favorites")
-        val FILTER_RECENTS    = booleanPreferencesKey("filter_recents")
-        val FILTER_FREQUENT   = booleanPreferencesKey("filter_frequent")
-        val CLICK_ACTION      = stringPreferencesKey("click_action")
-        val HAPTIC_FEEDBACK   = booleanPreferencesKey("haptic_feedback")
-        val THEME             = stringPreferencesKey("theme")
-        val DYNAMIC_COLORS    = booleanPreferencesKey("dynamic_colors")
-        val AVATAR_IDENTITY   = stringPreferencesKey("avatar_identity")
-        val CUSTOM_AVATAR_URI      = stringPreferencesKey("custom_avatar_uri")
-        val SHOW_UNKNOWN_NUMBERS   = booleanPreferencesKey("show_unknown_numbers")
-        val UNKNOWN_NUMBERS_DAYS   = intPreferencesKey("unknown_numbers_days")
-        val ACCENT_COLOR_INDEX = intPreferencesKey("accent_color_index")
+        val COLUMNS              = intPreferencesKey("columns")
+        val TILE_HEIGHT          = intPreferencesKey("tile_height")
+        val MAX_CONTACTS         = intPreferencesKey("max_contacts")
+        val FILTER_FAVORITES     = booleanPreferencesKey("filter_favorites")
+        val FILTER_RECENTS       = booleanPreferencesKey("filter_recents")
+        val FILTER_FREQUENT      = booleanPreferencesKey("filter_frequent")
+        val CLICK_ACTION         = stringPreferencesKey("click_action")
+        val HAPTIC_FEEDBACK      = booleanPreferencesKey("haptic_feedback")
+        val THEME                = stringPreferencesKey("theme")
+        val DYNAMIC_COLORS       = booleanPreferencesKey("dynamic_colors")
+        val ACCENT_COLOR_INDEX   = intPreferencesKey("accent_color_index")
+        val AVATAR_IDENTITY      = stringPreferencesKey("avatar_identity")
+        val CUSTOM_AVATAR_URI    = stringPreferencesKey("custom_avatar_uri")
+        val SHOW_UNKNOWN_NUMBERS = booleanPreferencesKey("show_unknown_numbers")
+        val UNKNOWN_NUMBERS_DAYS = intPreferencesKey("unknown_numbers_days")
+        val MESSENGER_WHATSAPP   = stringPreferencesKey("messenger_whatsapp")
+        val MESSENGER_VIBER      = stringPreferencesKey("messenger_viber")
+        val MESSENGER_TELEGRAM   = stringPreferencesKey("messenger_telegram")
         val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
-        val MESSENGER_WHATSAPP = stringPreferencesKey("messenger_whatsapp")
-        val MESSENGER_VIBER    = stringPreferencesKey("messenger_viber")
-        val MESSENGER_TELEGRAM = stringPreferencesKey("messenger_telegram")
-        val CUSTOM_AVATAR_URI  = stringPreferencesKey("custom_avatar_uri")
     }
 
     val settings: Flow<WidgetSettings> = context.dataStore.data
         .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
         .map { prefs ->
             WidgetSettings(
-                columns         = prefs[Keys.COLUMNS] ?: 4,
-                tileHeightDp    = prefs[Keys.TILE_HEIGHT] ?: 3,
-                maxContacts     = prefs[Keys.MAX_CONTACTS] ?: 12,
-                filterFavorites = prefs[Keys.FILTER_FAVORITES] ?: true,
-                filterRecents   = prefs[Keys.FILTER_RECENTS] ?: true,
-                filterFrequent  = prefs[Keys.FILTER_FREQUENT] ?: false,
-                clickAction     = prefs[Keys.CLICK_ACTION]
+                columns            = prefs[Keys.COLUMNS] ?: 4,
+                tileHeightDp       = prefs[Keys.TILE_HEIGHT] ?: 3,
+                maxContacts        = prefs[Keys.MAX_CONTACTS] ?: 12,
+                filterFavorites    = prefs[Keys.FILTER_FAVORITES] ?: true,
+                filterRecents      = prefs[Keys.FILTER_RECENTS] ?: true,
+                filterFrequent     = prefs[Keys.FILTER_FREQUENT] ?: false,
+                clickAction        = prefs[Keys.CLICK_ACTION]
                     ?.let { runCatching { ClickAction.valueOf(it) }.getOrNull() }
                     ?: ClickAction.SHOW_DIALOG,
-                hapticFeedback  = prefs[Keys.HAPTIC_FEEDBACK] ?: true,
-                theme           = prefs[Keys.THEME]
+                hapticFeedback     = prefs[Keys.HAPTIC_FEEDBACK] ?: true,
+                theme              = prefs[Keys.THEME]
                     ?.let { runCatching { AppTheme.valueOf(it) }.getOrNull() }
                     ?: AppTheme.LIGHT,
-                dynamicColors   = prefs[Keys.DYNAMIC_COLORS] ?: true,
-                avatarIdentity  = prefs[Keys.AVATAR_IDENTITY]
+                dynamicColors      = prefs[Keys.DYNAMIC_COLORS] ?: true,
+                accentColorIndex   = prefs[Keys.ACCENT_COLOR_INDEX] ?: 0,
+                avatarIdentity     = prefs[Keys.AVATAR_IDENTITY]
                     ?.let { runCatching { AvatarIdentity.valueOf(it) }.getOrNull() }
                     ?: AvatarIdentity.DEFAULT,
                 customAvatarUri    = prefs[Keys.CUSTOM_AVATAR_URI] ?: "",
                 showUnknownNumbers = prefs[Keys.SHOW_UNKNOWN_NUMBERS] ?: true,
                 unknownNumbersDays = prefs[Keys.UNKNOWN_NUMBERS_DAYS] ?: 3,
-                accentColorIndex = prefs[Keys.ACCENT_COLOR_INDEX] ?: 0,
-                messengerWhatsApp = prefs[Keys.MESSENGER_WHATSAPP] ?: "",
-                messengerViber    = prefs[Keys.MESSENGER_VIBER]    ?: "",
-                messengerTelegram = prefs[Keys.MESSENGER_TELEGRAM] ?: "",
-                customAvatarUri   = prefs[Keys.CUSTOM_AVATAR_URI]  ?: ""
+                messengerWhatsApp  = prefs[Keys.MESSENGER_WHATSAPP] ?: "",
+                messengerViber     = prefs[Keys.MESSENGER_VIBER] ?: "",
+                messengerTelegram  = prefs[Keys.MESSENGER_TELEGRAM] ?: ""
             )
         }
 
     suspend fun updateSettings(update: WidgetSettings) {
         context.dataStore.edit { prefs ->
-            prefs[Keys.COLUMNS]           = update.columns
-            prefs[Keys.TILE_HEIGHT]       = update.tileHeightDp
-            prefs[Keys.MAX_CONTACTS]      = update.maxContacts
-            prefs[Keys.FILTER_FAVORITES]  = update.filterFavorites
-            prefs[Keys.FILTER_RECENTS]    = update.filterRecents
-            prefs[Keys.FILTER_FREQUENT]   = update.filterFrequent
-            prefs[Keys.CLICK_ACTION]      = update.clickAction.name
-            prefs[Keys.HAPTIC_FEEDBACK]   = update.hapticFeedback
-            prefs[Keys.THEME]             = update.theme.name
-            prefs[Keys.DYNAMIC_COLORS]    = update.dynamicColors
-            prefs[Keys.AVATAR_IDENTITY]   = update.avatarIdentity.name
+            prefs[Keys.COLUMNS]              = update.columns
+            prefs[Keys.TILE_HEIGHT]          = update.tileHeightDp
+            prefs[Keys.MAX_CONTACTS]         = update.maxContacts
+            prefs[Keys.FILTER_FAVORITES]     = update.filterFavorites
+            prefs[Keys.FILTER_RECENTS]       = update.filterRecents
+            prefs[Keys.FILTER_FREQUENT]      = update.filterFrequent
+            prefs[Keys.CLICK_ACTION]         = update.clickAction.name
+            prefs[Keys.HAPTIC_FEEDBACK]      = update.hapticFeedback
+            prefs[Keys.THEME]                = update.theme.name
+            prefs[Keys.DYNAMIC_COLORS]       = update.dynamicColors
+            prefs[Keys.ACCENT_COLOR_INDEX]   = update.accentColorIndex
+            prefs[Keys.AVATAR_IDENTITY]      = update.avatarIdentity.name
             prefs[Keys.CUSTOM_AVATAR_URI]    = update.customAvatarUri
             prefs[Keys.SHOW_UNKNOWN_NUMBERS] = update.showUnknownNumbers
             prefs[Keys.UNKNOWN_NUMBERS_DAYS] = update.unknownNumbersDays
-            prefs[Keys.ACCENT_COLOR_INDEX] = update.accentColorIndex
-            prefs[Keys.MESSENGER_WHATSAPP] = update.messengerWhatsApp
-            prefs[Keys.MESSENGER_VIBER]    = update.messengerViber
-            prefs[Keys.MESSENGER_TELEGRAM] = update.messengerTelegram
-            prefs[Keys.CUSTOM_AVATAR_URI]  = update.customAvatarUri
+            prefs[Keys.MESSENGER_WHATSAPP]   = update.messengerWhatsApp
+            prefs[Keys.MESSENGER_VIBER]      = update.messengerViber
+            prefs[Keys.MESSENGER_TELEGRAM]   = update.messengerTelegram
         }
         val selectedIds = getSelectedContactIds()
         WidgetPrefs.sync(context, update, selectedIds)

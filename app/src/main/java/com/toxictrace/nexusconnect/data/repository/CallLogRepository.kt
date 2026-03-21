@@ -32,7 +32,7 @@ class CallLogRepository(private val context: Context) {
                     val type   = it.getInt(typeIdx)
                     // Count outgoing + incoming (not missed)
                     if (type == CallLog.Calls.OUTGOING_TYPE || type == CallLog.Calls.INCOMING_TYPE) {
-                        val norm = normalize(number)
+                        val norm = normalizeNum(number)
                         val contactId = numberToContactId[norm] ?: continue
                         freq[contactId] = (freq[contactId] ?: 0) + 1
                     }
@@ -64,7 +64,7 @@ class CallLogRepository(private val context: Context) {
                 val numIdx = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 while (it.moveToNext() && seen.size < limit) {
                     val number = it.getString(numIdx) ?: continue
-                    val contactId = numberToContactId[normalize(number)] ?: continue
+                    val contactId = numberToContactId[normalizeNum(number)] ?: continue
                     seen.add(contactId)
                 }
             }
@@ -100,7 +100,7 @@ class CallLogRepository(private val context: Context) {
                 val typeIdx = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
                 while (it.moveToNext() && result.size < limit) {
                     val number = it.getString(numIdx) ?: continue
-                    val norm = normalize(number)
+                    val norm = normalizeNum(number)
                     // Unknown = not in contacts AND not seen yet
                     if (norm !in numberToContactId && norm !in seen && number.isNotBlank()) {
                         seen.add(norm)
