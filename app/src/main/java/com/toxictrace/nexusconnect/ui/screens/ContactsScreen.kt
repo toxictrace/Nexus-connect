@@ -178,6 +178,9 @@ fun ContactsScreen(viewModel: MainViewModel) {
 
         // Bottom action bar
         if (selectedCount > 0) {
+            val settings by viewModel.settings.collectAsState()
+            val maxAllowed = settings.columns * settings.tileHeightDp.coerceIn(3, 6)
+
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -193,7 +196,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text("Selected $selectedCount / ${contacts.size}",
+                        Text("Selected $selectedCount / $maxAllowed",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold)
                         Text("WIDGET ORDER",

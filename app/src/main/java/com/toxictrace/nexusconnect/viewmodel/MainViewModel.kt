@@ -80,7 +80,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (contactId in current) {
             current.remove(contactId)
         } else {
-            current.add(contactId) // new selections go to end of selected list
+            // Limit to cols × rows
+            val maxAllowed = settings.value.run { columns * tileHeightDp.coerceIn(3, 6) }
+            if (current.size >= maxAllowed) return
+            current.add(contactId)
         }
         _selectedIds.value = current
     }
