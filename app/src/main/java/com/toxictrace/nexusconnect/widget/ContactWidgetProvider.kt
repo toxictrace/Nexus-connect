@@ -16,11 +16,9 @@ import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import com.toxictrace.nexusconnect.R
-import com.toxictrace.nexusconnect.data.preferences.SettingsRepository
-import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 import com.toxictrace.nexusconnect.data.model.Contact
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
+import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 
 class ContactWidgetProvider : AppWidgetProvider() {
 
@@ -31,7 +29,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
         const val EXTRA_CONTACT_PHONE = "extra_contact_phone"
         const val EXTRA_CONTACT_NAME  = "extra_contact_name"
 
-        // tile_N, photo_N, name_N — all declared in ids.xml
         private val TILE_IDS = intArrayOf(
             R.id.tile_0,  R.id.tile_1,  R.id.tile_2,  R.id.tile_3,
             R.id.tile_4,  R.id.tile_5,  R.id.tile_6,  R.id.tile_7,
@@ -50,27 +47,41 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
         fun updateAllWidgets(context: Context) {
             val mgr = AppWidgetManager.getInstance(context)
-            val ids = mgr.getAppWidgetIds(ComponentName(context, ContactWidgetProvider::class.java))
+            val ids = mgr.getAppWidgetIds(
+                ComponentName(context, ContactWidgetProvider::class.java)
+            )
             Log.d(TAG, "updateAllWidgets: ${ids.size} widgets")
             ids.forEach { buildAndPush(context, mgr, it) }
         }
 
         fun buildAndPush(context: Context, mgr: AppWidgetManager, widgetId: Int) {
             Log.d(TAG, "buildAndPush id=$widgetId")
-            val settingsRepo = SettingsRepository(context)
-            val contactsRepo = ContactsRepository(context)
-            val settings     = runBlocking { settingsRepo.settings.first() }
-            val allContacts  = contactsRepo.loadContacts()
-            val selectedIds  = runBlocking { settingsRepo.getSelectedContactIds() }
+
+            // All reads are synchronous — no coroutines needed
+            val maxContacts     = WidgetPrefs.getMaxContacts(context)
+            val filterFavorites = WidgetPrefs.getFilterFavorites(context)
+            val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
+
+            Log.d(TAG, "selectedIds=${selectedIds.size} maxContacts=$maxContacts")
+
+            val allContacts = try {
+                ContactsRepository(context).loadContacts()
+            } catch (e: Exception) {
+                Log.e(TAG, "loadContacts failed: ${e.message}")
+                emptyList()
+            }
+            Log.d(TAG, "allContacts=${allContacts.size}")
 
             val contacts = when {
                 selectedIds.isNotEmpty() ->
-                    selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }.take(12)
-                settings.filterFavorites ->
-                    allContacts.filter { it.isStarred }.take(12)
+                    selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
+                        .take(maxContacts)
+                filterFavorites ->
+                    allContacts.filter { it.isStarred }.take(maxContacts)
                 else ->
-                    allContacts.take(12)
-            }
+                    allContacts.take(maxContacts)
+            }.take(12)
+
             Log.d(TAG, "contacts to show: ${contacts.size}")
 
             val views = RemoteViews(context.packageName, R.layout.widget_grid_4x3)
@@ -78,18 +89,14 @@ class ContactWidgetProvider : AppWidgetProvider() {
             for (idx in 0..11) {
                 val contact = contacts.getOrNull(idx)
                 if (contact != null) {
-                    // Show tile
                     views.setViewVisibility(TILE_IDS[idx], View.VISIBLE)
 
-                    // Photo or initials bitmap
                     val bmp = loadPhoto(context, contact, 120) ?: makeInitials(contact, 120)
                     views.setImageViewBitmap(PHOTO_IDS[idx], bmp)
 
-                    // Name
                     val firstName = contact.name.split(" ").firstOrNull() ?: contact.name
                     views.setTextViewText(NAME_IDS[idx], firstName)
 
-                    // PendingIntent — unique per contact via data URI
                     val intent = Intent(context, ContactWidgetProvider::class.java).apply {
                         action = ACTION_CONTACT_CLICK
                         putExtra(EXTRA_CONTACT_ID,    contact.id)
@@ -151,18 +158,28 @@ class ContactWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
+        Log.d(TAG, "onUpdate ${ids.toList()}")
         ids.forEach { buildAndPush(context, mgr, it) }
     }
-    override fun onEnabled(context: Context) { ContactsObserverService.start(context) }
-    override fun onDisabled(context: Context) { ContactsObserverService.stop(context) }
+
+    override fun onEnabled(context: Context) {
+        Log.d(TAG, "onEnabled")
+        ContactsObserverService.start(context)
+    }
+
+    override fun onDisabled(context: Context) {
+        Log.d(TAG, "onDisabled")
+        ContactsObserverService.stop(context)
+    }
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
+        Log.d(TAG, "onReceive action=${intent.action}")
         if (intent.action == ACTION_CONTACT_CLICK) {
             val id    = intent.getLongExtra(EXTRA_CONTACT_ID, -1L)
             val phone = intent.getStringExtra(EXTRA_CONTACT_PHONE)
             val name  = intent.getStringExtra(EXTRA_CONTACT_NAME)
-            Log.d(TAG, "Click: $name id=$id")
+            Log.d(TAG, "Click: $name id=$id phone=$phone")
             ContactActionHandler.handle(context, id, phone, name)
         }
     }

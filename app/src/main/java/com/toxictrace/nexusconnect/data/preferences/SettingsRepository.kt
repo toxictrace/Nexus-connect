@@ -96,6 +96,9 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.AVATAR_IDENTITY] = update.avatarIdentity.name
             prefs[Keys.ACCENT_COLOR_INDEX] = update.accentColorIndex
         }
+        // Keep WidgetPrefs in sync for synchronous widget access
+        val selectedIds = getSelectedContactIds()
+        WidgetPrefs.sync(context, update, selectedIds)
     }
 
     /** Returns ordered list of selected contact IDs */
@@ -110,5 +113,7 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[Keys.SELECTED_CONTACT_IDS] = ids.joinToString(",")
         }
+        // Also sync to WidgetPrefs
+        WidgetPrefs.saveSelectedIds(context, ids)
     }
 }
