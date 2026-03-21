@@ -34,7 +34,7 @@ class ContactChooserActivity : ComponentActivity() {
                     name = name,
                     phone = phone,
                     onCall = {
-                        startActivity(Intent(Intent.ACTION_CALL, Uri.parse("tel:$phone")))
+                        startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
                         finish()
                     },
                     onWhatsApp = {

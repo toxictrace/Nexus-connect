@@ -6,26 +6,26 @@ import android.net.Uri
 import android.provider.ContactsContract
 import com.toxictrace.nexusconnect.data.model.ClickAction
 import com.toxictrace.nexusconnect.data.model.PriorityApp
-import com.toxictrace.nexusconnect.data.preferences.SettingsRepository
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 
 object ContactActionHandler {
 
     fun handle(context: Context, contactId: Long, phone: String?, name: String?) {
-        val settings = runBlocking { SettingsRepository(context).settings.first() }
+        // Use WidgetPrefs (synchronous) instead of DataStore to avoid deadlock
+        val clickAction = WidgetPrefs.getClickAction(context)
+        val priorityApp = WidgetPrefs.getPriorityApp(context)
 
-        when (settings.clickAction) {
-            ClickAction.DIRECT_CALL  -> dialDirectly(context, phone, settings.priorityApp)
+        when (clickAction) {
+            ClickAction.DIRECT_CALL  -> dialDirectly(context, phone, priorityApp)
             ClickAction.OPEN_PROFILE -> openProfile(context, contactId)
             ClickAction.SHOW_DIALOG  -> showChooserActivity(context, contactId, phone, name)
         }
     }
 
-    /** Direct dial or open messenger */
+    /** Open system dialer (no permission needed) */
     private fun dialDirectly(context: Context, phone: String?, app: PriorityApp) {
         val intent = when (app) {
-            PriorityApp.PHONE -> Intent(Intent.ACTION_CALL, Uri.parse("tel:${phone}"))
+            PriorityApp.PHONE    -> Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
             PriorityApp.WHATSAPP -> whatsAppIntent(phone)
             PriorityApp.TELEGRAM -> telegramIntent(phone)
             PriorityApp.VIBER    -> viberIntent(phone)
