@@ -39,6 +39,10 @@ object WidgetPrefs {
         else raw.split(",").mapNotNull { it.toLongOrNull() }
     }
 
+    fun getMessengerWhatsApp(context: Context): String = sp(context).getString("messenger_whatsapp", "") ?: ""
+    fun getMessengerViber(context: Context):    String = sp(context).getString("messenger_viber", "")    ?: ""
+    fun getMessengerTelegram(context: Context): String = sp(context).getString("messenger_telegram", "") ?: ""
+
     fun sync(context: Context, settings: WidgetSettings, selectedIds: List<Long>) {
         sp(context).edit().apply {
             putInt("columns",              settings.columns)
@@ -48,6 +52,9 @@ object WidgetPrefs {
             putBoolean("filter_recents",   settings.filterRecents)
             putBoolean("filter_frequent",  settings.filterFrequent)
             putString("click_action",      settings.clickAction.name)
+            putString("messenger_whatsapp", settings.messengerWhatsApp)
+            putString("messenger_viber",    settings.messengerViber)
+            putString("messenger_telegram", settings.messengerTelegram)
             putString("selected_ids",      selectedIds.joinToString(","))
             apply()
         }

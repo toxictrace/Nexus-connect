@@ -25,7 +25,11 @@ data class WidgetSettings(
     val theme: AppTheme = AppTheme.LIGHT,
     val dynamicColors: Boolean = true,
     val avatarIdentity: AvatarIdentity = AvatarIdentity.DYNAMIC_INITIALS,
-    val accentColorIndex: Int = 0
+    val accentColorIndex: Int = 0,
+    // Messenger package overrides (empty = auto-detect)
+    val messengerWhatsApp: String = "",
+    val messengerViber: String = "",
+    val messengerTelegram: String = ""
 )
 
 class SettingsRepository(private val context: Context) {
@@ -44,6 +48,9 @@ class SettingsRepository(private val context: Context) {
         val AVATAR_IDENTITY   = stringPreferencesKey("avatar_identity")
         val ACCENT_COLOR_INDEX = intPreferencesKey("accent_color_index")
         val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
+        val MESSENGER_WHATSAPP = stringPreferencesKey("messenger_whatsapp")
+        val MESSENGER_VIBER    = stringPreferencesKey("messenger_viber")
+        val MESSENGER_TELEGRAM = stringPreferencesKey("messenger_telegram")
     }
 
     val settings: Flow<WidgetSettings> = context.dataStore.data
@@ -67,7 +74,10 @@ class SettingsRepository(private val context: Context) {
                 avatarIdentity  = prefs[Keys.AVATAR_IDENTITY]
                     ?.let { runCatching { AvatarIdentity.valueOf(it) }.getOrNull() }
                     ?: AvatarIdentity.DYNAMIC_INITIALS,
-                accentColorIndex = prefs[Keys.ACCENT_COLOR_INDEX] ?: 0
+                accentColorIndex = prefs[Keys.ACCENT_COLOR_INDEX] ?: 0,
+                messengerWhatsApp = prefs[Keys.MESSENGER_WHATSAPP] ?: "",
+                messengerViber    = prefs[Keys.MESSENGER_VIBER]    ?: "",
+                messengerTelegram = prefs[Keys.MESSENGER_TELEGRAM] ?: ""
             )
         }
 
@@ -85,6 +95,9 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.DYNAMIC_COLORS]    = update.dynamicColors
             prefs[Keys.AVATAR_IDENTITY]   = update.avatarIdentity.name
             prefs[Keys.ACCENT_COLOR_INDEX] = update.accentColorIndex
+            prefs[Keys.MESSENGER_WHATSAPP] = update.messengerWhatsApp
+            prefs[Keys.MESSENGER_VIBER]    = update.messengerViber
+            prefs[Keys.MESSENGER_TELEGRAM] = update.messengerTelegram
         }
         val selectedIds = getSelectedContactIds()
         WidgetPrefs.sync(context, update, selectedIds)

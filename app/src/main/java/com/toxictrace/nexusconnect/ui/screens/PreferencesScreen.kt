@@ -41,6 +41,10 @@ fun PreferencesScreen(viewModel: MainViewModel) {
             settings = settings,
             onUpdate = { updated -> viewModel.updateSettings { updated } }
         )
+        MessengerSection(
+            settings = settings,
+            onUpdate = { updated -> viewModel.updateSettings { updated } }
+        )
         FeedbackSection(
             settings = settings,
             onUpdate = { enabled -> viewModel.updateSettings { s -> s.copy(hapticFeedback = enabled) } }
@@ -101,6 +105,144 @@ private fun ClickActionSection(settings: WidgetSettings, onUpdate: (WidgetSettin
                     selected = settings.clickAction == action,
                     icon = icon,
                     onClick = { onUpdate(settings.copy(clickAction = action)) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MessengerSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Get all installed apps that could handle messaging
+    val allApps = remember {
+        val pm = context.packageManager
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW,
+            android.net.Uri.parse("tel:+1234567890"))
+        // Get apps by known packages
+        val knownMessengers = listOf(
+            "com.whatsapp" to "WhatsApp",
+            "com.whatsapp.w4b" to "WhatsApp Business",
+            "com.viber.voip" to "Viber",
+            "air.WL.android.viber" to "Viber (alt)",
+            "org.telegram.messenger" to "Telegram",
+            "org.telegram.messenger.web" to "Telegram Web",
+            "org.thunderdog.challegram" to "Telegram X",
+            "im.molly.app" to "Molly",
+            "org.telegram.plus" to "Telegram Plus",
+            "com.nicegram.app" to "Nicegram",
+            "org.telegram.bimbot" to "BimBot",
+        )
+        knownMessengers.filter { (pkg, _) ->
+            runCatching { pm.getPackageInfo(pkg, 0); true }.getOrDefault(false)
+        }
+    }
+
+    Column {
+        SectionHeader("MESSENGERS", "Choose which app to use for each messenger.")
+        Spacer(Modifier.height(12.dp))
+        SettingsCard(contentPadding = PaddingValues(0.dp)) {
+            MessengerPicker(
+                label       = "WhatsApp",
+                currentPkg  = settings.messengerWhatsApp,
+                defaultPkgs = listOf("com.whatsapp", "com.whatsapp.w4b"),
+                allApps     = allApps,
+                onSelect    = { onUpdate(settings.copy(messengerWhatsApp = it)) }
+            )
+            HorizontalDivider()
+            MessengerPicker(
+                label       = "Viber",
+                currentPkg  = settings.messengerViber,
+                defaultPkgs = listOf("com.viber.voip", "air.WL.android.viber"),
+                allApps     = allApps,
+                onSelect    = { onUpdate(settings.copy(messengerViber = it)) }
+            )
+            HorizontalDivider()
+            MessengerPicker(
+                label       = "Telegram",
+                currentPkg  = settings.messengerTelegram,
+                defaultPkgs = listOf("org.telegram.messenger", "org.telegram.messenger.web",
+                    "org.thunderdog.challegram"),
+                allApps     = allApps,
+                onSelect    = { onUpdate(settings.copy(messengerTelegram = it)) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun MessengerPicker(
+    label: String,
+    currentPkg: String,
+    defaultPkgs: List<String>,
+    allApps: List<Pair<String, String>>,
+    onSelect: (String) -> Unit
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+
+    // Apps relevant to this messenger slot
+    val relevantApps = allApps.filter { (pkg, _) ->
+        pkg in defaultPkgs || currentPkg == pkg
+    }.ifEmpty {
+        // Show all known apps if none of defaults are installed
+        allApps
+    }
+
+    val displayName = if (currentPkg.isBlank()) {
+        val firstInstalled = defaultPkgs.firstOrNull { pkg ->
+            runCatching { context.packageManager.getPackageInfo(pkg, 0); true }.getOrDefault(false)
+        }
+        if (firstInstalled != null) "Auto-detect" else "Not installed"
+    } else {
+        allApps.firstOrNull { it.first == currentPkg }?.second ?: currentPkg
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = relevantApps.isNotEmpty()) { expanded = true }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, style = MaterialTheme.typography.titleMedium)
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(displayName, style = MaterialTheme.typography.bodyMedium,
+                color = if (relevantApps.isEmpty())
+                    MaterialTheme.colorScheme.outline
+                else MaterialTheme.colorScheme.primary)
+            if (relevantApps.isNotEmpty()) {
+                Icon(Icons.Default.ArrowDropDown, null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp))
+            }
+        }
+
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            if (currentPkg.isNotBlank()) {
+                DropdownMenuItem(
+                    text = { Text("Auto-detect") },
+                    onClick = { onSelect(""); expanded = false }
+                )
+                HorizontalDivider()
+            }
+            relevantApps.forEach { (pkg, name) ->
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(name)
+                            if (pkg == currentPkg) {
+                                Icon(Icons.Default.Check, null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    },
+                    onClick = { onSelect(pkg); expanded = false }
                 )
             }
         }
