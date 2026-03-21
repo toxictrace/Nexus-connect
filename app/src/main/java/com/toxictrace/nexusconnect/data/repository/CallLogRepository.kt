@@ -4,16 +4,6 @@ import android.content.Context
 import android.provider.CallLog
 import android.util.Log
 
-data class CallRecord(
-    val contactId: Long,       // matched contact ID (-1 if unknown)
-    val number: String,
-    val name: String?,
-    val date: Long,            // timestamp ms
-    val duration: Long,        // seconds
-    val type: Int,             // INCOMING=1, OUTGOING=2, MISSED=3
-    val cachedName: String?    // system cached name
-)
-
 class CallLogRepository(private val context: Context) {
 
     companion object {
@@ -21,86 +11,69 @@ class CallLogRepository(private val context: Context) {
     }
 
     /**
-     * Returns recent calls, sorted by date desc.
-     * Requires READ_CALL_LOG permission.
+     * Returns contact IDs ordered by call frequency (most called first).
+     * Matches call log numbers against contacts map.
      */
-    fun getRecentCalls(limit: Int = 200): List<CallRecord> {
-        val records = mutableListOf<CallRecord>()
-        return try {
+    fun getFrequentContactIds(numberToContactId: Map<String, Long>, limit: Int = 50): List<Long> {
+        val freq = mutableMapOf<Long, Int>()
+        try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
-                arrayOf(
-                    CallLog.Calls.NUMBER,
-                    CallLog.Calls.CACHED_NAME,
-                    CallLog.Calls.DATE,
-                    CallLog.Calls.DURATION,
-                    CallLog.Calls.TYPE,
-                    CallLog.Calls.CACHED_LOOKUP_URI
-                ),
+                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.TYPE),
                 null, null,
                 "${CallLog.Calls.DATE} DESC"
             ) ?: return emptyList()
 
             cursor.use {
                 val numIdx  = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
-                val nameIdx = it.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)
-                val dateIdx = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
-                val durIdx  = it.getColumnIndexOrThrow(CallLog.Calls.DURATION)
                 val typeIdx = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
-
-                var count = 0
-                while (it.moveToNext() && count < limit) {
+                while (it.moveToNext()) {
                     val number = it.getString(numIdx) ?: continue
-                    records.add(CallRecord(
-                        contactId  = -1L,
-                        number     = number,
-                        name       = null,
-                        date       = it.getLong(dateIdx),
-                        duration   = it.getLong(durIdx),
-                        type       = it.getInt(typeIdx),
-                        cachedName = it.getString(nameIdx)
-                    ))
-                    count++
+                    val type   = it.getInt(typeIdx)
+                    // Count outgoing + incoming (not missed)
+                    if (type == CallLog.Calls.OUTGOING_TYPE || type == CallLog.Calls.INCOMING_TYPE) {
+                        val norm = normalize(number)
+                        val contactId = numberToContactId[norm] ?: continue
+                        freq[contactId] = (freq[contactId] ?: 0) + 1
+                    }
                 }
             }
-            records
         } catch (e: Exception) {
-            Log.e(TAG, "getRecentCalls: ${e.message}")
-            emptyList()
+            Log.e(TAG, "getFrequentContactIds: ${e.message}")
         }
+        return freq.entries
+            .sortedByDescending { it.value }
+            .take(limit)
+            .map { it.key }
     }
 
     /**
-     * Returns set of phone numbers that appear in call log recently.
-     * Used to filter contacts by recency.
+     * Returns contact IDs ordered by most recent call (latest first).
      */
-    fun getRecentNumbers(limit: Int = 100): Set<String> {
-        return getRecentCalls(limit)
-            .map { normalizeNumber(it.number) }
-            .toSet()
-    }
-
-    /**
-     * Returns ordered list of contact IDs sorted by most recent call.
-     * Matches call log numbers against provided contacts.
-     */
-    fun getRecentContactIds(
-        contacts: List<android.net.Uri?>,
-        numberToContactId: Map<String, Long>,
-        limit: Int = 50
-    ): List<Long> {
+    fun getRecentContactIds(numberToContactId: Map<String, Long>, limit: Int = 50): List<Long> {
         val seen = linkedSetOf<Long>()
-        getRecentCalls(300).forEach { record ->
-            val normalized = normalizeNumber(record.number)
-            val contactId = numberToContactId[normalized]
-            if (contactId != null && contactId !in seen) {
-                seen.add(contactId)
-                if (seen.size >= limit) return@forEach
+        try {
+            val cursor = context.contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                arrayOf(CallLog.Calls.NUMBER),
+                null, null,
+                "${CallLog.Calls.DATE} DESC"
+            ) ?: return emptyList()
+
+            cursor.use {
+                val numIdx = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                while (it.moveToNext() && seen.size < limit) {
+                    val number = it.getString(numIdx) ?: continue
+                    val contactId = numberToContactId[normalize(number)] ?: continue
+                    seen.add(contactId)
+                }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "getRecentContactIds: ${e.message}")
         }
         return seen.toList()
     }
 
-    private fun normalizeNumber(number: String): String =
+    private fun normalize(number: String): String =
         number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
 }

@@ -45,7 +45,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val cols            = WidgetPrefs.getColumns(context).coerceIn(3, 6)
             val rows            = WidgetPrefs.getRows(context).coerceIn(3, 6)
             val maxContacts     = WidgetPrefs.getMaxContacts(context)
-            val filterFavorites = WidgetPrefs.getFilterFavorites(context)
             val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
 
             val maxTiles = cols * rows
@@ -57,15 +56,19 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 emptyList()
             }
 
-            val contacts = when {
-                selectedIds.isNotEmpty() ->
-                    selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
-                        .take(minOf(maxContacts, maxTiles))
-                filterFavorites ->
-                    allContacts.filter { it.isStarred }.take(minOf(maxContacts, maxTiles))
-                else ->
-                    allContacts.take(minOf(maxContacts, maxTiles))
-            }
+            val contacts = buildWidgetContacts(
+                context      = context,
+                allContacts  = allContacts,
+                selectedIds  = selectedIds,
+                settings     = WidgetPrefs.run {
+                    Triple(
+                        getFilterFavorites(context),
+                        getFilterFrequent(context),
+                        getFilterRecents(context)
+                    )
+                },
+                maxTiles     = maxTiles
+            )
             Log.d(TAG, "cols=$cols rows=$rows contacts=${contacts.size}")
 
             val layoutRes = context.resources.getIdentifier(
@@ -114,6 +117,55 @@ class ContactWidgetProvider : AppWidgetProvider() {
             } catch (e: Exception) {
                 Log.e(TAG, "FAILED: ${e.javaClass.simpleName}: ${e.message}")
             }
+        }
+
+        private fun buildWidgetContacts(
+            context: Context,
+            allContacts: List<Contact>,
+            selectedIds: List<Long>,
+            settings: Triple<Boolean, Boolean, Boolean>, // favorites, frequent, recents
+            maxTiles: Int
+        ): List<Contact> {
+            val (filterFavorites, filterFrequent, filterRecents) = settings
+            val result = mutableListOf<Contact>()
+            val usedIds = mutableSetOf<Long>()
+
+            // 1. Favorites (selected by user) — highest priority
+            if (filterFavorites && selectedIds.isNotEmpty()) {
+                selectedIds
+                    .mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
+                    .forEach { c -> if (usedIds.add(c.id)) result.add(c) }
+            }
+
+            if (result.size >= maxTiles) return result.take(maxTiles)
+
+            // Build number→id map for call log lookups
+            val numberMap = allContacts
+                .filter { it.phoneNumber != null }
+                .associate {
+                    it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7) to it.id
+                }
+            val callLogRepo = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
+
+            // 2. Frequent — medium priority
+            if (filterFrequent) {
+                callLogRepo.getFrequentContactIds(numberMap, 50).forEach { id ->
+                    val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
+                    if (usedIds.add(c.id)) result.add(c)
+                    if (result.size >= maxTiles) return result.take(maxTiles)
+                }
+            }
+
+            // 3. Recents — lowest priority
+            if (filterRecents) {
+                callLogRepo.getRecentContactIds(numberMap, 50).forEach { id ->
+                    val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
+                    if (usedIds.add(c.id)) result.add(c)
+                    if (result.size >= maxTiles) return result.take(maxTiles)
+                }
+            }
+
+            return result.take(maxTiles)
         }
 
         private fun loadPhoto(context: Context, contact: Contact, maxPx: Int): Bitmap? {

@@ -19,25 +19,36 @@ import kotlinx.coroutines.withContext
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val settingsRepo  = SettingsRepository(application)
-    private val contactsRepo  = ContactsRepository(application)
-    private val callLogRepo   = CallLogRepository(application)
+    private val settingsRepo = SettingsRepository(application)
+    private val contactsRepo = ContactsRepository(application)
+    private val callLogRepo  = CallLogRepository(application)
 
     val settings: StateFlow<WidgetSettings> = settingsRepo.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WidgetSettings())
 
+    // All contacts from system, sorted alphabetically
     private val _allContacts = MutableStateFlow<List<Contact>>(emptyList())
-    private val _sortMode    = MutableStateFlow(ContactSortMode.ALPHABETICAL)
-    val sortMode: StateFlow<ContactSortMode> = _sortMode.asStateFlow()
 
+    // Selected contact IDs in user-defined order
     private val _selectedIds = MutableStateFlow<List<Long>>(emptyList())
 
     val selectedCount: StateFlow<Int> = _selectedIds.map { it.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    // Contacts with selection flag, sorted by current mode
+    /**
+     * Display list:
+     * 1. Selected contacts in user-defined order (top)
+     * 2. Unselected contacts alphabetically (below)
+     */
     val displayContacts: StateFlow<List<Contact>> = combine(_allContacts, _selectedIds) { all, ids ->
-        all.map { c -> c.copy(isSelected = c.id in ids) }
+        val idSet = ids.toSet()
+        val selectedMap = all.associateBy { it.id }
+        val selectedOrdered = ids.mapNotNull { id -> selectedMap[id]?.copy(isSelected = true) }
+        val unselected = all
+            .filter { it.id !in idSet }
+            .map { it.copy(isSelected = false) }
+            .sortedBy { it.name }
+        selectedOrdered + unselected
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -46,14 +57,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadContacts() {
-        val hasContacts = ContextCompat.checkSelfPermission(
+        val hasPermission = ContextCompat.checkSelfPermission(
             getApplication(), Manifest.permission.READ_CONTACTS
         ) == PackageManager.PERMISSION_GRANTED
-        if (!hasContacts) return
+        if (!hasPermission) return
 
         viewModelScope.launch {
             contactsRepo.observeContacts().collect { list ->
-                _allContacts.value = sortList(list, _sortMode.value)
+                _allContacts.value = list.sortedBy { it.name }
             }
         }
     }
@@ -66,7 +77,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleContactSelection(contactId: Long) {
         val current = _selectedIds.value.toMutableList()
-        if (contactId in current) current.remove(contactId) else current.add(contactId)
+        if (contactId in current) {
+            current.remove(contactId)
+        } else {
+            current.add(contactId) // new selections go to end of selected list
+        }
         _selectedIds.value = current
     }
 
@@ -76,55 +91,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val item = current.removeAt(from)
         current.add(to, item)
         _selectedIds.value = current
-    }
-
-    fun setSortMode(mode: ContactSortMode) {
-        _sortMode.value = mode
-        viewModelScope.launch {
-            when (mode) {
-                ContactSortMode.ALPHABETICAL ->
-                    _allContacts.update { sortList(it, mode) }
-                ContactSortMode.FREQUENCY ->
-                    _allContacts.update { it.sortedByDescending { c -> c.isStarred } }
-                ContactSortMode.RECENTS ->
-                    sortByRecents()
-                ContactSortMode.MANUAL -> { }
-            }
-        }
-    }
-
-    private suspend fun sortByRecents() {
-        val hasCallLog = ContextCompat.checkSelfPermission(
-            getApplication(), Manifest.permission.READ_CALL_LOG
-        ) == PackageManager.PERMISSION_GRANTED
-        if (!hasCallLog) return
-
-        withContext(Dispatchers.IO) {
-            val contacts = _allContacts.value
-            // Build number → contactId map
-            val numberMap = contacts
-                .filter { it.phoneNumber != null }
-                .associate { normalizeNumber(it.phoneNumber!!) to it.id }
-
-            val recentIds = callLogRepo.getRecentContactIds(emptyList(), numberMap, 100)
-            val recentSet = recentIds.toList()
-
-            val sorted = contacts.sortedWith(compareBy { c ->
-                val pos = recentSet.indexOf(c.id)
-                if (pos == -1) Int.MAX_VALUE else pos
-            })
-            _allContacts.value = sorted
-        }
-    }
-
-    private fun normalizeNumber(number: String) =
-        number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
-
-    private fun sortList(list: List<Contact>, mode: ContactSortMode) = when (mode) {
-        ContactSortMode.ALPHABETICAL -> list.sortedBy { it.name }
-        ContactSortMode.FREQUENCY    -> list.sortedByDescending { it.isStarred }
-        ContactSortMode.RECENTS      -> list // handled separately
-        ContactSortMode.MANUAL       -> list
     }
 
     fun applyAndUpdateWidget() {
@@ -142,6 +108,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 }
 
+// Kept for potential future use
 enum class ContactSortMode(val label: String) {
     ALPHABETICAL("Alphabetical"),
     RECENTS("Recents"),

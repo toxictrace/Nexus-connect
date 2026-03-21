@@ -30,6 +30,12 @@ object WidgetPrefs {
     fun getFilterFavorites(context: Context): Boolean =
         sp(context).getBoolean("filter_favorites", true)
 
+    fun getFilterFrequent(context: Context): Boolean =
+        sp(context).getBoolean("filter_frequent", false)
+
+    fun getFilterRecents(context: Context): Boolean =
+        sp(context).getBoolean("filter_recents", true)
+
     fun getClickAction(context: Context): ClickAction =
         runCatching {
             ClickAction.valueOf(sp(context).getString("click_action", "") ?: "")
