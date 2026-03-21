@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="0dp"
-    android:layout_height="match_parent"
-    android:layout_weight="1">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/tile_photo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        android:src="@android:color/darker_gray"/>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/tile_gradient_scrim" />
+        android:background="@drawable/tile_gradient_scrim"/>
 
     <TextView
         android:id="@+id/tile_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
+        android:layout_gravity="bottom"
         android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="1"
         android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:paddingHorizontal="2dp"
         android:textColor="#FFFFFF"
         android:textSize="9sp"
@@ -31,6 +31,6 @@
         android:shadowColor="#AA000000"
         android:shadowDx="0"
         android:shadowDy="1"
-        android:shadowRadius="2" />
+        android:shadowRadius="2"/>
 
 </FrameLayout>

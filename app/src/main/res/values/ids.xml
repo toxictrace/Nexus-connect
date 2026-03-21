@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="tile_0"  type="id"/>
+    <item name="tile_1"  type="id"/>
+    <item name="tile_2"  type="id"/>
+    <item name="tile_3"  type="id"/>
+    <item name="tile_4"  type="id"/>
+    <item name="tile_5"  type="id"/>
+    <item name="tile_6"  type="id"/>
+    <item name="tile_7"  type="id"/>
+    <item name="tile_8"  type="id"/>
+    <item name="tile_9"  type="id"/>
+    <item name="tile_10" type="id"/>
+    <item name="tile_11" type="id"/>
+</resources>
