@@ -3,6 +3,7 @@ package com.toxictrace.nexusconnect.ui.screens
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -335,13 +337,20 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
         Text("Customize how Nexus Connect looks on your device.", style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            listOf(AppTheme.LIGHT to "Light", AppTheme.DARK to "Dark").forEach { (theme, label) ->
-                ThemeCard(label = label, isDark = theme == AppTheme.DARK,
-                    selected = settings.theme == theme,
-                    onClick = { onUpdate(settings.copy(theme = theme)) },
-                    modifier = Modifier.weight(1f))
-            }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ThemeCard(label = "Light", isDark = false,
+                selected = settings.theme == AppTheme.LIGHT,
+                onClick = { onUpdate(settings.copy(theme = AppTheme.LIGHT)) },
+                modifier = Modifier.weight(1f))
+            ThemeCard(label = "Dark", isDark = true,
+                selected = settings.theme == AppTheme.DARK,
+                onClick = { onUpdate(settings.copy(theme = AppTheme.DARK)) },
+                modifier = Modifier.weight(1f))
+            ThemeCard(label = "System", isDark = isSystemInDarkTheme(),
+                selected = settings.theme == AppTheme.SYSTEM,
+                onClick = { onUpdate(settings.copy(theme = AppTheme.SYSTEM)) },
+                modifier = Modifier.weight(1f),
+                showAuto = true)
         }
         Spacer(Modifier.height(12.dp))
         SettingsCard {
@@ -373,26 +382,41 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
 }
 
 @Composable
-private fun ThemeCard(label: String, isDark: Boolean, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ThemeCard(
+    label: String, isDark: Boolean, selected: Boolean,
+    onClick: () -> Unit, modifier: Modifier = Modifier,
+    showAuto: Boolean = false
+) {
     Card(modifier = modifier.clickable { onClick() }, shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Box(modifier = Modifier.fillMaxWidth().height(80.dp).clip(RoundedCornerShape(8.dp))
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
+                             else MaterialTheme.colorScheme.surfaceVariant)) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Box(modifier = Modifier.fillMaxWidth().height(60.dp).clip(RoundedCornerShape(8.dp))
                 .background(if (isDark) Color(0xFF1A1A2E) else Color.White)) {
-                Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Box(Modifier.fillMaxWidth(0.6f).height(6.dp).clip(RoundedCornerShape(3.dp))
-                        .background(if (isDark) Color(0xFF3A3A5C) else Color(0xFFDDDDDD)))
-                    Box(Modifier.fillMaxWidth(0.4f).height(6.dp).clip(RoundedCornerShape(3.dp))
-                        .background(if (isDark) Color(0xFF2A2A4C) else Color(0xFFEEEEEE)))
-                    Spacer(Modifier.weight(1f))
-                    Box(Modifier.size(20.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary).align(Alignment.End))
+                if (showAuto) {
+                    // Half light / half dark for System
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color.White))
+                        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFF1A1A2E)))
+                    }
+                    Icon(Icons.Default.Brightness4, null,
+                        tint = Color(0xFF888888),
+                        modifier = Modifier.align(Alignment.Center).size(20.dp))
+                } else {
+                    Column(modifier = Modifier.padding(6.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Box(Modifier.fillMaxWidth(0.6f).height(5.dp).clip(RoundedCornerShape(3.dp))
+                            .background(if (isDark) Color(0xFF3A3A5C) else Color(0xFFDDDDDD)))
+                        Box(Modifier.fillMaxWidth(0.4f).height(5.dp).clip(RoundedCornerShape(3.dp))
+                            .background(if (isDark) Color(0xFF2A2A4C) else Color(0xFFEEEEEE)))
+                    }
                 }
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(label, style = MaterialTheme.typography.titleSmall)
-                RadioButton(selected = selected, onClick = onClick)
+                Text(label, style = MaterialTheme.typography.labelMedium)
+                RadioButton(selected = selected, onClick = onClick, modifier = Modifier.size(20.dp))
             }
         }
     }
