@@ -148,22 +148,21 @@ private fun ActionCard(title: String, subtitle: String, selected: Boolean, icon:
 private fun MessengerSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
     val context = LocalContext.current
 
-    // All user-installed apps (excludes system apps)
+    // Only apps with launcher icon (excludes background services, system utilities)
     val allApps: List<AppInfo> = remember {
         val pm = context.packageManager
-        pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            .filter { appInfo ->
-                // Keep only apps the user installed (not system)
-                (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0 ||
-                (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-            }
-            .mapNotNull { appInfo ->
+        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        pm.queryIntentActivities(launcherIntent, 0)
+            .map { it.activityInfo.packageName }
+            .distinct()
+            .mapNotNull { pkg ->
                 runCatching {
-                    val label = pm.getApplicationLabel(appInfo).toString()
+                    val info = pm.getApplicationInfo(pkg, 0)
+                    val label = pm.getApplicationLabel(info).toString()
                     val iconBmp = runCatching {
-                        pm.getApplicationIcon(appInfo.packageName).toBitmap(48, 48).asImageBitmap()
+                        pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
                     }.getOrNull()
-                    AppInfo(appInfo.packageName, label, iconBmp)
+                    AppInfo(pkg, label, iconBmp)
                 }.getOrNull()
             }
             .sortedBy { it.label.lowercase() }
