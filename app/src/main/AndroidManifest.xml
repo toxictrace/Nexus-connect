@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
@@ -29,7 +30,7 @@
         <activity
             android:name=".widget.ContactChooserActivity"
             android:exported="false"
-            android:theme="@style/Theme.NexusConnect"
+            android:theme="@style/Theme.NexusConnect.Transparent"
             android:launchMode="singleTop" />
 
         <receiver
