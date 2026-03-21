@@ -8,16 +8,13 @@
             android:id="@+id/tile_0"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_0"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_0"
                 android:layout_width="match_parent"
@@ -30,25 +27,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_1"
                 android:layout_width="match_parent"
@@ -61,25 +54,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_2"
                 android:layout_width="match_parent"
@@ -92,25 +81,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_3"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_3"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_3"
                 android:layout_width="match_parent"
@@ -123,10 +108,9 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -134,16 +118,13 @@
             android:id="@+id/tile_4"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_4"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_4"
                 android:layout_width="match_parent"
@@ -156,25 +137,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_5"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_5"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_5"
                 android:layout_width="match_parent"
@@ -187,25 +164,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_6"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_6"
                 android:layout_width="match_parent"
@@ -218,25 +191,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_7"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_7"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_7"
                 android:layout_width="match_parent"
@@ -249,10 +218,9 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -260,16 +228,13 @@
             android:id="@+id/tile_8"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_8"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_8"
                 android:layout_width="match_parent"
@@ -282,25 +247,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_9"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_9"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_9"
                 android:layout_width="match_parent"
@@ -313,25 +274,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_10"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_10"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_10"
                 android:layout_width="match_parent"
@@ -344,25 +301,21 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_11"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="#FF1A1A1A">
             <ImageView
                 android:id="@+id/photo_11"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/tile_gradient_scrim"/>
             <TextView
                 android:id="@+id/name_11"
                 android:layout_width="match_parent"
@@ -375,10 +328,9 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:shadowColor="#AA000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="2"/>
+                android:background="#88000000"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"/>
         </FrameLayout>
     </LinearLayout>
 </LinearLayout>
