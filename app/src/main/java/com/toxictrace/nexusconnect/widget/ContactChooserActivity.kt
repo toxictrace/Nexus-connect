@@ -103,15 +103,13 @@ class ContactChooserActivity : ComponentActivity() {
                 try {
                     val v = window.decorView
                     v.isHapticFeedbackEnabled = true
-                    val r = v.performHapticFeedback(
-                        android.view.HapticFeedbackConstants.VIRTUAL_KEY,
+                    // LONG_PRESS gives stronger feedback than VIRTUAL_KEY
+                    v.performHapticFeedback(
+                        android.view.HapticFeedbackConstants.LONG_PRESS,
                         android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING or
                         android.view.HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
                     )
-                    android.util.Log.d("HapticHelper", "ChooserActivity performHapticFeedback=$r")
-                } catch (e: Exception) {
-                    android.util.Log.e("HapticHelper", "ChooserActivity haptic failed: ${e.message}")
-                }
+                } catch (_: Exception) {}
             }
         }
     }
@@ -328,7 +326,16 @@ private fun CallOption(icon: ImageVector, label: String, sublabel: String, color
     val view = androidx.compose.ui.platform.LocalView.current
     Row(
         modifier = Modifier.fillMaxWidth().clickable {
-            if (haptic) HapticHelper.vibrateView(view)
+            if (haptic) {
+                try {
+                    view.isHapticFeedbackEnabled = true
+                    view.performHapticFeedback(
+                        android.view.HapticFeedbackConstants.LONG_PRESS,
+                        android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING or
+                        android.view.HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
+                    )
+                } catch (_: Exception) {}
+            }
             onClick()
         }.padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,

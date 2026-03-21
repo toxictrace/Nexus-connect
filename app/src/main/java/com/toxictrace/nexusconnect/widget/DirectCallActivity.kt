@@ -22,9 +22,9 @@ class DirectCallActivity : ComponentActivity() {
                 val v = window.decorView
                 v.isHapticFeedbackEnabled = true
                 v.performHapticFeedback(
-                    HapticFeedbackConstants.VIRTUAL_KEY,
-                    HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING or
-                    HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
+                    android.view.HapticFeedbackConstants.LONG_PRESS,
+                    android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING or
+                    android.view.HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
                 )
             } catch (_: Exception) {}
         }
