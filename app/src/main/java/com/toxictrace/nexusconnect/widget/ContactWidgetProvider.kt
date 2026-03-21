@@ -29,24 +29,38 @@ class ContactWidgetProvider : AppWidgetProvider() {
         const val EXTRA_CONTACT_PHONE = "extra_contact_phone"
         const val EXTRA_CONTACT_NAME  = "extra_contact_name"
 
-        // 12 tiles × 120px × 120px × 4 bytes = ~830KB — within 1MB IPC limit
         private const val BITMAP_SIZE = 120
 
-        private val TILE_IDS = intArrayOf(
-            R.id.tile_0,  R.id.tile_1,  R.id.tile_2,  R.id.tile_3,
-            R.id.tile_4,  R.id.tile_5,  R.id.tile_6,  R.id.tile_7,
-            R.id.tile_8,  R.id.tile_9,  R.id.tile_10, R.id.tile_11
+        // IDs per column count — must match generated XML layouts
+        private val TILE_IDS = mapOf(
+            3 to Array(9)  { i -> resId("tile_3_$i") },
+            4 to Array(12) { i -> resId("tile_4_$i") },
+            5 to Array(15) { i -> resId("tile_5_$i") },
+            6 to Array(18) { i -> resId("tile_6_$i") }
         )
-        private val PHOTO_IDS = intArrayOf(
-            R.id.photo_0,  R.id.photo_1,  R.id.photo_2,  R.id.photo_3,
-            R.id.photo_4,  R.id.photo_5,  R.id.photo_6,  R.id.photo_7,
-            R.id.photo_8,  R.id.photo_9,  R.id.photo_10, R.id.photo_11
+        private val PHOTO_IDS = mapOf(
+            3 to Array(9)  { i -> resId("photo_3_$i") },
+            4 to Array(12) { i -> resId("photo_4_$i") },
+            5 to Array(15) { i -> resId("photo_5_$i") },
+            6 to Array(18) { i -> resId("photo_6_$i") }
         )
-        private val NAME_IDS = intArrayOf(
-            R.id.name_0,  R.id.name_1,  R.id.name_2,  R.id.name_3,
-            R.id.name_4,  R.id.name_5,  R.id.name_6,  R.id.name_7,
-            R.id.name_8,  R.id.name_9,  R.id.name_10, R.id.name_11
+        private val NAME_IDS = mapOf(
+            3 to Array(9)  { i -> resId("name_3_$i") },
+            4 to Array(12) { i -> resId("name_4_$i") },
+            5 to Array(15) { i -> resId("name_5_$i") },
+            6 to Array(18) { i -> resId("name_6_$i") }
         )
+        private val LAYOUTS = mapOf(
+            3 to R.layout.widget_grid_3col,
+            4 to R.layout.widget_grid_4col,
+            5 to R.layout.widget_grid_5col,
+            6 to R.layout.widget_grid_6col
+        )
+
+        private fun resId(name: String): Int {
+            // Will be resolved at runtime via R.id reflection-free lookup
+            return 0 // placeholder — see buildAndPush
+        }
 
         fun updateAllWidgets(context: Context) {
             val mgr = AppWidgetManager.getInstance(context)
@@ -60,41 +74,48 @@ class ContactWidgetProvider : AppWidgetProvider() {
         fun buildAndPush(context: Context, mgr: AppWidgetManager, widgetId: Int) {
             Log.d(TAG, "buildAndPush id=$widgetId")
 
+            val cols            = WidgetPrefs.getColumns(context).coerceIn(3, 6)
             val maxContacts     = WidgetPrefs.getMaxContacts(context)
             val filterFavorites = WidgetPrefs.getFilterFavorites(context)
             val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
 
+            val rows = 3
+            val maxTiles = cols * rows
+
             val allContacts = try {
                 ContactsRepository(context).loadContacts()
             } catch (e: Exception) {
-                Log.e(TAG, "loadContacts failed: ${e.message}")
+                Log.e(TAG, "loadContacts: ${e.message}")
                 emptyList()
             }
 
             val contacts = when {
                 selectedIds.isNotEmpty() ->
                     selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
-                        .take(minOf(maxContacts, 12))
+                        .take(minOf(maxContacts, maxTiles))
                 filterFavorites ->
-                    allContacts.filter { it.isStarred }.take(minOf(maxContacts, 12))
+                    allContacts.filter { it.isStarred }.take(minOf(maxContacts, maxTiles))
                 else ->
-                    allContacts.take(minOf(maxContacts, 12))
+                    allContacts.take(minOf(maxContacts, maxTiles))
             }
-            Log.d(TAG, "contacts=${contacts.size}")
+            Log.d(TAG, "cols=$cols contacts=${contacts.size}")
 
-            val views = RemoteViews(context.packageName, R.layout.widget_grid_4x3)
+            val layoutId = LAYOUTS[cols] ?: R.layout.widget_grid_4col
+            val views = RemoteViews(context.packageName, layoutId)
+            val pkg = context.packageName
 
-            for (idx in 0..11) {
+            for (idx in 0 until maxTiles) {
+                val tileId  = context.resources.getIdentifier("tile_${cols}_$idx",  "id", pkg)
+                val photoId = context.resources.getIdentifier("photo_${cols}_$idx", "id", pkg)
+                val nameId  = context.resources.getIdentifier("name_${cols}_$idx",  "id", pkg)
+
                 val contact = contacts.getOrNull(idx)
                 if (contact != null) {
-                    views.setViewVisibility(TILE_IDS[idx], View.VISIBLE)
-
-                    // Load photo at BITMAP_SIZE, fallback to initials
+                    views.setViewVisibility(tileId, View.VISIBLE)
                     val bmp = loadPhoto(context, contact, BITMAP_SIZE)
                         ?: makeInitials(contact, BITMAP_SIZE)
-                    views.setImageViewBitmap(PHOTO_IDS[idx], bmp)
-
-                    views.setTextViewText(NAME_IDS[idx],
+                    views.setImageViewBitmap(photoId, bmp)
+                    views.setTextViewText(nameId,
                         contact.name.split(" ").firstOrNull() ?: contact.name)
 
                     val intent = Intent(context, ContactWidgetProvider::class.java).apply {
@@ -108,9 +129,9 @@ class ContactWidgetProvider : AppWidgetProvider() {
                         context, contact.id.toInt(), intent,
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
-                    views.setOnClickPendingIntent(TILE_IDS[idx], pi)
+                    views.setOnClickPendingIntent(tileId, pi)
                 } else {
-                    views.setViewVisibility(TILE_IDS[idx], View.INVISIBLE)
+                    views.setViewVisibility(tileId, View.INVISIBLE)
                 }
             }
 
@@ -134,10 +155,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 context.contentResolver.openInputStream(uri)?.use { s ->
                     BitmapFactory.decodeStream(s, null, opts)
                 }
-            } catch (e: Exception) {
-                Log.w(TAG, "loadPhoto: ${e.message}")
-                null
-            }
+            } catch (e: Exception) { null }
         }
 
         private fun makeInitials(contact: Contact, size: Int): Bitmap {

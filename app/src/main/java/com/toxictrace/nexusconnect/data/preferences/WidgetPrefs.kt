@@ -18,6 +18,9 @@ object WidgetPrefs {
 
     // ── Read (synchronous, safe from any thread) ──────────────────────────────
 
+    fun getColumns(context: Context): Int =
+        sp(context).getInt("columns", 4)
+
     fun getMaxContacts(context: Context): Int =
         sp(context).getInt("max_contacts", 12)
 
@@ -42,17 +45,16 @@ object WidgetPrefs {
 
     // ── Write (called from SettingsRepository after DataStore update) ─────────
 
-    fun sync(
-        context: Context,
-        settings: WidgetSettings,
-        selectedIds: List<Long>
-    ) {
+    fun sync(context: Context, settings: WidgetSettings, selectedIds: List<Long>) {
         sp(context).edit().apply {
-            putInt("max_contacts",       settings.maxContacts)
+            putInt("columns",          settings.columns)
+            putInt("max_contacts",     settings.maxContacts)
             putBoolean("filter_favorites", settings.filterFavorites)
-            putString("click_action",    settings.clickAction.name)
-            putString("priority_app",    settings.priorityApp.name)
-            putString("selected_ids",    selectedIds.joinToString(","))
+            putBoolean("filter_recents",   settings.filterRecents)
+            putBoolean("filter_frequent",  settings.filterFrequent)
+            putString("click_action",  settings.clickAction.name)
+            putString("priority_app",  settings.priorityApp.name)
+            putString("selected_ids",  selectedIds.joinToString(","))
             apply()
         }
     }
