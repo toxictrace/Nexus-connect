@@ -5,42 +5,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import com.toxictrace.nexusconnect.data.model.ClickAction
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 
 object ContactActionHandler {
 
     fun handle(context: Context, contactId: Long, phone: String?, name: String?) {
-        if (WidgetPrefs.getHapticFeedback(context)) vibrate(context)
+        if (WidgetPrefs.getHapticFeedback(context)) HapticHelper.vibrate(context)
 
         when (WidgetPrefs.getClickAction(context)) {
             ClickAction.SHOW_DIALOG -> showChooser(context, contactId, phone, name)
             ClickAction.DIRECT_CALL -> directCall(context, phone)
         }
-    }
-
-    private fun vibrate(context: Context) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vm = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-                vm.defaultVibrator.vibrate(
-                    VibrationEffect.createOneShot(40, VibrationEffect.DEFAULT_AMPLITUDE)
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                val v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    v.vibrate(VibrationEffect.createOneShot(40, VibrationEffect.DEFAULT_AMPLITUDE))
-                } else {
-                    @Suppress("DEPRECATION")
-                    v.vibrate(40)
-                }
-            }
-        } catch (_: Exception) {}
     }
 
     private fun directCall(context: Context, phone: String?) {

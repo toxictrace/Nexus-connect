@@ -68,6 +68,9 @@ class ContactChooserActivity : ComponentActivity() {
         val viberPkg     = WidgetPrefs.getMessengerViber(this)
         val telegramPkg  = WidgetPrefs.getMessengerTelegram(this)
 
+        val hapticEnabled = WidgetPrefs.getHapticFeedback(this)
+        val actContext = this
+
         setContent {
             NexusConnectTheme(
                 darkTheme    = isDark,
@@ -83,6 +86,8 @@ class ContactChooserActivity : ComponentActivity() {
                     viberPkg     = viberPkg,
                     telegramPkg  = telegramPkg,
                     isInstalled  = ::isInstalled,
+                    haptic       = hapticEnabled,
+                    ctx          = actContext,
                     onDial       = { directCall(phone) },
                     onWhatsApp   = { openWithPackage(whatsAppPkg, buildWhatsAppUri(phone)) },
                     onViber      = { openViber(phone, viberPkg) },
@@ -180,6 +185,8 @@ private fun ChooserSheet(
     stats: CallStats,
     whatsAppPkg: String, viberPkg: String, telegramPkg: String,
     isInstalled: (String) -> Boolean,
+    haptic: Boolean,
+    ctx: android.content.Context,
     onDial: () -> Unit, onWhatsApp: () -> Unit,
     onViber: () -> Unit, onTelegram: () -> Unit,
     onDismiss: () -> Unit
@@ -267,19 +274,19 @@ private fun ChooserSheet(
             item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) }
 
             // Phone
-            item { CallOption(Icons.Default.Call, "Phone call", "Direct call", Color(0xFF1A3CA8), onDial) }
+            item { CallOption(Icons.Default.Call, "Phone call", "Direct call", Color(0xFF1A3CA8), haptic, ctx, onDial) }
 
             if (hasWhatsApp) {
                 item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
-                item { CallOption(Icons.Default.Message, "WhatsApp", "Open in WhatsApp", Color(0xFF25D366), onWhatsApp) }
+                item { CallOption(Icons.Default.Message, "WhatsApp", "Open in WhatsApp", Color(0xFF25D366), haptic, ctx, onWhatsApp) }
             }
             if (hasViber) {
                 item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
-                item { CallOption(Icons.Default.PhoneAndroid, "Viber", "Open in Viber", Color(0xFF7360F2), onViber) }
+                item { CallOption(Icons.Default.PhoneAndroid, "Viber", "Open in Viber", Color(0xFF7360F2), haptic, ctx, onViber) }
             }
             if (hasTelegram) {
                 item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
-                item { CallOption(Icons.Default.Send, "Telegram", "Open in Telegram", Color(0xFF2AABEE), onTelegram) }
+                item { CallOption(Icons.Default.Send, "Telegram", "Open in Telegram", Color(0xFF2AABEE), haptic, ctx, onTelegram) }
             }
         }
     }
@@ -298,11 +305,11 @@ private fun StatItem(icon: ImageVector, value: String, label: String, valueLines
 }
 
 @Composable
-private fun CallOption(icon: ImageVector, label: String, sublabel: String, color: Color, onClick: () -> Unit) {
-    val view = androidx.compose.ui.platform.LocalView.current
+private fun CallOption(icon: ImageVector, label: String, sublabel: String, color: Color,
+                       haptic: Boolean, context: android.content.Context, onClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().clickable {
-            view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            if (haptic) HapticHelper.vibrate(context)
             onClick()
         }.padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
