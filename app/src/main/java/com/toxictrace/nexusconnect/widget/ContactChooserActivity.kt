@@ -69,8 +69,6 @@ class ContactChooserActivity : ComponentActivity() {
         val telegramPkg  = WidgetPrefs.getMessengerTelegram(this)
 
         val hapticEnabled = WidgetPrefs.getHapticFeedback(this)
-        // Vibrate on open — most reliable place since we have full Activity context
-        if (hapticEnabled) HapticHelper.vibrate(this)
         val actContext = this
 
         setContent {
@@ -96,6 +94,24 @@ class ContactChooserActivity : ComponentActivity() {
                     onTelegram   = { openWithPackage(telegramPkg, buildTelegramUri(phone)) },
                     onDismiss    = { finish() }
                 )
+            }
+        }
+
+        // Vibrate after setContent so window.decorView is ready
+        if (hapticEnabled) {
+            window.decorView.post {
+                try {
+                    val v = window.decorView
+                    v.isHapticFeedbackEnabled = true
+                    val r = v.performHapticFeedback(
+                        android.view.HapticFeedbackConstants.VIRTUAL_KEY,
+                        android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING or
+                        android.view.HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
+                    )
+                    android.util.Log.d("HapticHelper", "ChooserActivity performHapticFeedback=$r")
+                } catch (e: Exception) {
+                    android.util.Log.e("HapticHelper", "ChooserActivity haptic failed: ${e.message}")
+                }
             }
         }
     }
@@ -309,9 +325,10 @@ private fun StatItem(icon: ImageVector, value: String, label: String, valueLines
 @Composable
 private fun CallOption(icon: ImageVector, label: String, sublabel: String, color: Color,
                        haptic: Boolean, context: android.content.Context, onClick: () -> Unit) {
+    val view = androidx.compose.ui.platform.LocalView.current
     Row(
         modifier = Modifier.fillMaxWidth().clickable {
-            if (haptic) HapticHelper.vibrate(context)
+            if (haptic) HapticHelper.vibrateView(view)
             onClick()
         }.padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,

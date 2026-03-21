@@ -5,20 +5,29 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import androidx.activity.ComponentActivity
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 
-/**
- * Transparent Activity that vibrates then immediately starts a phone call.
- * Needed because BroadcastReceiver context can't reliably vibrate.
- */
 class DirectCallActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val phone = intent.getStringExtra("phone") ?: ""
         if (phone.isBlank()) { finish(); return }
 
-        if (WidgetPrefs.getHapticFeedback(this)) HapticHelper.vibrate(this)
+        // Vibrate using window decor view with IGNORE flags
+        if (WidgetPrefs.getHapticFeedback(this)) {
+            try {
+                val v = window.decorView
+                v.isHapticFeedbackEnabled = true
+                v.performHapticFeedback(
+                    HapticFeedbackConstants.VIRTUAL_KEY,
+                    HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING or
+                    HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
+                )
+            } catch (_: Exception) {}
+        }
 
         val hasPermission = checkSelfPermission(Manifest.permission.CALL_PHONE) ==
                 PackageManager.PERMISSION_GRANTED
