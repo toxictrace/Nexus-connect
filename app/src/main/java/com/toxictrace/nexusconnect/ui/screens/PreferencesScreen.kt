@@ -150,37 +150,19 @@ private fun MessengerSection(settings: WidgetSettings, onUpdate: (WidgetSettings
 
     val allApps: List<AppInfo> = remember {
         val pm = context.packageManager
-
-        // Blacklist — known non-messenger apps to exclude
-        val blacklist = setOf(
-            "com.android.bluetooth", "com.android.settings", "com.android.camera",
-            "com.android.camera2", "com.android.deskclock", "com.android.calculator2",
-            "com.android.calendar", "com.miui.gallery", "com.miui.compass",
-            "com.miui.notes", "com.miui.player", "com.miui.calculator",
-            "com.miui.weather2", "com.miui.cleaner", "com.miui.securitycenter",
-            "com.miui.scanner", "com.android.thememanager", "com.android.soundrecorder",
-            "com.android.providers.downloads.ui", "com.mi.android.globalFileexplorer",
-            "com.miui.mishare.connectivity", "com.android.vending",
-            "com.google.android.gms", "com.google.android.gsf",
-            "com.google.android.youtube", "com.google.android.apps.maps",
-            "com.google.android.apps.photos", "com.google.android.music",
-            "com.android.chrome", "com.android.browser",
-            context.packageName
-        )
-
-        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        pm.queryIntentActivities(launcherIntent, 0)
-            .map { it.activityInfo.packageName }
-            .distinct()
-            .filter { it !in blacklist }
-            .mapNotNull { pkg ->
+        // GET_META_DATA needed to get all installed apps on Android 11+
+        pm.getInstalledApplications(0)
+            .filter { it.packageName != context.packageName }
+            .mapNotNull { info ->
                 runCatching {
-                    val info = pm.getApplicationInfo(pkg, 0)
+                    // Only include apps that have a launcher activity (visible to user)
+                    val hasLauncher = pm.getLaunchIntentForPackage(info.packageName) != null
+                    if (!hasLauncher) return@mapNotNull null
                     val label = pm.getApplicationLabel(info).toString()
                     val iconBmp = runCatching {
-                        pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
+                        pm.getApplicationIcon(info.packageName).toBitmap(48, 48).asImageBitmap()
                     }.getOrNull()
-                    AppInfo(pkg, label, iconBmp)
+                    AppInfo(info.packageName, label, iconBmp)
                 }.getOrNull()
             }
             .sortedBy { it.label.lowercase() }
