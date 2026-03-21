@@ -6,23 +6,24 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
+import android.view.HapticFeedbackConstants
+import android.view.View
 
 object HapticHelper {
 
     private const val TAG = "HapticHelper"
 
     fun vibrate(context: Context) {
-        Log.d(TAG, "vibrate() called, SDK=${Build.VERSION.SDK_INT}")
+        Log.d(TAG, "vibrate() called")
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val vm = context.getSystemService(VibratorManager::class.java)
-                val v = vm?.defaultVibrator
-                Log.d(TAG, "VibratorManager=$vm, defaultVibrator=$v, hasVibrator=${v?.hasVibrator()}")
-                v?.vibrate(VibrationEffect.createOneShot(100, 255))
+                vm?.defaultVibrator?.vibrate(
+                    VibrationEffect.createOneShot(100, 255)
+                )
             } else {
                 @Suppress("DEPRECATION")
                 val v = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-                Log.d(TAG, "Vibrator=$v, hasVibrator=${v?.hasVibrator()}")
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     v?.vibrate(VibrationEffect.createOneShot(100, 255))
                 } else {
@@ -30,9 +31,39 @@ object HapticHelper {
                     v?.vibrate(100)
                 }
             }
-            Log.d(TAG, "vibrate() completed without exception")
         } catch (e: Exception) {
-            Log.e(TAG, "vibrate() failed: ${e.message}", e)
+            Log.e(TAG, "Vibrator failed: ${e.message}")
+        }
+    }
+
+    /**
+     * MIUI-compatible haptic — must be called from a View.
+     * Uses FLAG_IGNORE_GLOBAL_SETTING to bypass MIUI restrictions.
+     */
+    @Suppress("DEPRECATION")
+    fun vibrateView(view: View) {
+        try {
+            view.isHapticFeedbackEnabled = true
+            val result = view.performHapticFeedback(
+                HapticFeedbackConstants.VIRTUAL_KEY,
+                HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING or
+                HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
+            )
+            Log.d(TAG, "vibrateView result=$result")
+            if (!result) {
+                val fallbackConstant = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                    HapticFeedbackConstants.CONFIRM
+                else
+                    HapticFeedbackConstants.VIRTUAL_KEY
+                view.performHapticFeedback(
+                    fallbackConstant,
+                    HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING or
+                    HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "vibrateView failed: ${e.message}")
+            vibrate(view.context)
         }
     }
 }
