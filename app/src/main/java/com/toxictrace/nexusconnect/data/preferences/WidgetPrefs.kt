@@ -22,7 +22,7 @@ object WidgetPrefs {
         sp(context).getInt("columns", 4).coerceIn(3, 6)
 
     fun getRows(context: Context): Int =
-        sp(context).getInt("rows", 3).coerceIn(2, 4)
+        sp(context).getInt("rows", 3).coerceIn(3, 6)
 
     fun getMaxContacts(context: Context): Int =
         sp(context).getInt("max_contacts", 12)

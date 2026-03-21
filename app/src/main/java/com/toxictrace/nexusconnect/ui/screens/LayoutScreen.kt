@@ -35,7 +35,7 @@ fun LayoutScreen(viewModel: MainViewModel) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Widget preview
-        WidgetPreview(columns = draft.columns, rows = draft.tileHeightDp.coerceIn(2, 4))
+        WidgetPreview(columns = draft.columns, rows = draft.tileHeightDp.coerceIn(3, 6))
 
         // Columns + Tile Height card
         SettingsCard {
@@ -53,11 +53,11 @@ fun LayoutScreen(viewModel: MainViewModel) {
 
             SettingsSlider(
                 label = "Number of Rows",
-                value = draft.tileHeightDp.coerceIn(2, 4),
-                valueRange = 2f..4f,
-                steps = 1,
-                startLabel = "2 ROWS",
-                endLabel = "4 ROWS",
+                value = draft.tileHeightDp.coerceIn(3, 6),
+                valueRange = 3f..6f,
+                steps = 2,
+                startLabel = "3 ROWS",
+                endLabel = "6 ROWS",
                 onValueChange = { draft = draft.copy(tileHeightDp = it) }
             )
         }

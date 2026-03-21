@@ -43,7 +43,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             Log.d(TAG, "buildAndPush id=$widgetId")
 
             val cols            = WidgetPrefs.getColumns(context).coerceIn(3, 6)
-            val rows            = WidgetPrefs.getRows(context).coerceIn(2, 4)
+            val rows            = WidgetPrefs.getRows(context).coerceIn(3, 6)
             val maxContacts     = WidgetPrefs.getMaxContacts(context)
             val filterFavorites = WidgetPrefs.getFilterFavorites(context)
             val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
