@@ -4,32 +4,24 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import com.toxictrace.nexusconnect.data.model.Contact
@@ -64,21 +56,16 @@ fun ContactsScreen(viewModel: MainViewModel) {
         ))
     }
 
-    // Split: selected (in order) on top, unselected below
     val selected   = contacts.filter { it.isSelected }
     val unselected = contacts.filter { !it.isSelected }.let { list ->
         if (searchQuery.isBlank()) list
         else list.filter { it.name.contains(searchQuery, ignoreCase = true) }
     }
 
-    // Drag state for selected contacts reordering
-    var dragFromIndex by remember { mutableStateOf(-1) }
-    var dragToIndex   by remember { mutableStateOf(-1) }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // Search bar — only affects unselected list
+            // Search bar with clear button
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -87,6 +74,14 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 placeholder = { Text("Find contacts...") },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                },
                 shape = RoundedCornerShape(28.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -135,7 +130,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     bottom = if (selectedCount > 0) 88.dp else 16.dp
                 )
             ) {
-                // ── Selected contacts (draggable) ──
+                // ── Selected contacts ──
                 if (selected.isNotEmpty()) {
                     item {
                         Text(
@@ -148,26 +143,13 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 }
 
                 itemsIndexed(selected, key = { _, c -> "sel_${c.id}" }) { idx, contact ->
-                    val isDragging = dragFromIndex == idx
-                    val elevation by animateDpAsState(if (isDragging) 8.dp else 1.dp)
-
-                    ContactItem(
-                        contact    = contact,
-                        isSelected = true,
-                        showDrag   = true,
-                        elevation  = elevation,
-                        onToggle   = { viewModel.toggleContactSelection(contact.id) },
-                        onDragStart = { dragFromIndex = idx; dragToIndex = idx },
-                        onDrag     = { delta ->
-                            // Simple index shift by pixel delta
-                            val newIdx = (dragToIndex + if (delta > 30f) 1 else if (delta < -30f) -1 else 0)
-                                .coerceIn(0, selected.lastIndex)
-                            if (newIdx != dragToIndex) {
-                                viewModel.reorderSelected(dragToIndex, newIdx)
-                                dragToIndex = newIdx
-                            }
-                        },
-                        onDragEnd  = { dragFromIndex = -1; dragToIndex = -1 }
+                    SelectedContactItem(
+                        contact   = contact,
+                        position  = idx,
+                        total     = selected.size,
+                        onToggle  = { viewModel.toggleContactSelection(contact.id) },
+                        onMoveUp  = { if (idx > 0) viewModel.reorderSelected(idx, idx - 1) },
+                        onMoveDown = { if (idx < selected.lastIndex) viewModel.reorderSelected(idx, idx + 1) }
                     )
                 }
 
@@ -186,18 +168,15 @@ fun ContactsScreen(viewModel: MainViewModel) {
 
                 // ── Unselected contacts ──
                 itemsIndexed(unselected, key = { _, c -> "uns_${c.id}" }) { _, contact ->
-                    ContactItem(
-                        contact    = contact,
-                        isSelected = false,
-                        showDrag   = false,
-                        elevation  = 1.dp,
-                        onToggle   = { viewModel.toggleContactSelection(contact.id) }
+                    UnselectedContactItem(
+                        contact  = contact,
+                        onToggle = { viewModel.toggleContactSelection(contact.id) }
                     )
                 }
             }
         }
 
-        // Bottom bar
+        // Bottom action bar
         if (selectedCount > 0) {
             Surface(
                 modifier = Modifier
@@ -217,7 +196,8 @@ fun ContactsScreen(viewModel: MainViewModel) {
                         Text("Selected $selectedCount / ${contacts.size}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold)
-                        Text("WIDGET ORDER", style = MaterialTheme.typography.labelSmall,
+                        Text("WIDGET ORDER",
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Button(
@@ -231,70 +211,118 @@ fun ContactsScreen(viewModel: MainViewModel) {
 }
 
 @Composable
-private fun ContactItem(
+private fun SelectedContactItem(
     contact: Contact,
-    isSelected: Boolean,
-    showDrag: Boolean,
-    elevation: androidx.compose.ui.unit.Dp,
+    position: Int,
+    total: Int,
     onToggle: () -> Unit,
-    onDragStart: () -> Unit = {},
-    onDrag: (Float) -> Unit = {},
-    onDragEnd: () -> Unit = {}
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(elevation, RoundedCornerShape(12.dp))
-            .zIndex(if (isSelected) 1f else 0f),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-            else MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
         ),
-        elevation = CardDefaults.cardElevation(0.dp)
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Drag handle — only for selected
-            if (showDrag) {
-                Icon(
-                    Icons.Default.DragHandle, null,
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                    modifier = Modifier
-                        .size(22.dp)
-                        .pointerInput(Unit) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = { onDragStart() },
-                                onDrag = { _, offset -> onDrag(offset.y) },
-                                onDragEnd = onDragEnd,
-                                onDragCancel = onDragEnd
-                            )
-                        }
+            // Position number
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "${position + 1}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
                 )
-            } else {
-                Spacer(Modifier.size(22.dp))
             }
 
-            Checkbox(checked = isSelected, onCheckedChange = { onToggle() })
+            ContactAvatar(contact = contact, size = 44)
 
+            Column(modifier = Modifier.weight(1f)) {
+                Text(contact.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold)
+                contact.phoneNumber?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+
+            // Move up/down buttons
+            Column {
+                IconButton(
+                    onClick = onMoveUp,
+                    enabled = position > 0,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(Icons.Default.KeyboardArrowUp, null,
+                        modifier = Modifier.size(20.dp),
+                        tint = if (position > 0) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                }
+                IconButton(
+                    onClick = onMoveDown,
+                    enabled = position < total - 1,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(Icons.Default.KeyboardArrowDown, null,
+                        modifier = Modifier.size(20.dp),
+                        tint = if (position < total - 1) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                }
+            }
+
+            // Deselect (×)
+            IconButton(
+                onClick = onToggle,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(Icons.Default.Close, null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun UnselectedContactItem(
+    contact: Contact,
+    onToggle: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(1.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Checkbox(checked = false, onCheckedChange = { onToggle() })
             ContactAvatar(contact = contact, size = 46)
-
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        contact.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                    )
+                    Text(contact.name, style = MaterialTheme.typography.titleMedium)
                     if (contact.isStarred) {
                         Icon(Icons.Default.Star, null,
                             tint = Color(0xFFFFC107),
