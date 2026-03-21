@@ -2,7 +2,7 @@ package com.toxictrace.nexusconnect.ui.screens
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawableimport androidx.compose.foundation.Image
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -215,7 +215,7 @@ private fun MessengerRow(label: String, currentPkg: String, allApps: List<AppInf
         Text(label, style = MaterialTheme.typography.titleMedium)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (icon != null) {
-                Image(bitmap = icon, contentDescription = null, modifier = Modifier.size(24.dp).clip(RoundedCornerShape(4.dp)))
+                androidx.compose.foundation.Image(bitmap = icon, contentDescription = null, modifier = Modifier.size(24.dp).clip(RoundedCornerShape(4.dp)))
             }
             Text(displayLabel, style = MaterialTheme.typography.bodyMedium,
                 color = if (currentPkg.isBlank()) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary)
@@ -276,7 +276,7 @@ private fun AppPickerDialog(apps: List<AppInfo>, loading: Boolean, current: Stri
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             if (app.icon != null) {
-                                Image(bitmap = app.icon, contentDescription = null,
+                                androidx.compose.foundation.Image(bitmap = app.icon, contentDescription = null,
                                     modifier = Modifier.size(32.dp).clip(RoundedCornerShape(4.dp)))
                             } else {
                                 Box(modifier = Modifier.size(32.dp).clip(RoundedCornerShape(4.dp))
