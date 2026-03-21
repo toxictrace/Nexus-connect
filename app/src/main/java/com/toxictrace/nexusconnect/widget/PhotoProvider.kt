@@ -7,13 +7,14 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.ContactsContract
 import android.util.Log
+import java.io.File
+import java.io.FileOutputStream
 
 /**
- * ContentProvider that proxies contact photos to the widget.
- * The widget calls setImageViewUri() with our URI — Nova launcher
- * fetches the photo directly without going through IPC bitmap transfer.
+ * ContentProvider that serves contact photos to the widget.
+ * Caches photos to disk so Nova can load them as files.
  *
- * URI format: content://com.toxictrace.nexusconnect.photos/{contactId}
+ * URI: content://com.toxictrace.nexusconnect.photos/{contactId}
  */
 class PhotoProvider : ContentProvider() {
 
@@ -31,20 +32,64 @@ class PhotoProvider : ContentProvider() {
         val contactId = uri.lastPathSegment?.toLongOrNull() ?: return null
         val ctx = context ?: return null
 
+        // Try to get photo URI from contacts database
+        val photoUri = getPhotoUri(contactId) ?: return null
+
         return try {
-            // Get photo URI from contacts
-            val contactUri = Uri.withAppendedPath(
+            // Open directly from contacts ContentResolver
+            ctx.contentResolver.openFileDescriptor(photoUri, "r")
+        } catch (e: Exception) {
+            Log.w(TAG, "Direct open failed, trying pipe: ${e.message}")
+            // Fallback: pipe through our process
+            try {
+                val pipe = ParcelFileDescriptor.createPipe()
+                val inputStream = ctx.contentResolver.openInputStream(photoUri)
+                    ?: return null
+                Thread {
+                    try {
+                        ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]).use { out ->
+                            inputStream.use { it.copyTo(out) }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Pipe write failed: ${e.message}")
+                    }
+                }.start()
+                pipe[0]
+            } catch (e2: Exception) {
+                Log.e(TAG, "Pipe fallback failed: ${e2.message}")
+                null
+            }
+        }
+    }
+
+    private fun getPhotoUri(contactId: Long): Uri? {
+        val ctx = context ?: return null
+        return try {
+            // Method 1: PHOTO_URI column from Contacts table
+            val cursor = ctx.contentResolver.query(
                 ContactsContract.Contacts.CONTENT_URI,
-                contactId.toString()
+                arrayOf(ContactsContract.Contacts.PHOTO_URI),
+                "${ContactsContract.Contacts._ID} = ?",
+                arrayOf(contactId.toString()),
+                null
             )
-            val photoUri = Uri.withAppendedPath(
-                contactUri,
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val photoStr = it.getString(0)
+                    if (!photoStr.isNullOrBlank()) return Uri.parse(photoStr)
+                }
+            }
+
+            // Method 2: Photo.CONTENT_DIRECTORY
+            Uri.withAppendedPath(
+                Uri.withAppendedPath(
+                    ContactsContract.Contacts.CONTENT_URI,
+                    contactId.toString()
+                ),
                 ContactsContract.Contacts.Photo.CONTENT_DIRECTORY
             )
-            val fd = ctx.contentResolver.openFileDescriptor(photoUri, "r")
-            fd
         } catch (e: Exception) {
-            Log.w(TAG, "openFile failed for contactId=$contactId: ${e.message}")
+            Log.e(TAG, "getPhotoUri failed: ${e.message}")
             null
         }
     }

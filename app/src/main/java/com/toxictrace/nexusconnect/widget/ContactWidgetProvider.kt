@@ -97,11 +97,11 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     views.setViewVisibility(tileId, View.VISIBLE)
 
                     if (contact.photoUri != null) {
-                        // Use ContentProvider URI — no IPC bitmap transfer, full quality
+                        // Primary: ContentProvider URI — full quality, no IPC limit
                         val photoProviderUri = PhotoProvider.uriForContact(contact.id)
                         views.setImageViewUri(photoId, photoProviderUri)
                     } else {
-                        // No photo — draw initials bitmap (small, safe for IPC)
+                        // No photo — draw initials bitmap
                         views.setImageViewBitmap(photoId, makeInitials(contact, 120))
                     }
 

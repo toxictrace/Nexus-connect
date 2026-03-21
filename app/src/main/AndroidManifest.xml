@@ -59,8 +59,7 @@
             android:name=".widget.PhotoProvider"
             android:authorities="com.toxictrace.nexusconnect.photos"
             android:exported="true"
-            android:grantUriPermissions="true"
-            android:readPermission="android.permission.READ_CONTACTS" />
+            android:grantUriPermissions="true" />
 
     </application>
 
