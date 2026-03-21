@@ -34,9 +34,3 @@ enum class AppTheme {
     DARK,
     SYSTEM
 }
-
-enum class AppTheme {
-    LIGHT,
-    DARK,
-    SYSTEM
-}
