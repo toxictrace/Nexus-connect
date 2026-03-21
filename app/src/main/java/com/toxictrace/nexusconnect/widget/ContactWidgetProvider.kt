@@ -30,8 +30,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
         const val EXTRA_CONTACT_PHONE = "extra_contact_phone"
         const val EXTRA_CONTACT_NAME  = "extra_contact_name"
 
-        // Tile IDs in the static layout widget_grid_4x3
-        // Must match @id/tile_0 .. @id/tile_11 in XML
         private val TILE_IDS = intArrayOf(
             R.id.tile_0,  R.id.tile_1,  R.id.tile_2,  R.id.tile_3,
             R.id.tile_4,  R.id.tile_5,  R.id.tile_6,  R.id.tile_7,
@@ -46,39 +44,36 @@ class ContactWidgetProvider : AppWidgetProvider() {
         }
 
         fun buildAndPush(context: Context, mgr: AppWidgetManager, widgetId: Int) {
-            Log.d(TAG, "buildAndPush id=$widgetId")
             val settingsRepo = SettingsRepository(context)
             val contactsRepo = ContactsRepository(context)
-
-            val settings    = runBlocking { settingsRepo.settings.first() }
-            val allContacts = contactsRepo.loadContacts()
-            val selectedIds = runBlocking { settingsRepo.getSelectedContactIds() }
+            val settings     = runBlocking { settingsRepo.settings.first() }
+            val allContacts  = contactsRepo.loadContacts()
+            val selectedIds  = runBlocking { settingsRepo.getSelectedContactIds() }
 
             val contacts = when {
                 selectedIds.isNotEmpty() ->
-                    selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
-                        .take(12)
+                    selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }.take(12)
                 settings.filterFavorites ->
                     allContacts.filter { it.isStarred }.take(12)
                 else ->
                     allContacts.take(12)
             }
-
             Log.d(TAG, "contacts=${contacts.size}")
 
-            val views = RemoteViews(context.packageName, R.layout.widget_grid_4x3)
+            // Root layout with 12 pre-defined slots
+            val root = RemoteViews(context.packageName, R.layout.widget_grid_4x3)
 
-            TILE_IDS.forEachIndexed { idx, tileId ->
+            TILE_IDS.forEachIndexed { idx, slotId ->
                 val contact = contacts.getOrNull(idx)
                 if (contact != null) {
-                    // Photo or initials
-                    val bmp = loadPhoto(context, contact, 120) ?: makeInitials(contact, 120)
-                    views.setImageViewBitmap(tileId, R.id.tile_photo, bmp)
-                    views.setTextViewText(tileId, R.id.tile_name,
+                    // Build tile RemoteViews independently
+                    val tile = RemoteViews(context.packageName, R.layout.widget_tile)
+                    tile.setTextViewText(R.id.tile_name,
                         contact.name.split(" ").firstOrNull() ?: contact.name)
-                    views.setViewVisibility(tileId, android.view.View.VISIBLE)
+                    val bmp = loadPhoto(context, contact, 120) ?: makeInitials(contact, 120)
+                    tile.setImageViewBitmap(R.id.tile_photo, bmp)
 
-                    // Individual PendingIntent per tile
+                    // Click
                     val intent = Intent(context, ContactWidgetProvider::class.java).apply {
                         action = ACTION_CONTACT_CLICK
                         putExtra(EXTRA_CONTACT_ID,    contact.id)
@@ -90,14 +85,19 @@ class ContactWidgetProvider : AppWidgetProvider() {
                         context, contact.id.toInt(), intent,
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
-                    views.setOnClickPendingIntent(tileId, pi)
+                    tile.setOnClickPendingIntent(R.id.tile_photo, pi)
+                    tile.setOnClickPendingIntent(R.id.tile_name, pi)
+
+                    // Insert tile into its slot
+                    root.setRemoteView(slotId, tile)
+                    root.setViewVisibility(slotId, android.view.View.VISIBLE)
                 } else {
-                    views.setViewVisibility(tileId, android.view.View.INVISIBLE)
+                    root.setViewVisibility(slotId, android.view.View.INVISIBLE)
                 }
             }
 
-            mgr.updateAppWidget(widgetId, views)
-            Log.d(TAG, "buildAndPush done")
+            mgr.updateAppWidget(widgetId, root)
+            Log.d(TAG, "buildAndPush done id=$widgetId")
         }
 
         private fun loadPhoto(context: Context, contact: Contact, maxPx: Int): Bitmap? {
@@ -112,10 +112,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 context.contentResolver.openInputStream(uri)?.use { s ->
                     BitmapFactory.decodeStream(s, null, opts)
                 }
-            } catch (e: Exception) {
-                Log.w(TAG, "loadPhoto failed: ${e.message}")
-                null
-            }
+            } catch (e: Exception) { null }
         }
 
         private fun makeInitials(contact: Contact, size: Int): Bitmap {
@@ -142,7 +139,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
         ids.forEach { buildAndPush(context, mgr, it) }
     }
-
     override fun onEnabled(context: Context) { ContactsObserverService.start(context) }
     override fun onDisabled(context: Context) { ContactsObserverService.stop(context) }
 
