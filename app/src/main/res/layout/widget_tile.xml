@@ -1,49 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tile_root"
-    android:layout_width="match_parent"
-    android:layout_height="72dp"
-    android:clickable="true"
-    android:focusable="true">
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1">
 
-    <!-- Contact photo full-bleed -->
     <ImageView
         android:id="@+id/tile_photo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop" />
 
-    <!-- Gradient scrim -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/tile_gradient_scrim" />
 
-    <!-- Contact first name, bottom center -->
     <TextView
         android:id="@+id/tile_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="4dp"
+        android:layout_marginBottom="3dp"
         android:ellipsize="end"
         android:maxLines="1"
+        android:gravity="center"
         android:paddingHorizontal="2dp"
         android:textColor="#FFFFFF"
-        android:textSize="10sp"
+        android:textSize="9sp"
         android:textStyle="bold"
-        android:gravity="center"
-        android:shadowColor="#99000000"
+        android:shadowColor="#AA000000"
         android:shadowDx="0"
         android:shadowDy="1"
         android:shadowRadius="2" />
-
-    <!-- Messenger badge top-right -->
-    <ImageView
-        android:id="@+id/tile_messenger_icon"
-        android:layout_width="14dp"
-        android:layout_height="14dp"
-        android:layout_gravity="top|end"
-        android:layout_margin="3dp" />
 
 </FrameLayout>

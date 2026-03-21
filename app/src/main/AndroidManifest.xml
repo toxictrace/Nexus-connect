@@ -15,7 +15,6 @@
         android:theme="@style/Theme.NexusConnect"
         tools:targetApi="31">
 
-        <!-- Main config activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -27,14 +26,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Chooser dialog shown when user taps a widget tile -->
         <activity
             android:name=".widget.ContactChooserActivity"
             android:exported="false"
             android:theme="@style/Theme.NexusConnect"
             android:launchMode="singleTop" />
 
-        <!-- AppWidget provider -->
         <receiver
             android:name=".widget.ContactWidgetProvider"
             android:exported="true">
@@ -47,13 +44,12 @@
                 android:resource="@xml/widget_info" />
         </receiver>
 
-        <!-- RemoteViewsService for widget grid tiles -->
+        <!-- ContactWidgetService kept for future use but not active -->
         <service
             android:name=".widget.ContactWidgetService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
-        <!-- Contacts change observer -->
         <service
             android:name=".widget.ContactsObserverService"
             android:exported="false" />
