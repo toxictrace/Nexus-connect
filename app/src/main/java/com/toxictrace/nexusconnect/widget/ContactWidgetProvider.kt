@@ -15,7 +15,6 @@ import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
-import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
@@ -31,37 +30,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
         private const val BITMAP_SIZE = 120
 
-        // IDs per column count — must match generated XML layouts
-        private val TILE_IDS = mapOf(
-            3 to Array(9)  { i -> resId("tile_3_$i") },
-            4 to Array(12) { i -> resId("tile_4_$i") },
-            5 to Array(15) { i -> resId("tile_5_$i") },
-            6 to Array(18) { i -> resId("tile_6_$i") }
-        )
-        private val PHOTO_IDS = mapOf(
-            3 to Array(9)  { i -> resId("photo_3_$i") },
-            4 to Array(12) { i -> resId("photo_4_$i") },
-            5 to Array(15) { i -> resId("photo_5_$i") },
-            6 to Array(18) { i -> resId("photo_6_$i") }
-        )
-        private val NAME_IDS = mapOf(
-            3 to Array(9)  { i -> resId("name_3_$i") },
-            4 to Array(12) { i -> resId("name_4_$i") },
-            5 to Array(15) { i -> resId("name_5_$i") },
-            6 to Array(18) { i -> resId("name_6_$i") }
-        )
-        private val LAYOUTS = mapOf(
-            3 to R.layout.widget_grid_3col,
-            4 to R.layout.widget_grid_4col,
-            5 to R.layout.widget_grid_5col,
-            6 to R.layout.widget_grid_6col
-        )
-
-        private fun resId(name: String): Int {
-            // Will be resolved at runtime via R.id reflection-free lookup
-            return 0 // placeholder — see buildAndPush
-        }
-
         fun updateAllWidgets(context: Context) {
             val mgr = AppWidgetManager.getInstance(context)
             val ids = mgr.getAppWidgetIds(
@@ -75,11 +43,11 @@ class ContactWidgetProvider : AppWidgetProvider() {
             Log.d(TAG, "buildAndPush id=$widgetId")
 
             val cols            = WidgetPrefs.getColumns(context).coerceIn(3, 6)
+            val rows            = WidgetPrefs.getRows(context).coerceIn(2, 4)
             val maxContacts     = WidgetPrefs.getMaxContacts(context)
             val filterFavorites = WidgetPrefs.getFilterFavorites(context)
             val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
 
-            val rows = 3
             val maxTiles = cols * rows
 
             val allContacts = try {
@@ -98,16 +66,21 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 else ->
                     allContacts.take(minOf(maxContacts, maxTiles))
             }
-            Log.d(TAG, "cols=$cols contacts=${contacts.size}")
+            Log.d(TAG, "cols=$cols rows=$rows contacts=${contacts.size}")
 
-            val layoutId = LAYOUTS[cols] ?: R.layout.widget_grid_4col
-            val views = RemoteViews(context.packageName, layoutId)
+            val layoutRes = context.resources.getIdentifier(
+                "widget_grid_${cols}c${rows}r", "layout", context.packageName
+            ).takeIf { it != 0 } ?: run {
+                Log.e(TAG, "Layout not found for ${cols}c${rows}r, using 4c3r")
+                context.resources.getIdentifier("widget_grid_4c3r", "layout", context.packageName)
+            }
+            val views = RemoteViews(context.packageName, layoutRes)
             val pkg = context.packageName
 
             for (idx in 0 until maxTiles) {
-                val tileId  = context.resources.getIdentifier("tile_${cols}_$idx",  "id", pkg)
-                val photoId = context.resources.getIdentifier("photo_${cols}_$idx", "id", pkg)
-                val nameId  = context.resources.getIdentifier("name_${cols}_$idx",  "id", pkg)
+                val tileId  = context.resources.getIdentifier("tile_${cols}r${rows}_$idx",  "id", pkg)
+                val photoId = context.resources.getIdentifier("photo_${cols}r${rows}_$idx", "id", pkg)
+                val nameId  = context.resources.getIdentifier("name_${cols}r${rows}_$idx",  "id", pkg)
 
                 val contact = contacts.getOrNull(idx)
                 if (contact != null) {

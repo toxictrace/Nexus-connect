@@ -19,7 +19,10 @@ object WidgetPrefs {
     // ── Read (synchronous, safe from any thread) ──────────────────────────────
 
     fun getColumns(context: Context): Int =
-        sp(context).getInt("columns", 4)
+        sp(context).getInt("columns", 4).coerceIn(3, 6)
+
+    fun getRows(context: Context): Int =
+        sp(context).getInt("rows", 3).coerceIn(2, 4)
 
     fun getMaxContacts(context: Context): Int =
         sp(context).getInt("max_contacts", 12)
@@ -48,6 +51,7 @@ object WidgetPrefs {
     fun sync(context: Context, settings: WidgetSettings, selectedIds: List<Long>) {
         sp(context).edit().apply {
             putInt("columns",          settings.columns)
+            putInt("rows",             settings.tileHeightDp) // reuse tileHeightDp field as rows (2-4)
             putInt("max_contacts",     settings.maxContacts)
             putBoolean("filter_favorites", settings.filterFavorites)
             putBoolean("filter_recents",   settings.filterRecents)

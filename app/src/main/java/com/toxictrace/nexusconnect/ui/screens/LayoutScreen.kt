@@ -35,7 +35,7 @@ fun LayoutScreen(viewModel: MainViewModel) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Widget preview
-        WidgetPreview(columns = draft.columns, maxItems = draft.maxContacts)
+        WidgetPreview(columns = draft.columns, rows = draft.tileHeightDp.coerceIn(2, 4))
 
         // Columns + Tile Height card
         SettingsCard {
@@ -52,12 +52,12 @@ fun LayoutScreen(viewModel: MainViewModel) {
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             SettingsSlider(
-                label = "Tile Height (dp)",
-                value = draft.tileHeightDp,
-                valueRange = 56f..100f,
-                steps = 8,
-                startLabel = "COMPACT",
-                endLabel = "SPACIOUS",
+                label = "Number of Rows",
+                value = draft.tileHeightDp.coerceIn(2, 4),
+                valueRange = 2f..4f,
+                steps = 1,
+                startLabel = "2 ROWS",
+                endLabel = "4 ROWS",
                 onValueChange = { draft = draft.copy(tileHeightDp = it) }
             )
         }
@@ -151,8 +151,7 @@ fun LayoutScreen(viewModel: MainViewModel) {
 }
 
 @Composable
-private fun WidgetPreview(columns: Int, maxItems: Int) {
-    val itemCount = minOf(maxItems, columns * 2)
+private fun WidgetPreview(columns: Int, rows: Int) {
     SettingsCard {
         Text(
             "Preview",
@@ -160,38 +159,27 @@ private fun WidgetPreview(columns: Int, maxItems: Int) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        val rows = (itemCount + columns - 1) / columns
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            repeat(rows) { rowIdx ->
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            repeat(rows) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    repeat(columns) { colIdx ->
-                        val idx = rowIdx * columns + colIdx
-                        val isAdd = idx == columns // highlight add button like screenshot
+                    repeat(columns) {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(52.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    if (isAdd) MaterialTheme.colorScheme.primaryContainer
-                                    else MaterialTheme.colorScheme.surfaceVariant
-                                ),
+                                .height(44.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (isAdd) {
-                                Text("+", style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary)
-                            } else {
-                                Icon(
-                                    Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.outline,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                            Icon(
+                                Icons.Default.Star,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
                     }
                 }

@@ -5,18 +5,18 @@
     android:orientation="vertical">
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
         <FrameLayout
-            android:id="@+id/tile_5_0"
+            android:id="@+id/tile_0"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_0"
+                android:id="@+id/photo_0"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_0"
+                android:id="@+id/name_0"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -32,18 +32,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_1"
+            android:id="@+id/tile_1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_1"
+                android:id="@+id/photo_1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_1"
+                android:id="@+id/name_1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -59,18 +59,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_2"
+            android:id="@+id/tile_2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_2"
+                android:id="@+id/photo_2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_2"
+                android:id="@+id/name_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -86,45 +86,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_3"
+            android:id="@+id/tile_3"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_3"
+                android:id="@+id/photo_3"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
-                android:gravity="center"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
-        </FrameLayout>
-        <FrameLayout
-            android:id="@+id/tile_5_4"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="#FF1A1A1A">
-            <ImageView
-                android:id="@+id/photo_5_4"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"/>
-            <TextView
-                android:id="@+id/name_5_4"
+                android:id="@+id/name_3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -142,18 +115,18 @@
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
         <FrameLayout
-            android:id="@+id/tile_5_5"
+            android:id="@+id/tile_4"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_5"
+                android:id="@+id/photo_4"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_5"
+                android:id="@+id/name_4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -169,18 +142,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_6"
+            android:id="@+id/tile_5"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_6"
+                android:id="@+id/photo_5"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_6"
+                android:id="@+id/name_5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -196,18 +169,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_7"
+            android:id="@+id/tile_6"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_7"
+                android:id="@+id/photo_6"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_7"
+                android:id="@+id/name_6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -223,45 +196,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_8"
+            android:id="@+id/tile_7"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_8"
+                android:id="@+id/photo_7"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_8"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
-                android:gravity="center"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
-        </FrameLayout>
-        <FrameLayout
-            android:id="@+id/tile_5_9"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="#FF1A1A1A">
-            <ImageView
-                android:id="@+id/photo_5_9"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"/>
-            <TextView
-                android:id="@+id/name_5_9"
+                android:id="@+id/name_7"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -279,18 +225,18 @@
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
         <FrameLayout
-            android:id="@+id/tile_5_10"
+            android:id="@+id/tile_8"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_10"
+                android:id="@+id/photo_8"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_10"
+                android:id="@+id/name_8"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -306,18 +252,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_11"
+            android:id="@+id/tile_9"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_11"
+                android:id="@+id/photo_9"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_11"
+                android:id="@+id/name_9"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -333,18 +279,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_12"
+            android:id="@+id/tile_10"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_12"
+                android:id="@+id/photo_10"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_12"
+                android:id="@+id/name_10"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -360,45 +306,18 @@
                 android:paddingBottom="2dp"/>
         </FrameLayout>
         <FrameLayout
-            android:id="@+id/tile_5_13"
+            android:id="@+id/tile_11"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#FF1A1A1A">
             <ImageView
-                android:id="@+id/photo_5_13"
+                android:id="@+id/photo_11"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"/>
             <TextView
-                android:id="@+id/name_5_13"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
-                android:gravity="center"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:textColor="#FFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
-        </FrameLayout>
-        <FrameLayout
-            android:id="@+id/tile_5_14"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="#FF1A1A1A">
-            <ImageView
-                android:id="@+id/photo_5_14"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"/>
-            <TextView
-                android:id="@+id/name_5_14"
+                android:id="@+id/name_11"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
