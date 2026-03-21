@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="photo_0"  type="id"/> <item name="name_0"  type="id"/>
-    <item name="photo_1"  type="id"/> <item name="name_1"  type="id"/>
-    <item name="photo_2"  type="id"/> <item name="name_2"  type="id"/>
-    <item name="photo_3"  type="id"/> <item name="name_3"  type="id"/>
-    <item name="photo_4"  type="id"/> <item name="name_4"  type="id"/>
-    <item name="photo_5"  type="id"/> <item name="name_5"  type="id"/>
-    <item name="photo_6"  type="id"/> <item name="name_6"  type="id"/>
-    <item name="photo_7"  type="id"/> <item name="name_7"  type="id"/>
-    <item name="photo_8"  type="id"/> <item name="name_8"  type="id"/>
-    <item name="photo_9"  type="id"/> <item name="name_9"  type="id"/>
-    <item name="photo_10" type="id"/> <item name="name_10" type="id"/>
-    <item name="photo_11" type="id"/> <item name="name_11" type="id"/>
-    <item name="tile_0"  type="id"/>  <item name="tile_1"  type="id"/>
-    <item name="tile_2"  type="id"/>  <item name="tile_3"  type="id"/>
-    <item name="tile_4"  type="id"/>  <item name="tile_5"  type="id"/>
-    <item name="tile_6"  type="id"/>  <item name="tile_7"  type="id"/>
-    <item name="tile_8"  type="id"/>  <item name="tile_9"  type="id"/>
-    <item name="tile_10" type="id"/>  <item name="tile_11" type="id"/>
+    <item name="tile_0"  type="id"/> <item name="name_0"  type="id"/>
+    <item name="tile_1"  type="id"/> <item name="name_1"  type="id"/>
+    <item name="tile_2"  type="id"/> <item name="name_2"  type="id"/>
+    <item name="tile_3"  type="id"/> <item name="name_3"  type="id"/>
+    <item name="tile_4"  type="id"/> <item name="name_4"  type="id"/>
+    <item name="tile_5"  type="id"/> <item name="name_5"  type="id"/>
+    <item name="tile_6"  type="id"/> <item name="name_6"  type="id"/>
+    <item name="tile_7"  type="id"/> <item name="name_7"  type="id"/>
+    <item name="tile_8"  type="id"/> <item name="name_8"  type="id"/>
+    <item name="tile_9"  type="id"/> <item name="name_9"  type="id"/>
+    <item name="tile_10" type="id"/> <item name="name_10" type="id"/>
+    <item name="tile_11" type="id"/> <item name="name_11" type="id"/>
 </resources>

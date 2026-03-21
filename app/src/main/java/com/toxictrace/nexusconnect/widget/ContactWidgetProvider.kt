@@ -6,17 +6,11 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import com.toxictrace.nexusconnect.R
-import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 
@@ -33,11 +27,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
             R.id.tile_0,  R.id.tile_1,  R.id.tile_2,  R.id.tile_3,
             R.id.tile_4,  R.id.tile_5,  R.id.tile_6,  R.id.tile_7,
             R.id.tile_8,  R.id.tile_9,  R.id.tile_10, R.id.tile_11
-        )
-        private val PHOTO_IDS = intArrayOf(
-            R.id.photo_0,  R.id.photo_1,  R.id.photo_2,  R.id.photo_3,
-            R.id.photo_4,  R.id.photo_5,  R.id.photo_6,  R.id.photo_7,
-            R.id.photo_8,  R.id.photo_9,  R.id.photo_10, R.id.photo_11
         )
         private val NAME_IDS = intArrayOf(
             R.id.name_0,  R.id.name_1,  R.id.name_2,  R.id.name_3,
@@ -57,7 +46,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
         fun buildAndPush(context: Context, mgr: AppWidgetManager, widgetId: Int) {
             Log.d(TAG, "buildAndPush id=$widgetId")
 
-            // All reads are synchronous — no coroutines needed
             val maxContacts     = WidgetPrefs.getMaxContacts(context)
             val filterFavorites = WidgetPrefs.getFilterFavorites(context)
             val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
@@ -75,13 +63,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val contacts = when {
                 selectedIds.isNotEmpty() ->
                     selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
-                        .take(maxContacts)
+                        .take(minOf(maxContacts, 12))
                 filterFavorites ->
-                    allContacts.filter { it.isStarred }.take(maxContacts)
+                    allContacts.filter { it.isStarred }.take(minOf(maxContacts, 12))
                 else ->
-                    allContacts.take(maxContacts)
-            }.take(12)
-
+                    allContacts.take(minOf(maxContacts, 12))
+            }
             Log.d(TAG, "contacts to show: ${contacts.size}")
 
             val views = RemoteViews(context.packageName, R.layout.widget_grid_4x3)
@@ -90,13 +77,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 val contact = contacts.getOrNull(idx)
                 if (contact != null) {
                     views.setViewVisibility(TILE_IDS[idx], View.VISIBLE)
-
-                    // 60px max — keeps total bitmap memory well under 1MB limit
-                    val bmp = loadPhoto(context, contact, 60) ?: makeInitials(contact, 60)
-                    views.setImageViewBitmap(PHOTO_IDS[idx], bmp)
-
-                    val firstName = contact.name.split(" ").firstOrNull() ?: contact.name
-                    views.setTextViewText(NAME_IDS[idx], firstName)
+                    views.setTextViewText(NAME_IDS[idx],
+                        contact.name.split(" ").firstOrNull() ?: contact.name)
 
                     val intent = Intent(context, ContactWidgetProvider::class.java).apply {
                         action = ACTION_CONTACT_CLICK
@@ -120,64 +102,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 Log.d(TAG, "buildAndPush done")
             } catch (e: Exception) {
                 Log.e(TAG, "updateAppWidget FAILED: ${e.javaClass.simpleName}: ${e.message}")
-                // Fallback: try with initials only (no photos) to rule out memory issue
-                val fallback = RemoteViews(context.packageName, R.layout.widget_grid_4x3)
-                for (idx in 0..11) {
-                    val contact = contacts.getOrNull(idx)
-                    if (contact != null) {
-                        fallback.setViewVisibility(TILE_IDS[idx], View.VISIBLE)
-                        fallback.setImageViewBitmap(PHOTO_IDS[idx], makeInitials(contact, 40))
-                        fallback.setTextViewText(NAME_IDS[idx],
-                            contact.name.split(" ").firstOrNull() ?: contact.name)
-                    } else {
-                        fallback.setViewVisibility(TILE_IDS[idx], View.INVISIBLE)
-                    }
-                }
-                try {
-                    mgr.updateAppWidget(widgetId, fallback)
-                    Log.d(TAG, "fallback update succeeded")
-                } catch (e2: Exception) {
-                    Log.e(TAG, "fallback ALSO failed: ${e2.message}")
-                }
             }
-        }
-
-        private fun loadPhoto(context: Context, contact: Contact, maxPx: Int): Bitmap? {
-            val uri = contact.photoUri ?: return null
-            return try {
-                val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                context.contentResolver.openInputStream(uri)?.use { s ->
-                    BitmapFactory.decodeStream(s, null, boundsOpts)
-                }
-                val sample = maxOf(1, maxOf(boundsOpts.outWidth, boundsOpts.outHeight) / maxPx)
-                val opts = BitmapFactory.Options().apply { inSampleSize = sample }
-                context.contentResolver.openInputStream(uri)?.use { s ->
-                    BitmapFactory.decodeStream(s, null, opts)
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "loadPhoto failed: ${e.message}")
-                null
-            }
-        }
-
-        private fun makeInitials(contact: Contact, size: Int): Bitmap {
-            val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bmp)
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            val colors = intArrayOf(
-                0xFF1A3CA8.toInt(), 0xFF7B3FA0.toInt(), 0xFF007A6E.toInt(),
-                0xFF8B2252.toInt(), 0xFF2E7D32.toInt(), 0xFFB85C00.toInt()
-            )
-            paint.color = colors[(contact.id % colors.size).toInt()]
-            canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
-            val initials = contact.name.split(" ")
-                .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
-            paint.color = Color.WHITE
-            paint.textSize = size * 0.38f
-            paint.textAlign = Paint.Align.CENTER
-            canvas.drawText(initials, size / 2f,
-                size / 2f - (paint.descent() + paint.ascent()) / 2f, paint)
-            return bmp
         }
     }
 
@@ -185,12 +110,10 @@ class ContactWidgetProvider : AppWidgetProvider() {
         Log.d(TAG, "onUpdate ${ids.toList()}")
         ids.forEach { buildAndPush(context, mgr, it) }
     }
-
     override fun onEnabled(context: Context) {
         Log.d(TAG, "onEnabled")
         ContactsObserverService.start(context)
     }
-
     override fun onDisabled(context: Context) {
         Log.d(TAG, "onDisabled")
         ContactsObserverService.stop(context)
@@ -203,7 +126,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val id    = intent.getLongExtra(EXTRA_CONTACT_ID, -1L)
             val phone = intent.getStringExtra(EXTRA_CONTACT_PHONE)
             val name  = intent.getStringExtra(EXTRA_CONTACT_NAME)
-            Log.d(TAG, "Click: $name id=$id phone=$phone")
+            Log.d(TAG, "Click: $name id=$id")
             ContactActionHandler.handle(context, id, phone, name)
         }
     }
