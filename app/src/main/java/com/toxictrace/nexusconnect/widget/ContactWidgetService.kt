@@ -12,13 +12,13 @@ import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.data.model.Contact
-import com.toxictrace.nexusconnect.data.model.PriorityApp
 import com.toxictrace.nexusconnect.data.preferences.SettingsRepository
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
+// Kept for manifest compatibility — actual widget rendering is in ContactWidgetProvider
 class ContactWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
         val widgetId = intent.getIntExtra(
@@ -45,7 +45,6 @@ class ContactWidgetFactory(
         settings = runBlocking { settingsRepo.settings.first() }
         val allContacts = contactsRepo.loadContacts()
         val selectedIds = runBlocking { settingsRepo.getSelectedContactIds() }
-
         contacts = when {
             selectedIds.isNotEmpty() ->
                 selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
@@ -69,71 +68,42 @@ class ContactWidgetFactory(
             ?: return RemoteViews(context.packageName, R.layout.widget_tile)
 
         val views = RemoteViews(context.packageName, R.layout.widget_tile)
-
-        // First name only
         views.setTextViewText(R.id.tile_name,
             contact.name.split(" ").firstOrNull() ?: contact.name)
 
-        // Photo or initials (max 150px to stay within RemoteViews 1MB limit)
-        val bitmap = loadPhoto(contact, 150) ?: makeInitials(contact, 150)
-        views.setImageViewBitmap(R.id.tile_photo, bitmap)
-
-        // Messenger icon
-        views.setImageViewResource(R.id.tile_messenger_icon, when (contact.priorityApp) {
-            PriorityApp.PHONE    -> android.R.drawable.ic_menu_call
-            PriorityApp.WHATSAPP -> android.R.drawable.ic_menu_share
-            PriorityApp.TELEGRAM -> android.R.drawable.ic_menu_send
-            PriorityApp.VIBER    -> android.R.drawable.ic_menu_call
-        })
-
-        // Click — applies to entire tile root
-        val fillIn = Intent().apply {
-            putExtra(ContactWidgetProvider.EXTRA_CONTACT_ID,    contact.id)
-            putExtra(ContactWidgetProvider.EXTRA_CONTACT_PHONE, contact.phoneNumber ?: "")
-            putExtra(ContactWidgetProvider.EXTRA_CONTACT_NAME,  contact.name)
-        }
-        views.setOnClickFillInIntent(R.id.tile_root, fillIn)
+        val bmp = loadPhoto(contact, 120) ?: makeInitials(contact, 120)
+        views.setImageViewBitmap(R.id.tile_photo, bmp)
 
         return views
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     private fun loadPhoto(contact: Contact, maxPx: Int): Bitmap? {
         val uri = contact.photoUri ?: return null
         return try {
-            // Pass 1: read bounds only
             val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             context.contentResolver.openInputStream(uri)?.use { s ->
                 BitmapFactory.decodeStream(s, null, boundsOpts)
             }
             val sample = maxOf(1, maxOf(boundsOpts.outWidth, boundsOpts.outHeight) / maxPx)
-
-            // Pass 2: decode at reduced size
             val decodeOpts = BitmapFactory.Options().apply { inSampleSize = sample }
             context.contentResolver.openInputStream(uri)?.use { s ->
                 BitmapFactory.decodeStream(s, null, decodeOpts)
             }
-        } catch (e: Exception) {
-            null
-        }
+        } catch (e: Exception) { null }
     }
 
     private fun makeInitials(contact: Contact, size: Int): Bitmap {
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
         val colors = intArrayOf(
             0xFF1A3CA8.toInt(), 0xFF7B3FA0.toInt(), 0xFF007A6E.toInt(),
             0xFF8B2252.toInt(), 0xFF2E7D32.toInt(), 0xFFB85C00.toInt()
         )
         paint.color = colors[(contact.id % colors.size).toInt()]
         canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
-
         val initials = contact.name.split(" ")
             .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
-
         paint.color = Color.WHITE
         paint.textSize = size * 0.38f
         paint.textAlign = Paint.Align.CENTER
