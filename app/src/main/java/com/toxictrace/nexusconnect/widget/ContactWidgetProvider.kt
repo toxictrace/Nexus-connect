@@ -7,7 +7,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -37,9 +36,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             // RGB_565: 2 bytes per pixel
             val size = Math.sqrt(bytesPerTile / 2.0).toInt()
             return size.coerceIn(100, 500)
-        }
-
-        fun updateAllWidgets(context: Context) {
+        }        fun updateAllWidgets(context: Context) {
             val mgr = AppWidgetManager.getInstance(context)
             val ids = mgr.getAppWidgetIds(
                 ComponentName(context, ContactWidgetProvider::class.java)
@@ -57,8 +54,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
 
             val maxTiles = cols * rows
-            val bmpSize  = bitmapSize(cols, rows)
-            Log.d(TAG, "cols=$cols rows=$rows maxTiles=$maxTiles bmpSize=$bmpSize")
+            Log.d(TAG, "cols=$cols rows=$rows maxTiles=$maxTiles")
 
             val allContacts = try {
                 ContactsRepository(context).loadContacts()
@@ -99,11 +95,17 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 val contact = contacts.getOrNull(idx)
                 if (contact != null) {
                     views.setViewVisibility(tileId, View.VISIBLE)
-                    val bmp = loadPhoto(context, contact, bmpSize)
-                        ?: makeInitials(contact, bmpSize)
-                    views.setImageViewBitmap(photoId, bmp)
-                    views.setTextViewText(nameId,
-                        contact.name.split(" ").firstOrNull() ?: contact.name)
+
+                    if (contact.photoUri != null) {
+                        // Use ContentProvider URI — no IPC bitmap transfer, full quality
+                        val photoProviderUri = PhotoProvider.uriForContact(contact.id)
+                        views.setImageViewUri(photoId, photoProviderUri)
+                    } else {
+                        // No photo — draw initials bitmap (small, safe for IPC)
+                        views.setImageViewBitmap(photoId, makeInitials(contact, 120))
+                    }
+
+                    views.setTextViewText(nameId, contact.name)
 
                     val intent = Intent(context, ContactWidgetProvider::class.java).apply {
                         action = ACTION_CONTACT_CLICK
@@ -179,26 +181,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
             return result.take(maxTiles)
         }
 
-        private fun loadPhoto(context: Context, contact: Contact, maxPx: Int): Bitmap? {
-            val uri = contact.photoUri ?: return null
-            return try {
-                val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                context.contentResolver.openInputStream(uri)?.use { s ->
-                    BitmapFactory.decodeStream(s, null, boundsOpts)
-                }
-                val sample = maxOf(1, maxOf(boundsOpts.outWidth, boundsOpts.outHeight) / maxPx)
-                val opts = BitmapFactory.Options().apply {
-                    inSampleSize = sample
-                    inPreferredConfig = Bitmap.Config.RGB_565 // 2 bytes/px — half the IPC size
-                }
-                context.contentResolver.openInputStream(uri)?.use { s ->
-                    BitmapFactory.decodeStream(s, null, opts)
-                }
-            } catch (e: Exception) { null }
-        }
-
         private fun makeInitials(contact: Contact, size: Int): Bitmap {
-            val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
+            val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bmp)
             val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             val colors = intArrayOf(

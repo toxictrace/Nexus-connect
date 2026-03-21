@@ -20,16 +20,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_1"
@@ -47,16 +49,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_2"
@@ -74,16 +78,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_3"
@@ -101,16 +107,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -130,16 +138,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_5"
@@ -157,16 +167,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_6"
@@ -184,16 +196,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_7"
@@ -211,16 +225,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -240,16 +256,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_9"
@@ -267,16 +285,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_10"
@@ -294,16 +314,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_11"
@@ -321,16 +343,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -350,16 +374,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_13"
@@ -377,16 +403,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_14"
@@ -404,16 +432,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_4r4_15"
@@ -431,16 +461,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="3dp"
+                android:layout_marginBottom="2dp"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:ellipsize="end"
                 android:textColor="#FFFFFF"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:background="#88000000"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"/>
+                android:background="#99000000"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"/>
         </FrameLayout>
     </LinearLayout>
 </LinearLayout>
