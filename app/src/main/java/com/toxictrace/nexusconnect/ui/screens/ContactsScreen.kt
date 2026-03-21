@@ -343,8 +343,6 @@ private fun UnselectedContactItem(
 
 @Composable
 fun ContactAvatar(contact: Contact, size: Int = 40) {
-    val initials = contact.name.split(" ")
-        .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     val colors = listOf(
         Color(0xFF1A3CA8), Color(0xFF7B3FA0), Color(0xFF007A6E),
         Color(0xFF8B2252), Color(0xFF2E7D32), Color(0xFFB85C00)
@@ -355,21 +353,21 @@ fun ContactAvatar(contact: Contact, size: Int = 40) {
         modifier = Modifier.size(size.dp).clip(CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize().background(bg),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(initials,
-                style = if (size >= 44) MaterialTheme.typography.titleMedium
-                        else MaterialTheme.typography.bodyMedium,
-                color = Color.White, fontWeight = FontWeight.Bold)
-        }
         if (contact.photoUri != null) {
             AsyncImage(
                 model = contact.photoUri,
                 contentDescription = contact.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            // No photo — show silhouette on colored background
+            Box(modifier = Modifier.fillMaxSize().background(bg))
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.9f),
+                modifier = Modifier.fillMaxSize(0.65f)
             )
         }
     }

@@ -7,7 +7,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.PhoneCallback
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -92,6 +94,50 @@ fun LayoutScreen(viewModel: MainViewModel) {
                 checked = draft.filterFrequent,
                 onCheckedChange = { draft = draft.copy(filterFrequent = it) }
             )
+        }
+
+        // Unknown numbers card
+        Text(
+            "Unknown Numbers",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+        SettingsCard(contentPadding = PaddingValues(0.dp)) {
+            FilterCheckItem(
+                icon = { Icon(Icons.Default.PhoneCallback, contentDescription = null) },
+                title = "Show unknown numbers",
+                subtitle = "Display recent calls from numbers not in contacts",
+                checked = draft.showUnknownNumbers,
+                onCheckedChange = { draft = draft.copy(showUnknownNumbers = it) }
+            )
+            if (draft.showUnknownNumbers) {
+                HorizontalDivider()
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Keep for", style = MaterialTheme.typography.titleMedium)
+                        Text("Show unknown numbers only within this period",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(1, 3, 7).forEach { days ->
+                            FilterChip(
+                                selected = draft.unknownNumbersDays == days,
+                                onClick = { draft = draft.copy(unknownNumbersDays = days) },
+                                label = { Text("${days}d") },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = Color.White
+                                )
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         // Apply button

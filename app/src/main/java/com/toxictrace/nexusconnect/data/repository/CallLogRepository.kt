@@ -74,6 +74,44 @@ class CallLogRepository(private val context: Context) {
         return seen.toList()
     }
 
-    private fun normalize(number: String): String =
-        number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+    /**
+     * Returns recent calls from unknown numbers (not in contacts),
+     * within the given number of days. Returns list of (number, date, type).
+     */
+    fun getUnknownRecentCalls(
+        numberToContactId: Map<String, Long>,
+        days: Int,
+        limit: Int = 20
+    ): List<Triple<String, Long, Int>> {
+        val cutoff = System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L
+        val seen = mutableSetOf<String>()
+        val result = mutableListOf<Triple<String, Long, Int>>()
+        return try {
+            val cursor = context.contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE, CallLog.Calls.TYPE),
+                "${CallLog.Calls.DATE} >= ?",
+                arrayOf(cutoff.toString()),
+                "${CallLog.Calls.DATE} DESC"
+            ) ?: return emptyList()
+            cursor.use {
+                val numIdx  = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val dateIdx = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
+                val typeIdx = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
+                while (it.moveToNext() && result.size < limit) {
+                    val number = it.getString(numIdx) ?: continue
+                    val norm = normalize(number)
+                    // Unknown = not in contacts AND not seen yet
+                    if (norm !in numberToContactId && norm !in seen && number.isNotBlank()) {
+                        seen.add(norm)
+                        result.add(Triple(number, it.getLong(dateIdx), it.getInt(typeIdx)))
+                    }
+                }
+            }
+            result
+        } catch (e: Exception) {
+            Log.e(TAG, "getUnknownRecentCalls: ${e.message}")
+            emptyList()
+        }
+    }
 }

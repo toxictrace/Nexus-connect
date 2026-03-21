@@ -9,7 +9,8 @@ data class Contact(
     val phoneNumber: String? = null,
     val isSelected: Boolean = false,
     val isStarred: Boolean = false,
-    val sortOrder: Int = 0
+    val sortOrder: Int = 0,
+    val customAvatarIndex: Int = -1  // -1 = use default/initials, 0 = silhouette, 1-5 = vector avatars
 )
 
 enum class ClickAction {
@@ -24,9 +25,8 @@ enum class FilterMode {
 }
 
 enum class AvatarIdentity {
-    SYSTEM_DEFAULT,
-    DYNAMIC_INITIALS,
-    PHOTOS_ONLY
+    DEFAULT,   // silhouette image
+    CUSTOM     // user-picked image from gallery
 }
 
 enum class AppTheme {

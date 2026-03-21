@@ -2,6 +2,8 @@ package com.toxictrace.nexusconnect.ui.screens
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
@@ -72,7 +74,7 @@ fun PreferencesScreen(viewModel: MainViewModel) {
         )
         AvatarIdentitySection(
             settings = settings,
-            onUpdate = { identity -> viewModel.updateSettings { s -> s.copy(avatarIdentity = identity) } }
+            onUpdate = { updated -> viewModel.updateSettings { updated } }
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -433,43 +435,97 @@ private fun ThemeCard(
 // ── Avatar Identity ───────────────────────────────────────────────────────────
 
 @Composable
-private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (AvatarIdentity) -> Unit) {
+private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            onUpdate(settings.copy(
+                avatarIdentity  = AvatarIdentity.CUSTOM,
+                customAvatarUri = uri.toString()
+            ))
+        }
+    }
+
     Column {
         Text("Avatar Identity", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text("Shown for contacts without a photo.", style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
-        val options = listOf(
-            Triple(AvatarIdentity.SYSTEM_DEFAULT, "System Default", "Generic silhouette based on account status"),
-            Triple(AvatarIdentity.DYNAMIC_INITIALS, "Dynamic Initials", "Your first and last name initials on theme color"),
-            Triple(AvatarIdentity.PHOTOS_ONLY, "Photos Only", "Prioritize actual profile pictures when available"),
-        )
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
-            options.forEachIndexed { idx, (identity, title, subtitle) ->
-                Row(modifier = Modifier.fillMaxWidth().clickable { onUpdate(identity) }.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Box(modifier = Modifier.size(44.dp).clip(CircleShape).background(
-                        when (identity) {
-                            AvatarIdentity.SYSTEM_DEFAULT   -> MaterialTheme.colorScheme.surfaceVariant
-                            AvatarIdentity.DYNAMIC_INITIALS -> MaterialTheme.colorScheme.primary
-                            AvatarIdentity.PHOTOS_ONLY      -> Color(0xFFF0E8D8)
-                        }
-                    ), contentAlignment = Alignment.Center) {
-                        when (identity) {
-                            AvatarIdentity.SYSTEM_DEFAULT ->
-                                Icon(Icons.Default.Person, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            AvatarIdentity.DYNAMIC_INITIALS ->
-                                Text("JD", style = MaterialTheme.typography.titleSmall, color = Color.White, fontWeight = FontWeight.Bold)
-                            AvatarIdentity.PHOTOS_ONLY ->
-                                Icon(Icons.Default.Image, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(title, style = MaterialTheme.typography.titleMedium)
-                        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    RadioButton(selected = settings.avatarIdentity == identity, onClick = { onUpdate(identity) })
+
+            // Option 1: Default silhouette
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .clickable { onUpdate(settings.copy(avatarIdentity = AvatarIdentity.DEFAULT)) }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Preview of silhouette
+                Box(
+                    modifier = Modifier.size(56.dp).clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Person, null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(36.dp))
                 }
-                if (idx < options.lastIndex) HorizontalDivider()
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Default", style = MaterialTheme.typography.titleMedium)
+                    Text("Standard silhouette image", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                RadioButton(
+                    selected = settings.avatarIdentity == AvatarIdentity.DEFAULT,
+                    onClick = { onUpdate(settings.copy(avatarIdentity = AvatarIdentity.DEFAULT)) }
+                )
+            }
+
+            HorizontalDivider()
+
+            // Option 2: Custom image from gallery
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .clickable { galleryLauncher.launch("image/*") }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Preview of selected image
+                Box(
+                    modifier = Modifier.size(56.dp).clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (settings.avatarIdentity == AvatarIdentity.CUSTOM && settings.customAvatarUri.isNotBlank()) {
+                        coil.compose.AsyncImage(
+                            model = settings.customAvatarUri,
+                            contentDescription = null,
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(Icons.Default.AddPhotoAlternate, null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(30.dp))
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Custom image", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        if (settings.avatarIdentity == AvatarIdentity.CUSTOM && settings.customAvatarUri.isNotBlank())
+                            "Tap to change image"
+                        else "Pick from gallery",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                RadioButton(
+                    selected = settings.avatarIdentity == AvatarIdentity.CUSTOM,
+                    onClick = { galleryLauncher.launch("image/*") }
+                )
             }
         }
     }

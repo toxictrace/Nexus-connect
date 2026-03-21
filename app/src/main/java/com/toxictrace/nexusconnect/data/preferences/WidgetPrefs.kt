@@ -33,6 +33,18 @@ object WidgetPrefs {
             ClickAction.valueOf(sp(context).getString("click_action", "") ?: "")
         }.getOrDefault(ClickAction.SHOW_DIALOG)
 
+    fun getShowUnknownNumbers(context: Context): Boolean =
+        sp(context).getBoolean("show_unknown_numbers", true)
+
+    fun getUnknownNumbersDays(context: Context): Int =
+        sp(context).getInt("unknown_numbers_days", 3)
+
+    fun getAvatarIdentity(context: Context): String =
+        sp(context).getString("avatar_identity", "DEFAULT") ?: "DEFAULT"
+
+    fun getCustomAvatarUri(context: Context): String =
+        sp(context).getString("custom_avatar_uri", "") ?: ""
+
     fun getHapticFeedback(context: Context): Boolean =
         sp(context).getBoolean("haptic_feedback", true)
 
@@ -64,6 +76,10 @@ object WidgetPrefs {
             putBoolean("filter_recents",   settings.filterRecents)
             putBoolean("filter_frequent",  settings.filterFrequent)
             putBoolean("haptic_feedback",    settings.hapticFeedback)
+            putString("avatar_identity",       settings.avatarIdentity.name)
+            putString("custom_avatar_uri",      settings.customAvatarUri)
+            putBoolean("show_unknown_numbers",  settings.showUnknownNumbers)
+            putInt("unknown_numbers_days",      settings.unknownNumbersDays)
             putString("click_action",        settings.clickAction.name)
             putString("theme",              settings.theme.name)
             putBoolean("dynamic_colors",    settings.dynamicColors)

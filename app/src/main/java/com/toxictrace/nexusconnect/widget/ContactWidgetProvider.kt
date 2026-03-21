@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -76,6 +77,16 @@ class ContactWidgetProvider : AppWidgetProvider() {
             )
             Log.d(TAG, "contacts=${contacts.size}")
 
+            // Fill remaining tiles with unknown numbers from call log
+            val numberMap = allContacts
+                .filter { it.phoneNumber != null }
+                .associate {
+                    it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7) to it.id
+                }
+            val unknowns = buildUnknownContacts(context, numberMap, maxTiles - contacts.size)
+            val allTileContacts = (contacts + unknowns).take(maxTiles)
+            Log.d(TAG, "total tiles=${allTileContacts.size} (${contacts.size} known + ${unknowns.size} unknown)")
+
             val layoutRes = context.resources.getIdentifier(
                 "widget_grid_${cols}c${rows}r", "layout", context.packageName
             ).takeIf { it != 0 } ?: run {
@@ -90,17 +101,15 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 val photoId = context.resources.getIdentifier("photo_${cols}r${rows}_$idx", "id", pkg)
                 val nameId  = context.resources.getIdentifier("name_${cols}r${rows}_$idx",  "id", pkg)
 
-                val contact = contacts.getOrNull(idx)
+                val contact = allTileContacts.getOrNull(idx)
                 if (contact != null) {
                     views.setViewVisibility(tileId, View.VISIBLE)
 
                     if (contact.photoUri != null) {
-                        // Primary: ContentProvider URI — full quality, no IPC limit
                         val photoProviderUri = PhotoProvider.uriForContact(contact.id)
                         views.setImageViewUri(photoId, photoProviderUri)
                     } else {
-                        // No photo — draw initials bitmap
-                        views.setImageViewBitmap(photoId, makeInitials(contact, 120))
+                        views.setImageViewBitmap(photoId, makeDefaultAvatar(context, contact, 120))
                     }
 
                     views.setTextViewText(nameId, contact.name)
@@ -179,23 +188,69 @@ class ContactWidgetProvider : AppWidgetProvider() {
             return result.take(maxTiles)
         }
 
-        private fun makeInitials(contact: Contact, size: Int): Bitmap {
+        private fun buildUnknownContacts(
+            context: Context,
+            numberMap: Map<String, Long>,
+            maxCount: Int
+        ): List<Contact> {
+            if (!WidgetPrefs.getShowUnknownNumbers(context)) return emptyList()
+            val days = WidgetPrefs.getUnknownNumbersDays(context)
+            val callLogRepo = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
+            return callLogRepo.getUnknownRecentCalls(numberMap, days, maxCount)
+                .mapIndexed { idx, (number, _, type) ->
+                    val label = when {
+                        number.isBlank() || number == "-1" -> "Unknown"
+                        number == "-2" -> "Private"
+                        else -> number
+                    }
+                    Contact(
+                        id          = -(idx + 1L), // negative ID = unknown
+                        name        = label,
+                        phoneNumber = number.takeIf { it.isNotBlank() && it != "-1" && it != "-2" }
+                    )
+                }
+        }
+
+        private fun makeDefaultAvatar(context: Context, contact: Contact, size: Int): Bitmap {
+            val avatarIdentity = WidgetPrefs.getAvatarIdentity(context)
+            val customUri      = WidgetPrefs.getCustomAvatarUri(context)
+
+            // Custom image from gallery
+            if (avatarIdentity == "CUSTOM" && customUri.isNotBlank()) {
+                try {
+                    val uri = android.net.Uri.parse(customUri)
+                    val opts = BitmapFactory.Options().apply { inSampleSize = 1 }
+                    context.contentResolver.openInputStream(uri)?.use { s ->
+                        val bmp = BitmapFactory.decodeStream(s, null, opts)
+                        if (bmp != null) return Bitmap.createScaledBitmap(bmp, size, size, true)
+                    }
+                } catch (_: Exception) {}
+            }
+
+            // Default: colored background + white silhouette icon
             val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bmp)
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             val colors = intArrayOf(
                 0xFF1A3CA8.toInt(), 0xFF7B3FA0.toInt(), 0xFF007A6E.toInt(),
                 0xFF8B2252.toInt(), 0xFF2E7D32.toInt(), 0xFFB85C00.toInt()
             )
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             paint.color = colors[(contact.id % colors.size).toInt()]
             canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
-            val initials = contact.name.split(" ")
-                .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
-            paint.color = Color.WHITE
-            paint.textSize = size * 0.38f
-            paint.textAlign = Paint.Align.CENTER
-            canvas.drawText(initials, size / 2f,
-                size / 2f - (paint.descent() + paint.ascent()) / 2f, paint)
+
+            // Draw person icon from drawable
+            try {
+                val drawable = context.resources.getDrawable(
+                    com.toxictrace.nexusconnect.R.drawable.avatar_default, null)
+                drawable.setBounds(size / 8, size / 8, size * 7 / 8, size * 7 / 8)
+                drawable.draw(canvas)
+            } catch (_: Exception) {
+                // Fallback: white circle
+                paint.color = Color.WHITE
+                paint.alpha = 180
+                canvas.drawCircle(size / 2f, size * 2f / 5, size * 0.22f, paint)
+                canvas.drawCircle(size / 2f, size * 0.75f, size * 0.32f, paint)
+            }
             return bmp
         }
     }
