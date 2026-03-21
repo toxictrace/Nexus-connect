@@ -53,13 +53,21 @@ class ContactChooserActivity : ComponentActivity() {
         val photoUri  = if (contactId > 0) PhotoProvider.uriForContact(contactId).toString() else null
         val stats     = loadCallStats(phone)
 
+        val isDark = when (WidgetPrefs.getTheme(this)) {
+            "DARK"   -> true
+            "SYSTEM" -> resources.configuration.uiMode and
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES
+            else     -> false
+        }
+
         // Read configured messenger packages from prefs
         val whatsAppPkg  = WidgetPrefs.getMessengerWhatsApp(this)
         val viberPkg     = WidgetPrefs.getMessengerViber(this)
         val telegramPkg  = WidgetPrefs.getMessengerTelegram(this)
 
         setContent {
-            NexusConnectTheme {
+            NexusConnectTheme(darkTheme = isDark) {
                 ChooserSheet(
                     name         = name,
                     phone        = phone,

@@ -33,6 +33,9 @@ object WidgetPrefs {
             ClickAction.valueOf(sp(context).getString("click_action", "") ?: "")
         }.getOrDefault(ClickAction.SHOW_DIALOG)
 
+    fun getTheme(context: Context): String =
+        sp(context).getString("theme", "LIGHT") ?: "LIGHT"
+
     fun getSelectedContactIds(context: Context): List<Long> {
         val raw = sp(context).getString("selected_ids", "") ?: ""
         return if (raw.isBlank()) emptyList()
@@ -52,6 +55,7 @@ object WidgetPrefs {
             putBoolean("filter_recents",   settings.filterRecents)
             putBoolean("filter_frequent",  settings.filterFrequent)
             putString("click_action",      settings.clickAction.name)
+            putString("theme",             settings.theme.name)
             putString("messenger_whatsapp", settings.messengerWhatsApp)
             putString("messenger_viber",    settings.messengerViber)
             putString("messenger_telegram", settings.messengerTelegram)
