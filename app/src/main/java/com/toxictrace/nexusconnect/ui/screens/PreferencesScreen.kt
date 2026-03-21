@@ -362,15 +362,23 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         AccentColors.forEachIndexed { idx, color ->
-                            Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(color)
-                                .then(if (settings.accentColorIndex == idx) Modifier.border(3.dp, Color.White, CircleShape) else Modifier)
-                                .clickable { onUpdate(settings.copy(accentColorIndex = idx)) })
-                        }
-                        Box(modifier = Modifier.size(36.dp).clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant).clickable { },
-                            contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Palette, null, modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(color)
+                                    .then(
+                                        if (settings.accentColorIndex == idx && !settings.dynamicColors)
+                                            Modifier.border(3.dp, Color.White, CircleShape)
+                                        else Modifier
+                                    )
+                                    .clickable {
+                                        onUpdate(settings.copy(
+                                            accentColorIndex = idx,
+                                            dynamicColors = false
+                                        ))
+                                    }
+                            )
                         }
                     }
                 }
