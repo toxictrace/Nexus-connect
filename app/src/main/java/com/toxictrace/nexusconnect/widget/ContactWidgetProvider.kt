@@ -91,7 +91,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 if (contact != null) {
                     views.setViewVisibility(TILE_IDS[idx], View.VISIBLE)
 
-                    val bmp = loadPhoto(context, contact, 120) ?: makeInitials(contact, 120)
+                    // 60px max — keeps total bitmap memory well under 1MB limit
+                    val bmp = loadPhoto(context, contact, 60) ?: makeInitials(contact, 60)
                     views.setImageViewBitmap(PHOTO_IDS[idx], bmp)
 
                     val firstName = contact.name.split(" ").firstOrNull() ?: contact.name
@@ -114,8 +115,31 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 }
             }
 
-            mgr.updateAppWidget(widgetId, views)
-            Log.d(TAG, "buildAndPush done")
+            try {
+                mgr.updateAppWidget(widgetId, views)
+                Log.d(TAG, "buildAndPush done")
+            } catch (e: Exception) {
+                Log.e(TAG, "updateAppWidget FAILED: ${e.javaClass.simpleName}: ${e.message}")
+                // Fallback: try with initials only (no photos) to rule out memory issue
+                val fallback = RemoteViews(context.packageName, R.layout.widget_grid_4x3)
+                for (idx in 0..11) {
+                    val contact = contacts.getOrNull(idx)
+                    if (contact != null) {
+                        fallback.setViewVisibility(TILE_IDS[idx], View.VISIBLE)
+                        fallback.setImageViewBitmap(PHOTO_IDS[idx], makeInitials(contact, 40))
+                        fallback.setTextViewText(NAME_IDS[idx],
+                            contact.name.split(" ").firstOrNull() ?: contact.name)
+                    } else {
+                        fallback.setViewVisibility(TILE_IDS[idx], View.INVISIBLE)
+                    }
+                }
+                try {
+                    mgr.updateAppWidget(widgetId, fallback)
+                    Log.d(TAG, "fallback update succeeded")
+                } catch (e2: Exception) {
+                    Log.e(TAG, "fallback ALSO failed: ${e2.message}")
+                }
+            }
         }
 
         private fun loadPhoto(context: Context, contact: Contact, maxPx: Int): Bitmap? {
