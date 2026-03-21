@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -27,6 +28,10 @@ class ContactWidgetProvider : AppWidgetProvider() {
         const val EXTRA_CONTACT_ID    = "extra_contact_id"
         const val EXTRA_CONTACT_PHONE = "extra_contact_phone"
         const val EXTRA_CONTACT_NAME  = "extra_contact_name"
+
+        // Max bitmap size per tile to stay under 1MB total IPC limit
+        // 12 tiles × 32px × 32px × 4 bytes = ~49KB — very safe
+        private const val BITMAP_SIZE = 32
 
         private val TILE_IDS = intArrayOf(
             R.id.tile_0,  R.id.tile_1,  R.id.tile_2,  R.id.tile_3,
@@ -76,7 +81,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 else ->
                     allContacts.take(minOf(maxContacts, 12))
             }
-            Log.d(TAG, "contacts to show: ${contacts.size}")
+            Log.d(TAG, "contacts=${contacts.size}")
 
             val views = RemoteViews(context.packageName, R.layout.widget_grid_4x3)
 
@@ -85,13 +90,10 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 if (contact != null) {
                     views.setViewVisibility(TILE_IDS[idx], View.VISIBLE)
 
-                    // Use setImageViewUri — no bitmap IPC, laucher loads photo itself
-                    if (contact.photoUri != null) {
-                        views.setImageViewUri(PHOTO_IDS[idx], contact.photoUri)
-                    } else {
-                        // Initials bitmap — small (40px) = ~6KB, safe for IPC
-                        views.setImageViewBitmap(PHOTO_IDS[idx], makeInitials(contact, 40))
-                    }
+                    // Load photo at BITMAP_SIZE, fallback to initials
+                    val bmp = loadPhoto(context, contact, BITMAP_SIZE)
+                        ?: makeInitials(contact, BITMAP_SIZE)
+                    views.setImageViewBitmap(PHOTO_IDS[idx], bmp)
 
                     views.setTextViewText(NAME_IDS[idx],
                         contact.name.split(" ").firstOrNull() ?: contact.name)
@@ -117,7 +119,25 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 mgr.updateAppWidget(widgetId, views)
                 Log.d(TAG, "buildAndPush done")
             } catch (e: Exception) {
-                Log.e(TAG, "updateAppWidget FAILED: ${e.javaClass.simpleName}: ${e.message}")
+                Log.e(TAG, "FAILED: ${e.javaClass.simpleName}: ${e.message}")
+            }
+        }
+
+        private fun loadPhoto(context: Context, contact: Contact, maxPx: Int): Bitmap? {
+            val uri = contact.photoUri ?: return null
+            return try {
+                val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                context.contentResolver.openInputStream(uri)?.use { s ->
+                    BitmapFactory.decodeStream(s, null, boundsOpts)
+                }
+                val sample = maxOf(1, maxOf(boundsOpts.outWidth, boundsOpts.outHeight) / maxPx)
+                val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+                context.contentResolver.openInputStream(uri)?.use { s ->
+                    BitmapFactory.decodeStream(s, null, opts)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "loadPhoto: ${e.message}")
+                null
             }
         }
 
@@ -154,7 +174,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
         Log.d(TAG, "onDisabled")
         ContactsObserverService.stop(context)
     }
-
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         Log.d(TAG, "onReceive action=${intent.action}")
