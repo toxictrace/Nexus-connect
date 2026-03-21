@@ -7,7 +7,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material3.*
@@ -60,46 +59,6 @@ fun LayoutScreen(viewModel: MainViewModel) {
                 endLabel = "6 ROWS",
                 onValueChange = { draft = draft.copy(tileHeightDp = it) }
             )
-        }
-
-        // Max Contacts card
-        SettingsCard {
-            SettingsSlider(
-                label = "Max Contacts",
-                value = draft.maxContacts,
-                valueRange = 4f..24f,
-                steps = 19,
-                startLabel = "4 ITEMS",
-                endLabel = "24 ITEMS",
-                onValueChange = { draft = draft.copy(maxContacts = it) }
-            )
-
-            // Info banner
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Icon(
-                        Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        "Adjusting the limit will automatically paginate your widget tiles if the grid is full.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
         }
 
         // Filtering Mode card

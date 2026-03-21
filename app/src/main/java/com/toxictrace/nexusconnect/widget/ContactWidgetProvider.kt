@@ -48,12 +48,10 @@ class ContactWidgetProvider : AppWidgetProvider() {
         fun buildAndPush(context: Context, mgr: AppWidgetManager, widgetId: Int) {
             Log.d(TAG, "buildAndPush id=$widgetId")
 
-            val cols            = WidgetPrefs.getColumns(context).coerceIn(3, 6)
-            val rows            = WidgetPrefs.getRows(context).coerceIn(3, 6)
-            val maxContacts     = WidgetPrefs.getMaxContacts(context)
-            val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
-
-            val maxTiles = cols * rows
+            val cols        = WidgetPrefs.getColumns(context).coerceIn(3, 6)
+            val rows        = WidgetPrefs.getRows(context).coerceIn(3, 6)
+            val selectedIds = WidgetPrefs.getSelectedContactIds(context)
+            val maxTiles    = cols * rows
             Log.d(TAG, "cols=$cols rows=$rows maxTiles=$maxTiles")
 
             val allContacts = try {
