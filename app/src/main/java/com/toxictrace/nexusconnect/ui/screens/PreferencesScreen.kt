@@ -2,8 +2,7 @@ package com.toxictrace.nexusconnect.ui.screens
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
-import androidx.compose.foundation.Image
+import android.graphics.drawable.Drawableimport androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,6 +40,8 @@ data class AppInfo(val packageName: String, val label: String, val icon: ImageBi
 fun PreferencesScreen(viewModel: MainViewModel) {
     val settings by viewModel.settings.collectAsState()
     val scroll = rememberScrollState()
+    val installedApps by viewModel.installedApps.collectAsState()
+    val appsLoading by viewModel.appsLoading.collectAsState()
 
     Column(
         modifier = Modifier
@@ -55,6 +56,8 @@ fun PreferencesScreen(viewModel: MainViewModel) {
         )
         MessengerSection(
             settings = settings,
+            apps = installedApps,
+            appsLoading = appsLoading,
             onUpdate = { updated -> viewModel.updateSettings { updated } }
         )
         FeedbackSection(
@@ -145,59 +148,45 @@ private fun ActionCard(title: String, subtitle: String, selected: Boolean, icon:
 // ── Messenger picker ──────────────────────────────────────────────────────────
 
 @Composable
-private fun MessengerSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
-    val context = LocalContext.current
-
-    val allApps: List<AppInfo> = remember {
-        val pm = context.packageManager
-        // GET_META_DATA needed to get all installed apps on Android 11+
-        pm.getInstalledApplications(0)
-            .filter { it.packageName != context.packageName }
-            .mapNotNull { info ->
-                runCatching {
-                    // Only include apps that have a launcher activity (visible to user)
-                    val hasLauncher = pm.getLaunchIntentForPackage(info.packageName) != null
-                    if (!hasLauncher) return@mapNotNull null
-                    val label = pm.getApplicationLabel(info).toString()
-                    val iconBmp = runCatching {
-                        pm.getApplicationIcon(info.packageName).toBitmap(48, 48).asImageBitmap()
-                    }.getOrNull()
-                    AppInfo(info.packageName, label, iconBmp)
-                }.getOrNull()
-            }
-            .sortedBy { it.label.lowercase() }
-    }
-
-    var showPickerFor by remember { mutableStateOf<String?>(null) } // "whatsapp" | "viber" | "telegram"
+private fun MessengerSection(
+    settings: WidgetSettings,
+    apps: List<AppInfo>,
+    appsLoading: Boolean,
+    onUpdate: (WidgetSettings) -> Unit
+) {
+    var showPickerFor by remember { mutableStateOf<String?>(null) }
 
     Column {
         SectionHeader("MESSENGERS", "Choose which app to use for each messenger.")
         Spacer(Modifier.height(12.dp))
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
-            MessengerRow("WhatsApp", settings.messengerWhatsApp, allApps) {
+            MessengerRow("WhatsApp", settings.messengerWhatsApp, apps) {
                 showPickerFor = "whatsapp"
             }
             HorizontalDivider()
-            MessengerRow("Viber", settings.messengerViber, allApps) {
+            MessengerRow("Viber", settings.messengerViber, apps) {
                 showPickerFor = "viber"
             }
             HorizontalDivider()
-            MessengerRow("Telegram", settings.messengerTelegram, allApps) {
+            MessengerRow("Telegram", settings.messengerTelegram, apps) {
                 showPickerFor = "telegram"
             }
         }
+        if (appsLoading) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
+        }
     }
 
-    // App picker dialog
     if (showPickerFor != null) {
         AppPickerDialog(
-            apps     = allApps,
-            current  = when (showPickerFor) {
+            apps      = apps,
+            loading   = appsLoading,
+            current   = when (showPickerFor) {
                 "whatsapp" -> settings.messengerWhatsApp
                 "viber"    -> settings.messengerViber
                 else       -> settings.messengerTelegram
             },
-            onSelect = { pkg ->
+            onSelect  = { pkg ->
                 when (showPickerFor) {
                     "whatsapp" -> onUpdate(settings.copy(messengerWhatsApp = pkg))
                     "viber"    -> onUpdate(settings.copy(messengerViber = pkg))
@@ -237,7 +226,7 @@ private fun MessengerRow(label: String, currentPkg: String, allApps: List<AppInf
 }
 
 @Composable
-private fun AppPickerDialog(apps: List<AppInfo>, current: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
+private fun AppPickerDialog(apps: List<AppInfo>, loading: Boolean, current: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
     var search by remember { mutableStateOf("") }
     val filtered = if (search.isBlank()) apps
     else apps.filter { it.label.contains(search, ignoreCase = true) || it.packageName.contains(search, ignoreCase = true) }
