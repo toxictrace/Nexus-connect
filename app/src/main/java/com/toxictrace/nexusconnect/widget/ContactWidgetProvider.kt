@@ -29,9 +29,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
         const val EXTRA_CONTACT_PHONE = "extra_contact_phone"
         const val EXTRA_CONTACT_NAME  = "extra_contact_name"
 
-        // Max bitmap size per tile to stay under 1MB total IPC limit
-        // 12 tiles × 32px × 32px × 4 bytes = ~49KB — very safe
-        private const val BITMAP_SIZE = 32
+        // 12 tiles × 120px × 120px × 4 bytes = ~830KB — within 1MB IPC limit
+        private const val BITMAP_SIZE = 120
 
         private val TILE_IDS = intArrayOf(
             R.id.tile_0,  R.id.tile_1,  R.id.tile_2,  R.id.tile_3,
