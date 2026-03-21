@@ -95,17 +95,20 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                ContactSortMode.values().forEach { mode ->
-                    FilterChip(
-                        selected = sortMode == mode,
-                        onClick = { viewModel.setSortMode(mode) },
-                        label = { Text(mode.label) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
+                // Show only user-facing sort modes, skip MANUAL
+                ContactSortMode.values()
+                    .filter { it != ContactSortMode.MANUAL }
+                    .forEach { mode ->
+                        FilterChip(
+                            selected = sortMode == mode,
+                            onClick = { viewModel.setSortMode(mode) },
+                            label = { Text(mode.label) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = Color.White
+                            )
                         )
-                    )
-                }
+                    }
             }
 
             if (!hasContacts) {
