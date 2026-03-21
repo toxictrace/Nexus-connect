@@ -36,6 +36,12 @@ object WidgetPrefs {
     fun getTheme(context: Context): String =
         sp(context).getString("theme", "LIGHT") ?: "LIGHT"
 
+    fun getDynamicColors(context: Context): Boolean =
+        sp(context).getBoolean("dynamic_colors", false)
+
+    fun getAccentColorIndex(context: Context): Int =
+        sp(context).getInt("accent_color_index", 0)
+
     fun getSelectedContactIds(context: Context): List<Long> {
         val raw = sp(context).getString("selected_ids", "") ?: ""
         return if (raw.isBlank()) emptyList()
@@ -54,8 +60,10 @@ object WidgetPrefs {
             putBoolean("filter_favorites", settings.filterFavorites)
             putBoolean("filter_recents",   settings.filterRecents)
             putBoolean("filter_frequent",  settings.filterFrequent)
-            putString("click_action",      settings.clickAction.name)
-            putString("theme",             settings.theme.name)
+            putString("click_action",       settings.clickAction.name)
+            putString("theme",              settings.theme.name)
+            putBoolean("dynamic_colors",    settings.dynamicColors)
+            putInt("accent_color_index",    settings.accentColorIndex)
             putString("messenger_whatsapp", settings.messengerWhatsApp)
             putString("messenger_viber",    settings.messengerViber)
             putString("messenger_telegram", settings.messengerTelegram)

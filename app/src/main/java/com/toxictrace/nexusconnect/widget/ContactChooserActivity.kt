@@ -60,6 +60,8 @@ class ContactChooserActivity : ComponentActivity() {
                 android.content.res.Configuration.UI_MODE_NIGHT_YES
             else     -> false
         }
+        val dynamicColor = WidgetPrefs.getDynamicColors(this)
+        val accentIndex  = WidgetPrefs.getAccentColorIndex(this)
 
         // Read configured messenger packages from prefs
         val whatsAppPkg  = WidgetPrefs.getMessengerWhatsApp(this)
@@ -67,7 +69,11 @@ class ContactChooserActivity : ComponentActivity() {
         val telegramPkg  = WidgetPrefs.getMessengerTelegram(this)
 
         setContent {
-            NexusConnectTheme(darkTheme = isDark) {
+            NexusConnectTheme(
+                darkTheme    = isDark,
+                dynamicColor = dynamicColor,
+                accentIndex  = accentIndex
+            ) {
                 ChooserSheet(
                     name         = name,
                     phone        = phone,
