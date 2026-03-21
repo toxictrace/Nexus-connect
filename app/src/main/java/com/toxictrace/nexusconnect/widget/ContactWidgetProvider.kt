@@ -28,7 +28,16 @@ class ContactWidgetProvider : AppWidgetProvider() {
         const val EXTRA_CONTACT_PHONE = "extra_contact_phone"
         const val EXTRA_CONTACT_NAME  = "extra_contact_name"
 
-        private const val BITMAP_SIZE = 120
+        // IPC limit ~900KB total. RGB_565 = 2 bytes/pixel (vs ARGB_8888 = 4)
+        private const val MAX_TOTAL_BYTES = 900_000
+
+        private fun bitmapSize(cols: Int, rows: Int): Int {
+            val tiles = cols * rows
+            val bytesPerTile = MAX_TOTAL_BYTES / tiles
+            // RGB_565: 2 bytes per pixel
+            val size = Math.sqrt(bytesPerTile / 2.0).toInt()
+            return size.coerceIn(100, 500)
+        }
 
         fun updateAllWidgets(context: Context) {
             val mgr = AppWidgetManager.getInstance(context)
@@ -48,6 +57,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val selectedIds     = WidgetPrefs.getSelectedContactIds(context)
 
             val maxTiles = cols * rows
+            val bmpSize  = bitmapSize(cols, rows)
+            Log.d(TAG, "cols=$cols rows=$rows maxTiles=$maxTiles bmpSize=$bmpSize")
 
             val allContacts = try {
                 ContactsRepository(context).loadContacts()
@@ -69,7 +80,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 },
                 maxTiles     = maxTiles
             )
-            Log.d(TAG, "cols=$cols rows=$rows contacts=${contacts.size}")
+            Log.d(TAG, "contacts=${contacts.size}")
 
             val layoutRes = context.resources.getIdentifier(
                 "widget_grid_${cols}c${rows}r", "layout", context.packageName
@@ -88,8 +99,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 val contact = contacts.getOrNull(idx)
                 if (contact != null) {
                     views.setViewVisibility(tileId, View.VISIBLE)
-                    val bmp = loadPhoto(context, contact, BITMAP_SIZE)
-                        ?: makeInitials(contact, BITMAP_SIZE)
+                    val bmp = loadPhoto(context, contact, bmpSize)
+                        ?: makeInitials(contact, bmpSize)
                     views.setImageViewBitmap(photoId, bmp)
                     views.setTextViewText(nameId,
                         contact.name.split(" ").firstOrNull() ?: contact.name)
@@ -176,7 +187,10 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     BitmapFactory.decodeStream(s, null, boundsOpts)
                 }
                 val sample = maxOf(1, maxOf(boundsOpts.outWidth, boundsOpts.outHeight) / maxPx)
-                val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+                val opts = BitmapFactory.Options().apply {
+                    inSampleSize = sample
+                    inPreferredConfig = Bitmap.Config.RGB_565 // 2 bytes/px — half the IPC size
+                }
                 context.contentResolver.openInputStream(uri)?.use { s ->
                     BitmapFactory.decodeStream(s, null, opts)
                 }
@@ -184,7 +198,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
         }
 
         private fun makeInitials(contact: Contact, size: Int): Bitmap {
-            val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
             val canvas = Canvas(bmp)
             val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             val colors = intArrayOf(
