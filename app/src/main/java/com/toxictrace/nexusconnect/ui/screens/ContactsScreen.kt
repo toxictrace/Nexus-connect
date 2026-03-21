@@ -3,8 +3,7 @@ package com.toxictrace.nexusconnect.ui.screens
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
+import androidx.activity.result.contract.ActivityResultContractsimport androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,24 +39,26 @@ fun ContactsScreen(viewModel: MainViewModel) {
     val selectedCount by viewModel.selectedCount.collectAsState()
     var searchQuery   by remember { mutableStateOf("") }
 
-    // Check permission once on composition
-    var hasPermission by remember {
+    var hasContacts by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
                 == PackageManager.PERMISSION_GRANTED
         )
     }
 
-    val permLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        hasPermission = granted
-        if (granted) viewModel.loadContacts()
+    val multiPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        hasContacts = results[Manifest.permission.READ_CONTACTS] == true
+        if (hasContacts) viewModel.loadContacts()
     }
 
-    LaunchedEffect(hasPermission) {
-        if (hasPermission) viewModel.loadContacts()
-        else permLauncher.launch(Manifest.permission.READ_CONTACTS)
+    LaunchedEffect(hasContacts) {
+        if (hasContacts) viewModel.loadContacts()
+        else multiPermLauncher.launch(arrayOf(
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.READ_CALL_LOG
+        ))
     }
 
     val filtered = contacts.filter {
@@ -106,7 +107,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 }
             }
 
-            if (!hasPermission) {
+            if (!hasContacts) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -125,9 +126,12 @@ fun ContactsScreen(viewModel: MainViewModel) {
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.bodySmall
                         )
-                        TextButton(onClick = { permLauncher.launch(Manifest.permission.READ_CONTACTS) }) {
-                            Text("Grant")
-                        }
+                        TextButton(onClick = {
+                            multiPermLauncher.launch(arrayOf(
+                                Manifest.permission.READ_CONTACTS,
+                                Manifest.permission.READ_CALL_LOG
+                            ))
+                        }) { Text("Grant") }
                     }
                 }
             }

@@ -9,34 +9,34 @@ import androidx.lifecycle.viewModelScope
 import com.toxictrace.nexusconnect.data.model.*
 import com.toxictrace.nexusconnect.data.preferences.SettingsRepository
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
+import com.toxictrace.nexusconnect.data.repository.CallLogRepository
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 import com.toxictrace.nexusconnect.widget.ContactWidgetProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val settingsRepo  = SettingsRepository(application)
     private val contactsRepo  = ContactsRepository(application)
+    private val callLogRepo   = CallLogRepository(application)
 
     val settings: StateFlow<WidgetSettings> = settingsRepo.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WidgetSettings())
 
-    // All contacts from system (live, via ContentObserver)
-    private val _contacts = MutableStateFlow<List<Contact>>(emptyList())
-    val contacts: StateFlow<List<Contact>> = _contacts.asStateFlow()
-
-    private val _sortMode = MutableStateFlow(ContactSortMode.ALPHABETICAL)
+    private val _allContacts = MutableStateFlow<List<Contact>>(emptyList())
+    private val _sortMode    = MutableStateFlow(ContactSortMode.ALPHABETICAL)
     val sortMode: StateFlow<ContactSortMode> = _sortMode.asStateFlow()
 
-    // Contacts the user has checked — in widget order
     private val _selectedIds = MutableStateFlow<List<Long>>(emptyList())
 
     val selectedCount: StateFlow<Int> = _selectedIds.map { it.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    // Merge contacts list with selection state and sort
-    val displayContacts: StateFlow<List<Contact>> = combine(_contacts, _selectedIds) { all, ids ->
+    // Contacts with selection flag, sorted by current mode
+    val displayContacts: StateFlow<List<Contact>> = combine(_allContacts, _selectedIds) { all, ids ->
         all.map { c -> c.copy(isSelected = c.id in ids) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -46,30 +46,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadContacts() {
-        val hasPermission = ContextCompat.checkSelfPermission(
+        val hasContacts = ContextCompat.checkSelfPermission(
             getApplication(), Manifest.permission.READ_CONTACTS
         ) == PackageManager.PERMISSION_GRANTED
-
-        if (!hasPermission) return
+        if (!hasContacts) return
 
         viewModelScope.launch {
             contactsRepo.observeContacts().collect { list ->
-                _contacts.value = sortList(list, _sortMode.value)
+                _allContacts.value = sortList(list, _sortMode.value)
             }
         }
     }
 
     private fun loadSavedSelection() {
         viewModelScope.launch {
-            val ids = settingsRepo.getSelectedContactIds()
-            _selectedIds.value = ids
+            _selectedIds.value = settingsRepo.getSelectedContactIds()
         }
     }
 
     fun toggleContactSelection(contactId: Long) {
         val current = _selectedIds.value.toMutableList()
-        if (contactId in current) current.remove(contactId)
-        else current.add(contactId)
+        if (contactId in current) current.remove(contactId) else current.add(contactId)
         _selectedIds.value = current
     }
 
@@ -83,16 +80,53 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setSortMode(mode: ContactSortMode) {
         _sortMode.value = mode
-        _contacts.update { sortList(it, mode) }
+        viewModelScope.launch {
+            when (mode) {
+                ContactSortMode.ALPHABETICAL ->
+                    _allContacts.update { sortList(it, mode) }
+                ContactSortMode.FREQUENCY ->
+                    _allContacts.update { it.sortedByDescending { c -> c.isStarred } }
+                ContactSortMode.RECENTS ->
+                    sortByRecents()
+                ContactSortMode.MANUAL -> { }
+            }
+        }
     }
 
-    private fun sortList(list: List<Contact>, mode: ContactSortMode): List<Contact> = when (mode) {
+    private suspend fun sortByRecents() {
+        val hasCallLog = ContextCompat.checkSelfPermission(
+            getApplication(), Manifest.permission.READ_CALL_LOG
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!hasCallLog) return
+
+        withContext(Dispatchers.IO) {
+            val contacts = _allContacts.value
+            // Build number → contactId map
+            val numberMap = contacts
+                .filter { it.phoneNumber != null }
+                .associate { normalizeNumber(it.phoneNumber!!) to it.id }
+
+            val recentIds = callLogRepo.getRecentContactIds(emptyList(), numberMap, 100)
+            val recentSet = recentIds.toList()
+
+            val sorted = contacts.sortedWith(compareBy { c ->
+                val pos = recentSet.indexOf(c.id)
+                if (pos == -1) Int.MAX_VALUE else pos
+            })
+            _allContacts.value = sorted
+        }
+    }
+
+    private fun normalizeNumber(number: String) =
+        number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+
+    private fun sortList(list: List<Contact>, mode: ContactSortMode) = when (mode) {
         ContactSortMode.ALPHABETICAL -> list.sortedBy { it.name }
         ContactSortMode.FREQUENCY    -> list.sortedByDescending { it.isStarred }
+        ContactSortMode.RECENTS      -> list // handled separately
         ContactSortMode.MANUAL       -> list
     }
 
-    /** Save selection to DataStore and update the widget */
     fun applyAndUpdateWidget() {
         viewModelScope.launch {
             settingsRepo.saveSelectedContactIds(_selectedIds.value)
@@ -103,7 +137,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateSettings(update: (WidgetSettings) -> WidgetSettings) {
         viewModelScope.launch {
             settingsRepo.updateSettings(update(settings.value))
-            // Also refresh widget when layout settings change
             ContactWidgetProvider.updateAllWidgets(getApplication())
         }
     }
@@ -111,6 +144,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 enum class ContactSortMode(val label: String) {
     ALPHABETICAL("Alphabetical"),
-    FREQUENCY("Frequency"),
+    RECENTS("Recents"),
+    FREQUENCY("Starred"),
     MANUAL("Manual Order")
 }
