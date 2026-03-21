@@ -2,6 +2,14 @@ package com.toxictrace.nexusconnect.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
@@ -97,8 +105,14 @@ fun NexusApp() {
             navController = navController,
             startDestination = Screen.Layout.route,
             modifier = Modifier
-                .padding(top = paddingValues.calculateTopPadding())
-                .imePadding()
+                .padding(
+                    top    = paddingValues.calculateTopPadding(),
+                    bottom = paddingValues.calculateBottomPadding()
+                )
+                .windowInsetsPadding(
+                    WindowInsets.ime.only(WindowInsetsSides.Bottom)
+                        .exclude(WindowInsets.navigationBars)
+                )
         ) {
             composable(Screen.Contacts.route) { ContactsScreen(viewModel = viewModel) }
             composable(Screen.Layout.route) { LayoutScreen(viewModel = viewModel) }
