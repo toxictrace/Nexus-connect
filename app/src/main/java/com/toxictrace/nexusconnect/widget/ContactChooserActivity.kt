@@ -299,9 +299,12 @@ private fun StatItem(icon: ImageVector, value: String, label: String, valueLines
 
 @Composable
 private fun CallOption(icon: ImageVector, label: String, sublabel: String, color: Color, onClick: () -> Unit) {
+    val view = androidx.compose.ui.platform.LocalView.current
     Row(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+        modifier = Modifier.fillMaxWidth().clickable {
+            view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            onClick()
+        }.padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {

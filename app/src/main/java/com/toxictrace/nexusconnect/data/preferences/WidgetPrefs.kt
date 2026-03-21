@@ -33,6 +33,9 @@ object WidgetPrefs {
             ClickAction.valueOf(sp(context).getString("click_action", "") ?: "")
         }.getOrDefault(ClickAction.SHOW_DIALOG)
 
+    fun getHapticFeedback(context: Context): Boolean =
+        sp(context).getBoolean("haptic_feedback", true)
+
     fun getTheme(context: Context): String =
         sp(context).getString("theme", "LIGHT") ?: "LIGHT"
 
@@ -60,7 +63,8 @@ object WidgetPrefs {
             putBoolean("filter_favorites", settings.filterFavorites)
             putBoolean("filter_recents",   settings.filterRecents)
             putBoolean("filter_frequent",  settings.filterFrequent)
-            putString("click_action",       settings.clickAction.name)
+            putBoolean("haptic_feedback",    settings.hapticFeedback)
+            putString("click_action",        settings.clickAction.name)
             putString("theme",              settings.theme.name)
             putBoolean("dynamic_colors",    settings.dynamicColors)
             putInt("accent_color_index",    settings.accentColorIndex)
