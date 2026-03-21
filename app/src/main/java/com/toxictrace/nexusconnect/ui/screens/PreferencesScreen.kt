@@ -148,46 +148,42 @@ private fun ActionCard(title: String, subtitle: String, selected: Boolean, icon:
 private fun MessengerSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
     val context = LocalContext.current
 
-    // Apps that can handle tel: or messaging — real communication apps
     val allApps: List<AppInfo> = remember {
         val pm = context.packageManager
-        val pkgs = mutableSetOf<String>()
 
-        // Apps that handle tel: URI
-        val telIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("tel:+1234567890"))
-        pm.queryIntentActivities(telIntent, 0).forEach { pkgs.add(it.activityInfo.packageName) }
-
-        // Apps that handle sms:
-        val smsIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("sms:+1234567890"))
-        pm.queryIntentActivities(smsIntent, 0).forEach { pkgs.add(it.activityInfo.packageName) }
-
-        // Apps that handle SEND text (messengers)
-        val sendIntent = Intent(Intent.ACTION_SEND).apply { type = "text/plain" }
-        pm.queryIntentActivities(sendIntent, 0).forEach { pkgs.add(it.activityInfo.packageName) }
-
-        // Apps that handle https:// (web-capable messengers like Telegram)
-        val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://t.me"))
-        pm.queryIntentActivities(webIntent, 0).forEach { pkgs.add(it.activityInfo.packageName) }
-
-        // Remove obvious non-messengers
-        val exclude = setOf(
-            "com.android.browser", "com.android.chrome", "com.google.android.youtube",
-            "com.google.android.gm", "com.android.email", "com.android.mms",
-            "com.miui.gallery", "com.android.camera", "com.android.settings",
-            "com.android.contacts", "com.google.android.contacts",
-            context.packageName // exclude ourselves
+        // Blacklist — known non-messenger apps to exclude
+        val blacklist = setOf(
+            "com.android.bluetooth", "com.android.settings", "com.android.camera",
+            "com.android.camera2", "com.android.deskclock", "com.android.calculator2",
+            "com.android.calendar", "com.miui.gallery", "com.miui.compass",
+            "com.miui.notes", "com.miui.player", "com.miui.calculator",
+            "com.miui.weather2", "com.miui.cleaner", "com.miui.securitycenter",
+            "com.miui.scanner", "com.android.thememanager", "com.android.soundrecorder",
+            "com.android.providers.downloads.ui", "com.mi.android.globalFileexplorer",
+            "com.miui.mishare.connectivity", "com.android.vending",
+            "com.google.android.gms", "com.google.android.gsf",
+            "com.google.android.youtube", "com.google.android.apps.maps",
+            "com.google.android.apps.photos", "com.google.android.music",
+            "com.android.chrome", "com.android.browser",
+            context.packageName
         )
 
-        pkgs.minus(exclude).mapNotNull { pkg ->
-            runCatching {
-                val info = pm.getApplicationInfo(pkg, 0)
-                val label = pm.getApplicationLabel(info).toString()
-                val iconBmp = runCatching {
-                    pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
+        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        pm.queryIntentActivities(launcherIntent, 0)
+            .map { it.activityInfo.packageName }
+            .distinct()
+            .filter { it !in blacklist }
+            .mapNotNull { pkg ->
+                runCatching {
+                    val info = pm.getApplicationInfo(pkg, 0)
+                    val label = pm.getApplicationLabel(info).toString()
+                    val iconBmp = runCatching {
+                        pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
+                    }.getOrNull()
+                    AppInfo(pkg, label, iconBmp)
                 }.getOrNull()
-                AppInfo(pkg, label, iconBmp)
-            }.getOrNull()
-        }.sortedBy { it.label.lowercase() }
+            }
+            .sortedBy { it.label.lowercase() }
     }
 
     var showPickerFor by remember { mutableStateOf<String?>(null) } // "whatsapp" | "viber" | "telegram"
