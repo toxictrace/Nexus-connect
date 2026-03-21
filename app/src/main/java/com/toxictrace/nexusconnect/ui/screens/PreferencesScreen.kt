@@ -148,33 +148,25 @@ private fun ActionCard(title: String, subtitle: String, selected: Boolean, icon:
 private fun MessengerSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
     val context = LocalContext.current
 
-    // All installed apps that can handle a phone URI — i.e. communication apps
+    // All user-installed apps (excludes system apps)
     val allApps: List<AppInfo> = remember {
         val pm = context.packageManager
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            // Query apps that handle URLs (broad net for messengers)
-            data = android.net.Uri.parse("https://")
-        }
-        val resolvedApps = pm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-            .map { it.activityInfo.packageName }
-            .toSet()
-            .plus(
-                // Also query all installed packages directly
-                pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                    .map { it.packageName }
-            )
-            .toSortedSet()
-
-        resolvedApps.mapNotNull { pkg ->
-            runCatching {
-                val info = pm.getApplicationInfo(pkg, 0)
-                val label = pm.getApplicationLabel(info).toString()
-                val iconBmp = runCatching {
-                    pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
+        pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            .filter { appInfo ->
+                // Keep only apps the user installed (not system)
+                (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0 ||
+                (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+            }
+            .mapNotNull { appInfo ->
+                runCatching {
+                    val label = pm.getApplicationLabel(appInfo).toString()
+                    val iconBmp = runCatching {
+                        pm.getApplicationIcon(appInfo.packageName).toBitmap(48, 48).asImageBitmap()
+                    }.getOrNull()
+                    AppInfo(appInfo.packageName, label, iconBmp)
                 }.getOrNull()
-                AppInfo(pkg, label, iconBmp)
-            }.getOrNull()
-        }.sortedBy { it.label }
+            }
+            .sortedBy { it.label.lowercase() }
     }
 
     var showPickerFor by remember { mutableStateOf<String?>(null) } // "whatsapp" | "viber" | "telegram"

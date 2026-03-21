@@ -130,16 +130,25 @@ class ContactChooserActivity : ComponentActivity() {
     }
 
     private fun openViber(phone: String, pkg: String) {
+        val effectivePkg = pkg.ifBlank { "com.viber.voip" }
+        // Viber reliably handles tel: URI when called with its package
+        val telIntent = Intent(Intent.ACTION_VIEW, Uri.parse("tel:$phone")).apply {
+            setPackage(effectivePkg)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
+        if (telIntent.resolveActivity(packageManager) != null) {
+            startActivity(telIntent)
+            finish()
+            return
+        }
+        // Fallback: viber deep links
         val c = phone.replace(Regex("[^+\\d]"), "")
-        // Viber: try viber://chat first, then viber://contact
-        val uris = listOf(
+        for (uri in listOf(
             Uri.parse("viber://chat?number=%2B$c"),
-            Uri.parse("viber://contact?number=$c"),
-            Uri.parse("viber://add?number=$c")
-        )
-        for (uri in uris) {
+            Uri.parse("viber://contact?number=$c")
+        )) {
             val i = Intent(Intent.ACTION_VIEW, uri).apply {
-                if (pkg.isNotBlank()) setPackage(pkg)
+                setPackage(effectivePkg)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
             if (i.resolveActivity(packageManager) != null) {
@@ -182,10 +191,12 @@ private fun ChooserSheet(
             isInstalled("org.telegram.messenger.web") ||
             isInstalled("org.thunderdog.challegram")
 
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxHeight(0.85f)
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
