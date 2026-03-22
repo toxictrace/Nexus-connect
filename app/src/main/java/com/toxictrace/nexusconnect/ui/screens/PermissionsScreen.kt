@@ -224,7 +224,7 @@ fun BatteryOptimizationBanner() {
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    "Disable battery optimization for Nexus Connect so the widget updates after calls even when the app is closed.",
+                    "Disable battery optimization for Nexus Connect so the widget updates after calls even when the app is closed. Go to App Settings → Battery → No restrictions.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
@@ -244,17 +244,18 @@ fun BatteryOptimizationBanner() {
             ) { Text("Dismiss") }
             TextButton(
                 onClick = {
-                    // Open battery optimization settings for our app
+                    // Open app battery settings — user manually disables optimization
+                    // (no REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission needed)
                     try {
-                        val intent = android.content.Intent(
-                            android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                            android.net.Uri.parse("package:${context.packageName}")
-                        )
-                        context.startActivity(intent)
-                    } catch (_: Exception) {
-                        // Fallback to general battery settings
                         context.startActivity(
-                            android.content.Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS)
+                            android.content.Intent(
+                                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                android.net.Uri.parse("package:${context.packageName}")
+                            )
+                        )
+                    } catch (_: Exception) {
+                        context.startActivity(
+                            android.content.Intent(android.provider.Settings.ACTION_SETTINGS)
                         )
                     }
                 }
