@@ -32,11 +32,13 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.toxictrace.nexusconnect.data.model.*
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
+import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.ui.theme.AccentColors
 import com.toxictrace.nexusconnect.viewmodel.MainViewModel
 
@@ -86,6 +88,15 @@ fun PreferencesScreen(viewModel: MainViewModel) {
             settings = settings,
             viewModel = viewModel
         )
+        LanguageSection(
+            settings = settings,
+            onUpdate = { lang ->
+                viewModel.updateSettings { s -> s.copy(language = lang) }
+                com.toxictrace.nexusconnect.util.LocaleHelper.saveLanguage(context, lang)
+                // Restart activity to apply locale
+                (context as? android.app.Activity)?.recreate()
+            }
+        )
         Spacer(Modifier.height(8.dp))
     }
 }
@@ -95,12 +106,12 @@ fun PreferencesScreen(viewModel: MainViewModel) {
 @Composable
 private fun ClickActionSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
     Column {
-        SectionHeader("GLOBAL ACTION", "Select the primary behavior when tapping a contact tile.")
+        SectionHeader(stringResource(R.string.global_action), stringResource(R.string.global_action_subtitle))
         Spacer(Modifier.height(12.dp))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(
                 Triple(ClickAction.SHOW_DIALOG, "Show selection dialog", "Choose how to call on every tap"),
-                Triple(ClickAction.DIRECT_CALL, "Direct Call", "Call immediately without dialog")
+                Triple(ClickAction.DIRECT_CALL, "Direct Call", stringResource(R.string.direct_call_subtitle))
             ).forEach { (action, title, subtitle) ->
                 ActionCard(
                     title = title, subtitle = subtitle,
@@ -154,7 +165,7 @@ private fun MessengerSection(
     var showPickerFor by remember { mutableStateOf<String?>(null) }
 
     Column {
-        SectionHeader("MESSENGERS", "Choose which app to use for each messenger.")
+        SectionHeader("MESSENGERS", stringResource(R.string.messenger_subtitle))
         Spacer(Modifier.height(12.dp))
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
             MessengerRow("WhatsApp", settings.messengerWhatsApp, apps) {
@@ -198,7 +209,7 @@ private fun MessengerSection(
 
 @Composable
 private fun MessengerRow(label: String, currentPkg: String, allApps: List<AppInfo>, onClick: () -> Unit) {
-    val displayLabel = if (currentPkg.isBlank()) "Not set"
+    val displayLabel = if (currentPkg.isBlank()) stringResource(R.string.not_set)
     else allApps.firstOrNull { it.packageName == currentPkg }?.label ?: currentPkg
     val icon = if (currentPkg.isNotBlank())
         allApps.firstOrNull { it.packageName == currentPkg }?.icon else null
@@ -230,13 +241,13 @@ private fun AppPickerDialog(apps: List<AppInfo>, loading: Boolean, current: Stri
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Choose app") },
+        title = { Text(stringResource(R.string.choose_app)) },
         text = {
             Column {
                 OutlinedTextField(
                     value = search,
                     onValueChange = { search = it },
-                    placeholder = { Text("Search...") },
+                    placeholder = { Text(stringResource(R.string.search)) },
                     leadingIcon = { Icon(Icons.Default.Search, null) },
                     trailingIcon = {
                         if (search.isNotEmpty()) IconButton(onClick = { search = "" }) {
@@ -259,7 +270,7 @@ private fun AppPickerDialog(apps: List<AppInfo>, loading: Boolean, current: Stri
                                 contentAlignment = Alignment.Center) {
                                 Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp))
                             }
-                            Text("None (auto)", modifier = Modifier.weight(1f))
+                            Text(stringResource(R.string.none_auto), modifier = Modifier.weight(1f))
                             if (current.isBlank()) Icon(Icons.Default.Check, null,
                                 tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                         }
@@ -294,7 +305,7 @@ private fun AppPickerDialog(apps: List<AppInfo>, loading: Boolean, current: Stri
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
     )
 }
@@ -304,7 +315,7 @@ private fun AppPickerDialog(apps: List<AppInfo>, loading: Boolean, current: Stri
 @Composable
 private fun CallIconSection(settings: WidgetSettings, onUpdate: (Boolean) -> Unit) {
     Column {
-        Text("CALL TYPE ICON", style = MaterialTheme.typography.labelMedium,
+        Text(stringResource(R.string.call_type_icon), style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
         SettingsCard {
@@ -319,8 +330,8 @@ private fun CallIconSection(settings: WidgetSettings, onUpdate: (Boolean) -> Uni
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Show call type icon", style = MaterialTheme.typography.titleMedium)
-                    Text("Incoming / Outgoing / Missed on tile",
+                    Text(stringResource(R.string.show_call_type_icon), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.call_type_icon_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -333,7 +344,7 @@ private fun CallIconSection(settings: WidgetSettings, onUpdate: (Boolean) -> Uni
 @Composable
 private fun FeedbackSection(settings: WidgetSettings, onUpdate: (Boolean) -> Unit) {
     Column {
-        Text("FEEDBACK", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.feedback), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
         SettingsCard {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
@@ -342,8 +353,8 @@ private fun FeedbackSection(settings: WidgetSettings, onUpdate: (Boolean) -> Uni
                     Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.Vibration, null) }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Haptic Feedback", style = MaterialTheme.typography.titleMedium)
-                    Text("Vibrate on interaction", style = MaterialTheme.typography.bodySmall,
+                    Text(stringResource(R.string.haptic_feedback), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.haptic_subtitle), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(checked = settings.hapticFeedback, onCheckedChange = onUpdate)
@@ -357,20 +368,20 @@ private fun FeedbackSection(settings: WidgetSettings, onUpdate: (Boolean) -> Uni
 @Composable
 private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
     Column {
-        Text("Appearance", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text("Customize how Nexus Connect looks on your device.", style = MaterialTheme.typography.bodyMedium,
+        Text(stringResource(R.string.appearance), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.appearance_subtitle), style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ThemeCard(label = "Light", isDark = false,
+            ThemeCard(label = stringResource(R.string.theme_light), isDark = false,
                 selected = settings.theme == AppTheme.LIGHT,
                 onClick = { onUpdate(settings.copy(theme = AppTheme.LIGHT)) },
                 modifier = Modifier.weight(1f))
-            ThemeCard(label = "Dark", isDark = true,
+            ThemeCard(label = stringResource(R.string.theme_dark), isDark = true,
                 selected = settings.theme == AppTheme.DARK,
                 onClick = { onUpdate(settings.copy(theme = AppTheme.DARK)) },
                 modifier = Modifier.weight(1f))
-            ThemeCard(label = "System", isDark = isSystemInDarkTheme(),
+            ThemeCard(label = stringResource(R.string.theme_system), isDark = isSystemInDarkTheme(),
                 selected = settings.theme == AppTheme.SYSTEM,
                 onClick = { onUpdate(settings.copy(theme = AppTheme.SYSTEM)) },
                 modifier = Modifier.weight(1f),
@@ -380,8 +391,8 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
         SettingsCard {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Dynamic Colors", style = MaterialTheme.typography.titleMedium)
-                    Text("Use system colors for a cohesive look (Monet)", style = MaterialTheme.typography.bodySmall,
+                    Text(stringResource(R.string.dynamic_colors), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.dynamic_colors_subtitle), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -470,8 +481,8 @@ private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSet
     }
 
     Column {
-        Text("Avatar Identity", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text("Shown for contacts without a photo.", style = MaterialTheme.typography.bodyMedium,
+        Text(stringResource(R.string.avatar_identity), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.avatar_subtitle), style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
@@ -495,8 +506,8 @@ private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSet
                         modifier = Modifier.size(36.dp))
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Default", style = MaterialTheme.typography.titleMedium)
-                    Text("Standard silhouette image", style = MaterialTheme.typography.bodySmall,
+                    Text(stringResource(R.string.avatar_default), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.avatar_default_subtitle), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 RadioButton(
@@ -535,11 +546,11 @@ private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSet
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Custom image", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.avatar_custom), style = MaterialTheme.typography.titleMedium)
                     Text(
                         if (settings.avatarIdentity == AvatarIdentity.CUSTOM && settings.customAvatarUri.isNotBlank())
-                            "Tap to change image"
-                        else "Pick from gallery",
+                            stringResource(R.string.avatar_custom_change)
+                        else stringResource(R.string.avatar_custom_pick),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -577,7 +588,7 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
     }
 
     Column {
-        SectionHeader("BACKUP & RESTORE", "Save and restore your settings.")
+        SectionHeader(stringResource(R.string.backup_restore), stringResource(R.string.backup_subtitle))
         Spacer(Modifier.height(12.dp))
 
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
@@ -591,9 +602,9 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
                 Icon(Icons.Default.Folder, null,
                     tint = MaterialTheme.colorScheme.primary)
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Backup folder", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.backup_folder), style = MaterialTheme.typography.titleMedium)
                     Text(
-                        if (settings.backupFolderUri.isBlank()) "Not selected"
+                        if (settings.backupFolderUri.isBlank()) stringResource(R.string.backup_folder_not_selected)
                         else decodeFolderUri(settings.backupFolderUri),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (settings.backupFolderUri.isBlank())
@@ -613,8 +624,8 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
                 modifier = Modifier.fillMaxWidth()
                     .clickable(enabled = settings.backupFolderUri.isNotBlank()) {
                         viewModel.saveBackup(
-                            onResult = { name -> message = "Saved: $name" },
-                            onError  = { err  -> message = "Error: $err" }
+                            onResult = { name -> message = context.getString(R.string.backup_saved, name) },
+                            onError  = { err  -> message = context.getString(R.string.backup_error, err) }
                         )
                     }
                     .padding(16.dp),
@@ -626,10 +637,10 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
                         MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.outline)
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Save backup", style = MaterialTheme.typography.titleMedium,
+                    Text(stringResource(R.string.save_backup), style = MaterialTheme.typography.titleMedium,
                         color = if (settings.backupFolderUri.isBlank())
                             MaterialTheme.colorScheme.outline else Color.Unspecified)
-                    Text("Save current settings to file",
+                    Text(stringResource(R.string.save_backup_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -653,10 +664,10 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
                         MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.outline)
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Restore backup", style = MaterialTheme.typography.titleMedium,
+                    Text(stringResource(R.string.restore_backup), style = MaterialTheme.typography.titleMedium,
                         color = if (settings.backupFolderUri.isBlank())
                             MaterialTheme.colorScheme.outline else Color.Unspecified)
-                    Text("Load settings from saved file",
+                    Text(stringResource(R.string.restore_backup_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -686,8 +697,8 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
                 showRestoreDialog = false
                 viewModel.restoreBackup(
                     fileUri  = uri,
-                    onResult = { message = "Restored successfully" },
-                    onError  = { err -> message = "Error: $err" }
+                    onResult = { message = stringResource(R.string.restored_successfully) },
+                    onError  = { err -> message = context.getString(R.string.backup_error, err) }
                 )
             },
             onDismiss = { showRestoreDialog = false }
@@ -703,10 +714,10 @@ private fun RestoreDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Select backup") },
+        title = { Text(stringResource(R.string.select_backup)) },
         text = {
             if (backups.isEmpty()) {
-                Text("No backups found in selected folder.",
+                Text(stringResource(R.string.no_backups_found),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
@@ -731,9 +742,46 @@ private fun RestoreDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
     )
+}
+
+// ── Language ──────────────────────────────────────────────────────────────────
+
+@Composable
+private fun LanguageSection(settings: WidgetSettings, onUpdate: (String) -> Unit) {
+    Column {
+        SectionHeader(
+            title    = stringResource(R.string.language),
+            subtitle = stringResource(R.string.language_subtitle)
+        )
+        Spacer(Modifier.height(12.dp))
+        SettingsCard(contentPadding = PaddingValues(0.dp)) {
+            listOf(
+                Triple("system", stringResource(R.string.language_system),  Icons.Default.Language),
+                Triple("en",     stringResource(R.string.language_english), Icons.Default.Language),
+                Triple("ru",     stringResource(R.string.language_russian), Icons.Default.Language),
+            ).forEachIndexed { idx, (code, label, icon) ->
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clickable { onUpdate(code) }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
+                    Text(label, style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.weight(1f))
+                    RadioButton(
+                        selected = settings.language == code,
+                        onClick  = { onUpdate(code) }
+                    )
+                }
+                if (idx < 2) HorizontalDivider()
+            }
+        }
+    }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

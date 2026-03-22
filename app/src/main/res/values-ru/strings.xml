@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App -->
+    <string name="app_name">Nexus Connect</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_contacts">Контакты</string>
+    <string name="nav_layout">Виджет</string>
+    <string name="nav_preferences">Настройки</string>
+
+    <!-- Contacts screen -->
+    <string name="find_contacts">Поиск контактов…</string>
+    <string name="contacts_permission_required">Нет разрешения на доступ к контактам.</string>
+    <string name="grant">Разрешить</string>
+    <string name="selected_label">ВЫБРАНО · %1$d</string>
+    <string name="all_contacts">ВСЕ КОНТАКТЫ</string>
+    <string name="selected_count">Выбрано %1$d / %2$d</string>
+    <string name="update_widget">Обновить виджет</string>
+    <string name="widget_order">ПОРЯДОК НА ВИДЖЕТЕ</string>
+
+    <!-- Layout screen -->
+    <string name="number_of_columns">Количество столбцов</string>
+    <string name="number_of_rows">Количество строк</string>
+    <string name="filtering_mode">Режим фильтрации</string>
+    <string name="favorites">Избранные</string>
+    <string name="favorites_subtitle">Закреплённые и отмеченные звёздочкой</string>
+    <string name="recents">Недавние</string>
+    <string name="recents_subtitle">Последние звонки и сообщения</string>
+    <string name="frequent">Частые</string>
+    <string name="frequent_subtitle">По частоте звонков</string>
+    <string name="unknown_numbers">Неизвестные номера</string>
+    <string name="show_unknown_numbers">Показывать неизвестные номера</string>
+    <string name="show_unknown_subtitle">Недавние звонки с номеров не из контактов</string>
+    <string name="keep_for">Хранить</string>
+    <string name="keep_for_subtitle">Показывать неизвестные номера только за этот период</string>
+    <string name="apply_layout">Применить изменения</string>
+    <string name="preview">Предпросмотр</string>
+
+    <!-- Preferences screen -->
+    <string name="global_action">ДЕЙСТВИЕ ПРИ НАЖАТИИ</string>
+    <string name="global_action_subtitle">Выберите действие при нажатии на плитку контакта.</string>
+    <string name="show_dialog">Показать диалог</string>
+    <string name="direct_call">Прямой звонок</string>
+    <string name="direct_call_subtitle">Звонить сразу без диалога</string>
+    <string name="call_immediately">Звонить сразу без диалога</string>
+
+    <!-- Messenger -->
+    <string name="messenger_section">МЕССЕНДЖЕР</string>
+    <string name="messenger_subtitle">Выберите приложение для каждого мессенджера.</string>
+    <string name="choose_app">Выбрать приложение</string>
+    <string name="not_set">Не задано</string>
+    <string name="none_auto">Авто</string>
+    <string name="search">Поиск…</string>
+
+    <!-- Appearance -->
+    <string name="appearance">Внешний вид</string>
+    <string name="appearance_subtitle">Настройте отображение Nexus Connect на вашем устройстве.</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_system">Системная</string>
+    <string name="dynamic_colors">Динамические цвета</string>
+    <string name="dynamic_colors_subtitle">Использовать цвета системы (Monet)</string>
+
+    <!-- Avatar -->
+    <string name="avatar_identity">Аватар</string>
+    <string name="avatar_subtitle">Для контактов без фотографии.</string>
+    <string name="avatar_default">Стандартный</string>
+    <string name="avatar_default_subtitle">Стандартный силуэт</string>
+    <string name="avatar_custom">Своя картинка</string>
+    <string name="avatar_custom_change">Нажмите чтобы сменить</string>
+    <string name="avatar_custom_pick">Выбрать из галереи</string>
+
+    <!-- Call type icon -->
+    <string name="call_type_icon">ИКОНКА ТИПА ЗВОНКА</string>
+    <string name="show_call_type_icon">Показывать иконку звонка</string>
+    <string name="call_type_icon_subtitle">Входящий / Исходящий / Пропущенный на плитке</string>
+
+    <!-- Feedback -->
+    <string name="feedback">ОБРАТНАЯ СВЯЗЬ</string>
+    <string name="haptic_feedback">Вибрация</string>
+    <string name="haptic_subtitle">Вибрировать при нажатии</string>
+
+    <!-- Backup -->
+    <string name="backup_restore">РЕЗЕРВНАЯ КОПИЯ</string>
+    <string name="backup_subtitle">Сохранение и восстановление настроек.</string>
+    <string name="backup_folder">Папка для резервных копий</string>
+    <string name="backup_folder_not_selected">Не выбрана</string>
+    <string name="backup_folder_selected">Выбрана</string>
+    <string name="save_backup">Сохранить копию</string>
+    <string name="save_backup_subtitle">Сохранить текущие настройки в файл</string>
+    <string name="restore_backup">Восстановить</string>
+    <string name="restore_backup_subtitle">Загрузить настройки из файла</string>
+    <string name="select_backup">Выберите копию</string>
+    <string name="no_backups_found">Резервные копии не найдены.</string>
+    <string name="cancel">Отмена</string>
+    <string name="backup_saved">Сохранено: %1$s</string>
+    <string name="backup_error">Ошибка: %1$s</string>
+    <string name="restored_successfully">Восстановлено успешно</string>
+
+    <!-- Language -->
+    <string name="language">Язык</string>
+    <string name="language_subtitle">Выберите язык приложения</string>
+    <string name="language_system">Как в системе</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+
+    <!-- Permissions -->
+    <string name="permissions_required">Требуются разрешения</string>
+    <string name="permissions_subtitle">Nexus Connect требует следующие разрешения для работы.</string>
+    <string name="grant_permissions">Предоставить разрешения</string>
+    <string name="permission_contacts">Контакты</string>
+    <string name="permission_contacts_desc">Доступ к контактам для отображения на виджете</string>
+    <string name="permission_call_log">Журнал звонков</string>
+    <string name="permission_call_log_desc">История звонков для недавних и частых контактов</string>
+    <string name="permission_call_phone">Звонки</string>
+    <string name="permission_call_phone_desc">Звонить напрямую с виджета без открытия звонилки</string>
+    <string name="permission_phone_state">Состояние телефона</string>
+    <string name="permission_phone_state_desc">Обнаружение окончания звонка для обновления виджета</string>
+    <string name="optional">Необязательно</string>
+
+    <!-- Battery banner -->
+    <string name="battery_optimization">Оптимизация батареи</string>
+    <string name="battery_optimization_desc">Отключите оптимизацию батареи для Nexus Connect, чтобы виджет обновлялся после звонков даже когда приложение закрыто. Настройки → Приложения → Nexus Connect → Батарея → Без ограничений.</string>
+    <string name="dismiss">Скрыть</string>
+    <string name="open_settings">Открыть настройки</string>
+
+    <!-- Dialog -->
+    <string name="calls_count">%1$d звонков</string>
+    <string name="last_call">Последний звонок</string>
+    <string name="unknown">Неизвестный</string>
+    <string name="private_number">Скрытый номер</string>
+</resources>

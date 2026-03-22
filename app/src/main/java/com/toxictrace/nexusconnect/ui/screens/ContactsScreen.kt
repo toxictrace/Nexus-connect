@@ -23,12 +23,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.request.CachePolicy
+import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.viewmodel.MainViewModel
 
@@ -62,7 +64,6 @@ fun ContactsScreen(viewModel: MainViewModel) {
         ))
     }
 
-    // Preload photos when contacts list is ready
     LaunchedEffect(contacts) {
         if (contacts.isNotEmpty()) viewModel.preloadPhotos(contacts)
     }
@@ -73,19 +74,18 @@ fun ContactsScreen(viewModel: MainViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // Search bar with clear button
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.setSearchQuery(it) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                placeholder = { Text("Find contacts...") },
+                placeholder = { Text(stringResource(R.string.find_contacts)) },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { viewModel.setSearchQuery("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Clear",
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.cancel),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
@@ -110,11 +110,11 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Contacts permission required.",
+                        Text(stringResource(R.string.contacts_permission_required),
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.bodySmall)
                         TextButton(onClick = {
@@ -122,7 +122,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                                 Manifest.permission.READ_CONTACTS,
                                 Manifest.permission.READ_CALL_LOG
                             ))
-                        }) { Text("Grant") }
+                        }) { Text(stringResource(R.string.grant)) }
                     }
                 }
             }
@@ -138,11 +138,10 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     bottom = if (selectedCount > 0) 88.dp else 16.dp
                 )
             ) {
-                // ── Selected contacts ──
                 if (selected.isNotEmpty()) {
                     item {
                         Text(
-                            "SELECTED · ${selected.size}",
+                            stringResource(R.string.selected_label, selected.size),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(vertical = 4.dp)
@@ -151,8 +150,8 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 }
 
                 itemsIndexed(selected, key = { _, c -> "sel_${c.id}" }) { idx, contact ->
-                    val onToggle  = remember(contact.id) { { viewModel.toggleContactSelection(contact.id) } }
-                    val onMoveUp  = remember(idx) { { if (idx > 0) viewModel.reorderSelected(idx, idx - 1) } }
+                    val onToggle   = remember(contact.id) { { viewModel.toggleContactSelection(contact.id) } }
+                    val onMoveUp   = remember(idx) { { if (idx > 0) viewModel.reorderSelected(idx, idx - 1) } }
                     val onMoveDown = remember(idx, selected.size) { { if (idx < selected.lastIndex) viewModel.reorderSelected(idx, idx + 1) } }
                     SelectedContactItem(
                         contact    = contact,
@@ -165,12 +164,11 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     )
                 }
 
-                // ── Divider ──
                 if (selected.isNotEmpty() && unselected.isNotEmpty()) {
                     item {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                         Text(
-                            "ALL CONTACTS",
+                            stringResource(R.string.all_contacts),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
@@ -178,7 +176,6 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     }
                 }
 
-                // ── Unselected contacts ──
                 items(unselected, key = { c -> "uns_${c.id}" }) { contact ->
                     val onToggle = remember(contact.id) { { viewModel.toggleContactSelection(contact.id) } }
                     UnselectedContactItem(contact = contact, onToggle = onToggle, photoCache = photoCache)
@@ -186,7 +183,6 @@ fun ContactsScreen(viewModel: MainViewModel) {
             }
         }
 
-        // Bottom action bar
         if (selectedCount > 0) {
             val settings by viewModel.settings.collectAsState()
             val maxAllowed = settings.columns * settings.tileHeightDp.coerceIn(3, 6)
@@ -205,18 +201,19 @@ fun ContactsScreen(viewModel: MainViewModel) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column {
-                        Text("Selected $selectedCount / $maxAllowed",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold)
-                        Text("WIDGET ORDER",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    Text(
+                        stringResource(R.string.selected_count, selectedCount, maxAllowed),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
                     Button(
                         onClick = { viewModel.applyAndUpdateWidget() },
                         shape = RoundedCornerShape(24.dp)
-                    ) { Text("Update Widget") }
+                    ) {
+                        Icon(Icons.Default.Refresh, null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.update_widget))
+                    }
                 }
             }
         }
@@ -314,13 +311,11 @@ private fun UnselectedContactItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        contact.name,
+                    Text(contact.name,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                    )
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                     if (contact.isStarred) {
                         Icon(Icons.Default.Star, null,
                             tint = Color(0xFFFFC107),
@@ -328,8 +323,7 @@ private fun UnselectedContactItem(
                     }
                 }
                 contact.phoneNumber?.let {
-                    Text(it,
-                        style = MaterialTheme.typography.bodySmall,
+                    Text(it, style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1)
                 }
@@ -360,7 +354,6 @@ fun ContactAvatar(
     ) {
         when {
             cachedBitmap != null -> {
-                // Preloaded — zero IO, instant draw
                 androidx.compose.foundation.Image(
                     bitmap = cachedBitmap.asImageBitmap(),
                     contentDescription = null,
@@ -369,7 +362,6 @@ fun ContactAvatar(
                 )
             }
             contact.photoUri != null -> {
-                // Not yet cached — AsyncImage while loading
                 val ctx = LocalContext.current
                 val req = remember(contact.id) {
                     ImageRequest.Builder(ctx)

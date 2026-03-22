@@ -1,5 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App -->
     <string name="app_name">Nexus Connect</string>
-    <string name="widget_description">Quick access to your favourite contacts</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_contacts">Contacts</string>
+    <string name="nav_layout">Layout</string>
+    <string name="nav_preferences">Preferences</string>
+
+    <!-- Contacts screen -->
+    <string name="find_contacts">Find contacts…</string>
+    <string name="contacts_permission_required">Contacts permission required.</string>
+    <string name="grant">Grant</string>
+    <string name="selected_label">SELECTED · %1$d</string>
+    <string name="all_contacts">ALL CONTACTS</string>
+    <string name="selected_count">Selected %1$d / %2$d</string>
+    <string name="update_widget">Update Widget</string>
+    <string name="widget_order">WIDGET ORDER</string>
+
+    <!-- Layout screen -->
+    <string name="number_of_columns">Number of Columns</string>
+    <string name="number_of_rows">Number of Rows</string>
+    <string name="filtering_mode">Filtering Mode</string>
+    <string name="favorites">Favorites</string>
+    <string name="favorites_subtitle">Pinned and starred contacts</string>
+    <string name="recents">Recents</string>
+    <string name="recents_subtitle">Last interacted or messaged</string>
+    <string name="frequent">Frequent</string>
+    <string name="frequent_subtitle">Prioritize by engagement score</string>
+    <string name="unknown_numbers">Unknown Numbers</string>
+    <string name="show_unknown_numbers">Show unknown numbers</string>
+    <string name="show_unknown_subtitle">Display recent calls from numbers not in contacts</string>
+    <string name="keep_for">Keep for</string>
+    <string name="keep_for_subtitle">Show unknown numbers only within this period</string>
+    <string name="apply_layout">Apply Layout Changes</string>
+    <string name="preview">Preview</string>
+
+    <!-- Preferences screen -->
+    <string name="global_action">GLOBAL ACTION</string>
+    <string name="global_action_subtitle">Select the primary behavior when tapping a contact tile.</string>
+    <string name="show_dialog">Show dialog</string>
+    <string name="direct_call">Direct call</string>
+    <string name="direct_call_subtitle">Call immediately without dialog</string>
+    <string name="call_immediately">Call immediately without dialog</string>
+
+    <!-- Messenger -->
+    <string name="messenger_section">MESSENGER</string>
+    <string name="messenger_subtitle">Choose which app to use for each messenger.</string>
+    <string name="choose_app">Choose app</string>
+    <string name="not_set">Not set</string>
+    <string name="none_auto">None (auto)</string>
+    <string name="search">Search…</string>
+
+    <!-- Appearance -->
+    <string name="appearance">Appearance</string>
+    <string name="appearance_subtitle">Customize how Nexus Connect looks on your device.</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+    <string name="dynamic_colors">Dynamic Colors</string>
+    <string name="dynamic_colors_subtitle">Use system colors for a cohesive look (Monet)</string>
+
+    <!-- Avatar -->
+    <string name="avatar_identity">Avatar Identity</string>
+    <string name="avatar_subtitle">Shown for contacts without a photo.</string>
+    <string name="avatar_default">Default</string>
+    <string name="avatar_default_subtitle">Standard silhouette image</string>
+    <string name="avatar_custom">Custom image</string>
+    <string name="avatar_custom_change">Tap to change image</string>
+    <string name="avatar_custom_pick">Pick from gallery</string>
+
+    <!-- Call type icon -->
+    <string name="call_type_icon">CALL TYPE ICON</string>
+    <string name="show_call_type_icon">Show call type icon</string>
+    <string name="call_type_icon_subtitle">Incoming / Outgoing / Missed on tile</string>
+
+    <!-- Feedback -->
+    <string name="feedback">FEEDBACK</string>
+    <string name="haptic_feedback">Haptic Feedback</string>
+    <string name="haptic_subtitle">Vibrate on interaction</string>
+
+    <!-- Backup -->
+    <string name="backup_restore">BACKUP &amp; RESTORE</string>
+    <string name="backup_subtitle">Save and restore your settings.</string>
+    <string name="backup_folder">Backup folder</string>
+    <string name="backup_folder_not_selected">Not selected</string>
+    <string name="backup_folder_selected">Selected</string>
+    <string name="save_backup">Save backup</string>
+    <string name="save_backup_subtitle">Save current settings to file</string>
+    <string name="restore_backup">Restore backup</string>
+    <string name="restore_backup_subtitle">Load settings from saved file</string>
+    <string name="select_backup">Select backup</string>
+    <string name="no_backups_found">No backups found in selected folder.</string>
+    <string name="cancel">Cancel</string>
+    <string name="backup_saved">Saved: %1$s</string>
+    <string name="backup_error">Error: %1$s</string>
+    <string name="restored_successfully">Restored successfully</string>
+
+    <!-- Language -->
+    <string name="language">Language</string>
+    <string name="language_subtitle">Choose app display language</string>
+    <string name="language_system">As system</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+
+    <!-- Permissions -->
+    <string name="permissions_required">Permissions Required</string>
+    <string name="permissions_subtitle">Nexus Connect needs the following permissions to work properly.</string>
+    <string name="grant_permissions">Grant Permissions</string>
+    <string name="permission_contacts">Contacts</string>
+    <string name="permission_contacts_desc">Access your contacts to display them on the widget</string>
+    <string name="permission_call_log">Call Log</string>
+    <string name="permission_call_log_desc">Read call history for recent/frequent contacts and call type icons</string>
+    <string name="permission_call_phone">Make Calls</string>
+    <string name="permission_call_phone_desc">Call directly from the widget without opening the dialer</string>
+    <string name="permission_phone_state">Phone State</string>
+    <string name="permission_phone_state_desc">Detect when calls end to update the widget automatically</string>
+    <string name="optional">Optional</string>
+
+    <!-- Battery banner -->
+    <string name="battery_optimization">Battery optimization</string>
+    <string name="battery_optimization_desc">Disable battery optimization for Nexus Connect so the widget updates after calls even when the app is closed. Go to App Settings → Battery → No restrictions.</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="open_settings">Open Settings</string>
+
+    <!-- Dialog -->
+    <string name="calls_count">%1$d calls</string>
+    <string name="last_call">Last call</string>
+    <string name="unknown">Unknown</string>
+    <string name="private_number">Private</string>
 </resources>

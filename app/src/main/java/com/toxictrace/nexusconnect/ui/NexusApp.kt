@@ -20,7 +20,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.toxictrace.nexusconnect.data.model.AppTheme
-import com.toxictrace.nexusconnect.ui.screens.BatteryOptimizationBanner
+import androidx.compose.ui.res.stringResource
+import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.ui.screens.ContactsScreen
 import com.toxictrace.nexusconnect.ui.screens.LayoutScreen
 import com.toxictrace.nexusconnect.ui.screens.PermissionsScreen
@@ -29,10 +30,10 @@ import com.toxictrace.nexusconnect.ui.screens.REQUIRED_PERMISSIONS
 import com.toxictrace.nexusconnect.ui.theme.NexusConnectTheme
 import com.toxictrace.nexusconnect.viewmodel.MainViewModel
 
-sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
-    object Contacts    : Screen("contacts",    "Contacts",    Icons.Default.Person)
-    object Layout      : Screen("layout",      "Layout",      Icons.Default.GridView)
-    object Preferences : Screen("preferences", "Preferences", Icons.Default.Tune)
+sealed class Screen(val route: String, val labelRes: Int, val icon: ImageVector) {
+    object Contacts    : Screen("contacts",    R.string.nav_contacts,    Icons.Default.Person)
+    object Layout      : Screen("layout",      R.string.nav_layout,      Icons.Default.GridView)
+    object Preferences : Screen("preferences", R.string.nav_preferences, Icons.Default.Tune)
 }
 
 private val bottomNavItems = listOf(Screen.Contacts, Screen.Layout, Screen.Preferences)
@@ -80,7 +81,7 @@ fun NexusApp() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Nexus Connect", style = MaterialTheme.typography.titleLarge) },
+                    title = { Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface
                     )
@@ -101,8 +102,8 @@ fun NexusApp() {
                                     restoreState = true
                                 }
                             },
-                            icon = { Icon(screen.icon, contentDescription = screen.label) },
-                            label = { Text(screen.label.uppercase()) }
+                            icon = { Icon(screen.icon, contentDescription = stringResource(screen.labelRes)) },
+                            label = { Text(stringResource(screen.labelRes).uppercase()) }
                         )
                     }
                 }

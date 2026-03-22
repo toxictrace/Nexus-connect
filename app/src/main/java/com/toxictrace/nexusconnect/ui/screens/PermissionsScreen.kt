@@ -15,47 +15,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.toxictrace.nexusconnect.R
 
 data class PermissionInfo(
     val permission: String,
-    val title: String,
-    val description: String,
+    val titleRes: Int,
+    val descRes: Int,
     val icon: ImageVector,
     val required: Boolean = true
 )
 
 val REQUIRED_PERMISSIONS = listOf(
-    PermissionInfo(
-        Manifest.permission.READ_CONTACTS,
-        "Contacts",
-        "Access your contacts to display them on the widget",
-        Icons.Default.Contacts,
-        required = true
-    ),
-    PermissionInfo(
-        Manifest.permission.READ_CALL_LOG,
-        "Call Log",
-        "Read call history for recent/frequent contacts and call type icons",
-        Icons.Default.Call,
-        required = true
-    ),
-    PermissionInfo(
-        Manifest.permission.CALL_PHONE,
-        "Make Calls",
-        "Call directly from the widget without opening the dialer",
-        Icons.Default.Phone,
-        required = false
-    ),
-    PermissionInfo(
-        Manifest.permission.READ_PHONE_STATE,
-        "Phone State",
-        "Detect when calls end to update the widget automatically",
-        Icons.Default.PhoneCallback,
-        required = true
-    ),
+    PermissionInfo(Manifest.permission.READ_CONTACTS,  R.string.permission_contacts,    R.string.permission_contacts_desc,    Icons.Default.Contacts,      true),
+    PermissionInfo(Manifest.permission.READ_CALL_LOG,  R.string.permission_call_log,    R.string.permission_call_log_desc,    Icons.Default.Call,          true),
+    PermissionInfo(Manifest.permission.CALL_PHONE,     R.string.permission_call_phone,  R.string.permission_call_phone_desc,  Icons.Default.Phone,         false),
+    PermissionInfo(Manifest.permission.READ_PHONE_STATE, R.string.permission_phone_state, R.string.permission_phone_state_desc, Icons.Default.PhoneCallback, true),
 )
 
 @Composable
@@ -76,11 +54,8 @@ fun PermissionsScreen(onAllGranted: () -> Unit) {
     }
 
     LaunchedEffect(Unit) {
-        if (allGranted) {
-            onAllGranted()
-        } else {
-            launcher.launch(REQUIRED_PERMISSIONS.map { it.permission }.toTypedArray())
-        }
+        if (allGranted) onAllGranted()
+        else launcher.launch(REQUIRED_PERMISSIONS.map { it.permission }.toTypedArray())
     }
 
     if (allGranted) return
@@ -94,10 +69,10 @@ fun PermissionsScreen(onAllGranted: () -> Unit) {
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.height(16.dp))
-        Text("Permissions Required",
+        Text(stringResource(R.string.permissions_required),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold)
-        Text("Nexus Connect needs the following permissions to work properly.",
+        Text(stringResource(R.string.permissions_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 8.dp, bottom = 24.dp))
@@ -119,17 +94,13 @@ fun PermissionsScreen(onAllGranted: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = if (granted)
-                            MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.size(44.dp)
-                    ) {
+                    Surface(shape = CircleShape,
+                        color = if (granted) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.size(44.dp)) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                if (granted) Icons.Default.Check else perm.icon,
-                                null,
+                                if (granted) Icons.Default.Check else perm.icon, null,
                                 tint = if (granted) MaterialTheme.colorScheme.onPrimary
                                        else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(22.dp)
@@ -139,21 +110,20 @@ fun PermissionsScreen(onAllGranted: () -> Unit) {
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(perm.title, style = MaterialTheme.typography.titleMedium,
+                            Text(stringResource(perm.titleRes),
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold)
                             if (!perm.required) {
-                                Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant
-                                ) {
-                                    Text("Optional",
+                                Surface(shape = RoundedCornerShape(4.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant) {
+                                    Text(stringResource(R.string.optional),
                                         style = MaterialTheme.typography.labelSmall,
                                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
-                        Text(perm.description,
+                        Text(stringResource(perm.descRes),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -162,105 +132,70 @@ fun PermissionsScreen(onAllGranted: () -> Unit) {
         }
 
         Spacer(Modifier.height(32.dp))
-
         Button(
-            onClick = {
-                launcher.launch(REQUIRED_PERMISSIONS.map { it.permission }.toTypedArray())
-            },
+            onClick = { launcher.launch(REQUIRED_PERMISSIONS.map { it.permission }.toTypedArray()) },
             modifier = Modifier.fillMaxWidth().height(52.dp),
             shape = RoundedCornerShape(26.dp)
         ) {
             Icon(Icons.Default.Lock, null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Grant Permissions", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.grant_permissions), style = MaterialTheme.typography.titleMedium)
         }
     }
 }
 
-// ── Battery optimization reminder ─────────────────────────────────────────────
-
 @Composable
 fun BatteryOptimizationBanner() {
     val context = LocalContext.current
-    val prefs = remember {
-        context.getSharedPreferences("nexus_ui_prefs", android.content.Context.MODE_PRIVATE)
-    }
-    var dismissed by remember {
-        mutableStateOf(prefs.getBoolean("battery_banner_dismissed", false))
-    }
+    val prefs = remember { context.getSharedPreferences("nexus_ui_prefs", android.content.Context.MODE_PRIVATE) }
+    var dismissed by remember { mutableStateOf(prefs.getBoolean("battery_banner_dismissed", false)) }
 
-    // Check if battery optimization is disabled for our app
     val isIgnoringBatteryOpt = remember {
-        val pm = context.getSystemService(android.content.Context.POWER_SERVICE)
-                as android.os.PowerManager
+        val pm = context.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
         pm.isIgnoringBatteryOptimizations(context.packageName)
     }
 
     if (dismissed || isIgnoringBatteryOpt) return
 
     Card(
-        modifier = androidx.compose.ui.Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8f)
         )
     ) {
-        Row(
-            modifier = androidx.compose.ui.Modifier.padding(12.dp),
+        Row(modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                Icons.Default.BatteryAlert, null,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(Icons.Default.BatteryAlert, null,
                 tint = MaterialTheme.colorScheme.tertiary,
-                modifier = androidx.compose.ui.Modifier.size(24.dp)
-            )
-            Column(modifier = androidx.compose.ui.Modifier.weight(1f)) {
-                Text(
-                    "Battery optimization",
+                modifier = Modifier.size(24.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.battery_optimization),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    "Disable battery optimization for Nexus Connect so the widget updates after calls even when the app is closed. Go to App Settings → Battery → No restrictions.",
+                    fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.battery_optimization_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
+                    color = MaterialTheme.colorScheme.onTertiaryContainer)
             }
         }
-        Row(
-            modifier = androidx.compose.ui.Modifier
-                .fillMaxWidth()
-                .padding(start = 48.dp, end = 12.dp, bottom = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            TextButton(
-                onClick = {
-                    dismissed = true
-                    prefs.edit().putBoolean("battery_banner_dismissed", true).apply()
+        Row(modifier = Modifier.fillMaxWidth().padding(start = 48.dp, end = 12.dp, bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = {
+                dismissed = true
+                prefs.edit().putBoolean("battery_banner_dismissed", true).apply()
+            }) { Text(stringResource(R.string.dismiss)) }
+            TextButton(onClick = {
+                try {
+                    context.startActivity(android.content.Intent(
+                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        android.net.Uri.parse("package:${context.packageName}")))
+                } catch (_: Exception) {
+                    context.startActivity(android.content.Intent(android.provider.Settings.ACTION_SETTINGS))
                 }
-            ) { Text("Dismiss") }
-            TextButton(
-                onClick = {
-                    // Open app battery settings — user manually disables optimization
-                    // (no REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission needed)
-                    try {
-                        context.startActivity(
-                            android.content.Intent(
-                                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                android.net.Uri.parse("package:${context.packageName}")
-                            )
-                        )
-                    } catch (_: Exception) {
-                        context.startActivity(
-                            android.content.Intent(android.provider.Settings.ACTION_SETTINGS)
-                        )
-                    }
-                }
-            ) {
-                Text("Open Settings", color = MaterialTheme.colorScheme.tertiary,
+            }) {
+                Text(stringResource(R.string.open_settings),
+                    color = MaterialTheme.colorScheme.tertiary,
                     fontWeight = FontWeight.SemiBold)
             }
         }

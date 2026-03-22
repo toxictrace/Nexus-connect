@@ -16,7 +16,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
 import com.toxictrace.nexusconnect.viewmodel.MainViewModel
 
@@ -25,7 +27,6 @@ fun LayoutScreen(viewModel: MainViewModel) {
     val settings by viewModel.settings.collectAsState()
     val scrollState = rememberScrollState()
 
-    // Local draft state - applied only on button press
     var draft by remember(settings) { mutableStateOf(settings) }
 
     Column(
@@ -35,78 +36,69 @@ fun LayoutScreen(viewModel: MainViewModel) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Widget preview
         WidgetPreview(columns = draft.columns, rows = draft.tileHeightDp.coerceIn(3, 6))
 
-        // Columns + Tile Height card
         SettingsCard {
             SettingsSlider(
-                label = "Number of Columns",
+                label = stringResource(R.string.number_of_columns),
                 value = draft.columns,
                 valueRange = 3f..6f,
                 steps = 2,
-                startLabel = "3 COLUMNS",
-                endLabel = "6 COLUMNS",
+                startLabel = "3",
+                endLabel = "6",
                 onValueChange = { draft = draft.copy(columns = it) }
             )
-
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
             SettingsSlider(
-                label = "Number of Rows",
+                label = stringResource(R.string.number_of_rows),
                 value = draft.tileHeightDp.coerceIn(3, 6),
                 valueRange = 3f..6f,
                 steps = 2,
-                startLabel = "3 ROWS",
-                endLabel = "6 ROWS",
+                startLabel = "3",
+                endLabel = "6",
                 onValueChange = { draft = draft.copy(tileHeightDp = it) }
             )
         }
 
-        // Filtering Mode card
-        Text(
-            "Filtering Mode",
+        Text(stringResource(R.string.filtering_mode),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+            modifier = Modifier.padding(top = 4.dp))
 
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
             FilterCheckItem(
-                icon = { Icon(Icons.Default.Star, contentDescription = null) },
-                title = "Favorites",
-                subtitle = "Pinned and starred contacts",
+                icon = { Icon(Icons.Default.Star, null) },
+                title = stringResource(R.string.favorites),
+                subtitle = stringResource(R.string.favorites_subtitle),
                 checked = draft.filterFavorites,
                 onCheckedChange = { draft = draft.copy(filterFavorites = it) }
             )
             HorizontalDivider()
             FilterCheckItem(
-                icon = { Icon(Icons.Outlined.AccessTime, contentDescription = null) },
-                title = "Recents",
-                subtitle = "Last interacted or messaged",
+                icon = { Icon(Icons.Outlined.AccessTime, null) },
+                title = stringResource(R.string.recents),
+                subtitle = stringResource(R.string.recents_subtitle),
                 checked = draft.filterRecents,
                 onCheckedChange = { draft = draft.copy(filterRecents = it) }
             )
             HorizontalDivider()
             FilterCheckItem(
-                icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
-                title = "Frequent",
-                subtitle = "Prioritize by engagement score",
+                icon = { Icon(Icons.Default.BarChart, null) },
+                title = stringResource(R.string.frequent),
+                subtitle = stringResource(R.string.frequent_subtitle),
                 checked = draft.filterFrequent,
                 onCheckedChange = { draft = draft.copy(filterFrequent = it) }
             )
         }
 
-        // Unknown numbers card
-        Text(
-            "Unknown Numbers",
+        Text(stringResource(R.string.unknown_numbers),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+            modifier = Modifier.padding(top = 4.dp))
+
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
             FilterCheckItem(
-                icon = { Icon(Icons.Default.PhoneCallback, contentDescription = null) },
-                title = "Show unknown numbers",
-                subtitle = "Display recent calls from numbers not in contacts",
+                icon = { Icon(Icons.Default.PhoneCallback, null) },
+                title = stringResource(R.string.show_unknown_numbers),
+                subtitle = stringResource(R.string.show_unknown_subtitle),
                 checked = draft.showUnknownNumbers,
                 onCheckedChange = { draft = draft.copy(showUnknownNumbers = it) }
             )
@@ -118,8 +110,9 @@ fun LayoutScreen(viewModel: MainViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Keep for", style = MaterialTheme.typography.titleMedium)
-                        Text("Show unknown numbers only within this period",
+                        Text(stringResource(R.string.keep_for),
+                            style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.keep_for_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -140,15 +133,12 @@ fun LayoutScreen(viewModel: MainViewModel) {
             }
         }
 
-        // Apply button
         Button(
             onClick = { viewModel.updateSettings { draft } },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
+            modifier = Modifier.fillMaxWidth().height(52.dp),
             shape = RoundedCornerShape(28.dp)
         ) {
-            Text("Apply Layout Changes", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.apply_layout), style = MaterialTheme.typography.titleMedium)
         }
 
         Spacer(Modifier.height(8.dp))
