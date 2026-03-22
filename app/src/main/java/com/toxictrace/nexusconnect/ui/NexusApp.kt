@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.toxictrace.nexusconnect.data.model.AppTheme
+import com.toxictrace.nexusconnect.ui.screens.BatteryOptimizationBanner
 import com.toxictrace.nexusconnect.ui.screens.ContactsScreen
 import com.toxictrace.nexusconnect.ui.screens.LayoutScreen
 import com.toxictrace.nexusconnect.ui.screens.PermissionsScreen
@@ -112,17 +113,22 @@ fun NexusApp() {
             val barBottom = paddingValues.calculateBottomPadding()
             val bottomPadding = with(density) { maxOf(imeBottom.toDp(), barBottom) }
 
-            NavHost(
-                navController = navController,
-                startDestination = Screen.Contacts.route,
+            Column(
                 modifier = Modifier.padding(
                     top    = paddingValues.calculateTopPadding(),
                     bottom = bottomPadding
                 )
             ) {
-                composable(Screen.Contacts.route)    { ContactsScreen(viewModel = viewModel) }
-                composable(Screen.Layout.route)      { LayoutScreen(viewModel = viewModel) }
-                composable(Screen.Preferences.route) { PreferencesScreen(viewModel = viewModel) }
+                BatteryOptimizationBanner()
+                NavHost(
+                    navController = navController,
+                    startDestination = Screen.Contacts.route,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    composable(Screen.Contacts.route)    { ContactsScreen(viewModel = viewModel) }
+                    composable(Screen.Layout.route)      { LayoutScreen(viewModel = viewModel) }
+                    composable(Screen.Preferences.route) { PreferencesScreen(viewModel = viewModel) }
+                }
             }
         }
     }
