@@ -52,13 +52,15 @@ class ContactChooserActivity : ComponentActivity() {
         val name      = intent.getStringExtra("contact_name")  ?: ""
         val photoUri  = if (contactId > 0) PhotoProvider.uriForContact(contactId).toString() else null
 
-        // Fallback avatar when contact has no photo
+        // Fallback avatar: custom URI or default drawable resource
         val avatarIdentity = WidgetPrefs.getAvatarIdentity(this)
-        val fallbackAvatarUri = if (avatarIdentity == "CUSTOM" &&
-            WidgetPrefs.getCustomAvatarUri(this).isNotBlank())
-            AvatarProvider.customUri().toString()
-        else
-            AvatarProvider.defaultUri().toString()
+        val customUri = WidgetPrefs.getCustomAvatarUri(this)
+        val fallbackAvatarUri: Any = when {
+            avatarIdentity == "CUSTOM" && customUri.isNotBlank() ->
+                android.net.Uri.parse(customUri)
+            else ->
+                com.toxictrace.nexusconnect.R.drawable.avatar_default
+        }
         val stats     = loadCallStats(phone)
 
         val isDark = when (WidgetPrefs.getTheme(this)) {
@@ -207,7 +209,7 @@ class ContactChooserActivity : ComponentActivity() {
 @Composable
 private fun ChooserSheet(
     name: String, phone: String, photoUri: String?,
-    fallbackAvatarUri: String,
+    fallbackAvatarUri: Any,
     stats: CallStats,
     whatsAppPkg: String, viberPkg: String, telegramPkg: String,
     isInstalled: (String) -> Boolean,

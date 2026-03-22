@@ -60,16 +60,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadInstalledApps() {
         viewModelScope.launch(Dispatchers.IO) {
             val pm = getApplication<Application>().packageManager
-            val apps = pm.getInstalledApplications(0)
-                .filter { it.packageName != getApplication<Application>().packageName }
-                .mapNotNull { info ->
+            // Use CATEGORY_LAUNCHER to get all apps with home screen icon
+            // This works without QUERY_ALL_PACKAGES
+            val launcherIntent = android.content.Intent(android.content.Intent.ACTION_MAIN)
+                .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+            val apps = pm.queryIntentActivities(launcherIntent, 0)
+                .map { it.activityInfo.packageName }
+                .distinct()
+                .filter { it != getApplication<Application>().packageName }
+                .mapNotNull { pkg ->
                     runCatching {
-                        if (pm.getLaunchIntentForPackage(info.packageName) == null) return@mapNotNull null
+                        val info = pm.getApplicationInfo(pkg, 0)
                         val label = pm.getApplicationLabel(info).toString()
                         val iconBmp = runCatching {
-                            pm.getApplicationIcon(info.packageName).toBitmap(48, 48).asImageBitmap()
+                            pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
                         }.getOrNull()
-                        AppInfo(info.packageName, label, iconBmp)
+                        AppInfo(pkg, label, iconBmp)
                     }.getOrNull()
                 }
                 .sortedBy { it.label.lowercase() }
