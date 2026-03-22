@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -128,7 +129,8 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 contentPadding = PaddingValues(
                     top = 4.dp,
                     bottom = if (selectedCount > 0) 88.dp else 16.dp
-                )
+                ),
+                flingBehavior = rememberSmoothFlingBehavior()
             ) {
                 // ── Selected contacts ──
                 if (selected.isNotEmpty()) {
@@ -223,7 +225,7 @@ private fun SelectedContactItem(
     onMoveDown: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().graphicsLayer { },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
@@ -306,7 +308,7 @@ private fun UnselectedContactItem(
     onToggle: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().graphicsLayer { },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -339,6 +341,16 @@ private fun UnselectedContactItem(
             }
         }
     }
+}
+
+@Composable
+private fun rememberSmoothFlingBehavior(): androidx.compose.foundation.gestures.FlingBehavior {
+    val decaySpec = remember {
+        androidx.compose.animation.core.exponentialDecay<Float>(
+            frictionMultiplier = 1.8f  // higher = slower deceleration = smoother
+        )
+    }
+    return androidx.compose.foundation.gestures.rememberSplineBasedDecay()
 }
 
 @Composable
