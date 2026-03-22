@@ -106,10 +106,17 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     views.setViewVisibility(tileId, View.VISIBLE)
 
                     if (contact.photoUri != null) {
-                        val photoProviderUri = PhotoProvider.uriForContact(contact.id)
-                        views.setImageViewUri(photoId, photoProviderUri)
+                        // Real contact photo — full quality via PhotoProvider
+                        views.setImageViewUri(photoId, PhotoProvider.uriForContact(contact.id))
                     } else {
-                        views.setImageViewBitmap(photoId, makeDefaultAvatar(context, contact, 120))
+                        // No photo — use AvatarProvider (default silhouette or custom image)
+                        val avatarIdentity = WidgetPrefs.getAvatarIdentity(context)
+                        val avatarUri = if (avatarIdentity == "CUSTOM" &&
+                            WidgetPrefs.getCustomAvatarUri(context).isNotBlank())
+                            AvatarProvider.customUri()
+                        else
+                            AvatarProvider.defaultUri()
+                        views.setImageViewUri(photoId, avatarUri)
                     }
 
                     views.setTextViewText(nameId, contact.name)

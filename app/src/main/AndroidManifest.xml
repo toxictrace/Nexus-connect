@@ -78,6 +78,13 @@
             android:name=".widget.ContactsObserverService"
             android:exported="false" />
 
+        <!-- Avatar ContentProvider — serves default silhouette and custom avatar at full quality -->
+        <provider
+            android:name=".widget.AvatarProvider"
+            android:authorities="com.toxictrace.nexusconnect.avatar"
+            android:exported="true"
+            android:grantUriPermissions="true" />
+
         <!-- Photo ContentProvider for widget — bypasses IPC bitmap limit -->
         <provider
             android:name=".widget.PhotoProvider"
