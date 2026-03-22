@@ -345,12 +345,7 @@ private fun UnselectedContactItem(
 
 @Composable
 private fun rememberSmoothFlingBehavior(): androidx.compose.foundation.gestures.FlingBehavior {
-    val decaySpec = remember {
-        androidx.compose.animation.core.exponentialDecay<Float>(
-            frictionMultiplier = 1.8f  // higher = slower deceleration = smoother
-        )
-    }
-    return androidx.compose.foundation.gestures.rememberSplineBasedDecay()
+    return ScrollableDefaults.flingBehavior()
 }
 
 @Composable
