@@ -124,8 +124,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                    .padding(horizontal = 8.dp),
                 contentPadding = PaddingValues(
                     top = 4.dp,
                     bottom = if (selectedCount > 0) 88.dp else 16.dp
@@ -225,66 +224,50 @@ private fun SelectedContactItem(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-        tonalElevation = 0.dp
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Box(
+            modifier = Modifier.size(26.dp).clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("${position + 1}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold)
-            }
+            Text("${position + 1}",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White,
+                fontWeight = FontWeight.Bold)
+        }
 
-            ContactAvatar(contact = contact, size = 44)
+        ContactAvatar(contact = contact, size = 44)
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(contact.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                contact.phoneNumber?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1)
-                }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(contact.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            contact.phoneNumber?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1)
             }
+        }
 
-            Column {
-                IconButton(onClick = onMoveUp, enabled = position > 0,
-                    modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Default.KeyboardArrowUp, null,
-                        modifier = Modifier.size(20.dp),
-                        tint = if (position > 0) MaterialTheme.colorScheme.primary
-                               else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                }
-                IconButton(onClick = onMoveDown, enabled = position < total - 1,
-                    modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Default.KeyboardArrowDown, null,
-                        modifier = Modifier.size(20.dp),
-                        tint = if (position < total - 1) MaterialTheme.colorScheme.primary
-                               else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                }
-            }
-
-            IconButton(onClick = onToggle, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.Close, null, modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+        IconButton(onClick = onMoveUp, enabled = position > 0,
+            modifier = Modifier.size(28.dp)) {
+            Icon(Icons.Default.KeyboardArrowUp, null, modifier = Modifier.size(18.dp))
+        }
+        IconButton(onClick = onMoveDown, enabled = position < total - 1,
+            modifier = Modifier.size(28.dp)) {
+            Icon(Icons.Default.KeyboardArrowDown, null, modifier = Modifier.size(18.dp))
+        }
+        IconButton(onClick = onToggle, modifier = Modifier.size(28.dp)) {
+            Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp))
         }
     }
 }
@@ -295,39 +278,38 @@ private fun UnselectedContactItem(
     contact: Contact,
     onToggle: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onToggle)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Checkbox(checked = false, onCheckedChange = { onToggle() })
-            ContactAvatar(contact = contact, size = 46)
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(contact.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                    if (contact.isStarred) {
-                        Icon(Icons.Default.Star, null,
-                            tint = Color(0xFFFFC107),
-                            modifier = Modifier.size(13.dp))
-                    }
+        Checkbox(checked = false, onCheckedChange = { onToggle() })
+        ContactAvatar(contact = contact, size = 46)
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    contact.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+                if (contact.isStarred) {
+                    Icon(Icons.Default.Star, null,
+                        tint = Color(0xFFFFC107),
+                        modifier = Modifier.size(13.dp))
                 }
-                contact.phoneNumber?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1)
-                }
+            }
+            contact.phoneNumber?.let {
+                Text(it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1)
             }
         }
     }
