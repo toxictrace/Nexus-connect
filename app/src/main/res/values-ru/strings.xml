@@ -2,6 +2,7 @@
 <resources>
     <!-- App -->
     <string name="app_name">Nexus Connect</string>
+    <string name="widget_description">Быстрый доступ к избранным контактам</string>
 
     <!-- Bottom nav -->
     <string name="nav_contacts">Контакты</string>
