@@ -50,7 +50,20 @@ class ContactChooserActivity : ComponentActivity() {
         val contactId = intent.getLongExtra("contact_id", -1L)
         val phone     = intent.getStringExtra("contact_phone") ?: ""
         val name      = intent.getStringExtra("contact_name")  ?: ""
-        val photoUri  = if (contactId > 0) PhotoProvider.uriForContact(contactId).toString() else null
+
+        // Check if contact actually has a photo
+        val hasPhoto = contactId > 0 && run {
+            try {
+                val cursor = contentResolver.query(
+                    android.provider.ContactsContract.Contacts.CONTENT_URI,
+                    arrayOf(android.provider.ContactsContract.Contacts.PHOTO_URI),
+                    "${android.provider.ContactsContract.Contacts._ID} = ?",
+                    arrayOf(contactId.toString()), null
+                )
+                cursor?.use { it.moveToFirst() && !it.getString(0).isNullOrBlank() } == true
+            } catch (_: Exception) { false }
+        }
+        val photoUri = if (hasPhoto) PhotoProvider.uriForContact(contactId).toString() else null
 
         val avatarIdentity = WidgetPrefs.getAvatarIdentity(this)
         val customUri = WidgetPrefs.getCustomAvatarUri(this)
