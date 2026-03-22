@@ -12,6 +12,11 @@ val AccentColors = listOf(
     Color(0xFF007A6E), // Teal
     Color(0xFF8B2252), // Rose
     Color(0xFF2E7D32), // Green
+    Color(0xFFB85C00), // Orange
+    Color(0xFFC62828), // Red
+    Color(0xFF00695C), // Dark Teal
+    Color(0xFF283593), // Indigo
+    Color(0xFF558B2F), // Olive
 )
 
 private fun lightScheme(primary: Color) = lightColorScheme(

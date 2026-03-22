@@ -166,7 +166,7 @@ private fun MessengerSection(
     var showPickerFor by remember { mutableStateOf<String?>(null) }
 
     Column {
-        SectionHeader("MESSENGERS", stringResource(R.string.messenger_subtitle))
+        SectionHeader(stringResource(R.string.messenger_section), stringResource(R.string.messenger_subtitle))
         Spacer(Modifier.height(12.dp))
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
             MessengerRow("WhatsApp", settings.messengerWhatsApp, apps) {
