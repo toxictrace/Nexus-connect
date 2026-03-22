@@ -131,7 +131,8 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
                 contentPadding = PaddingValues(
                     top = 4.dp,
                     bottom = if (selectedCount > 0) 88.dp else 16.dp
@@ -233,50 +234,56 @@ private fun SelectedContactItem(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Box(
-            modifier = Modifier.size(26.dp).clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("${position + 1}",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.White,
-                fontWeight = FontWeight.Bold)
-        }
-
-        ContactAvatar(contact = contact, size = 44, photoCache = photoCache)
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(contact.name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-            contact.phoneNumber?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1)
+            Box(
+                modifier = Modifier.size(26.dp).clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("${position + 1}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold)
             }
-        }
 
-        IconButton(onClick = onMoveUp, enabled = position > 0,
-            modifier = Modifier.size(28.dp)) {
-            Icon(Icons.Default.KeyboardArrowUp, null, modifier = Modifier.size(18.dp))
-        }
-        IconButton(onClick = onMoveDown, enabled = position < total - 1,
-            modifier = Modifier.size(28.dp)) {
-            Icon(Icons.Default.KeyboardArrowDown, null, modifier = Modifier.size(18.dp))
-        }
-        IconButton(onClick = onToggle, modifier = Modifier.size(28.dp)) {
-            Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp))
+            ContactAvatar(contact = contact, size = 44, photoCache = photoCache)
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(contact.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                contact.phoneNumber?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1)
+                }
+            }
+
+            IconButton(onClick = onMoveUp, enabled = position > 0,
+                modifier = Modifier.size(28.dp)) {
+                Icon(Icons.Default.KeyboardArrowUp, null, modifier = Modifier.size(18.dp))
+            }
+            IconButton(onClick = onMoveDown, enabled = position < total - 1,
+                modifier = Modifier.size(28.dp)) {
+                Icon(Icons.Default.KeyboardArrowDown, null, modifier = Modifier.size(18.dp))
+            }
+            IconButton(onClick = onToggle, modifier = Modifier.size(28.dp)) {
+                Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp))
+            }
         }
     }
 }
@@ -288,38 +295,44 @@ private fun UnselectedContactItem(
     onToggle: () -> Unit,
     photoCache: Map<Long, android.graphics.Bitmap> = emptyMap()
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onToggle)
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    Card(
+        onClick = onToggle,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Checkbox(checked = false, onCheckedChange = { onToggle() })
-        ContactAvatar(contact = contact, size = 46, photoCache = photoCache)
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    contact.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                )
-                if (contact.isStarred) {
-                    Icon(Icons.Default.Star, null,
-                        tint = Color(0xFFFFC107),
-                        modifier = Modifier.size(13.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Checkbox(checked = false, onCheckedChange = { onToggle() })
+            ContactAvatar(contact = contact, size = 46, photoCache = photoCache)
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        contact.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    if (contact.isStarred) {
+                        Icon(Icons.Default.Star, null,
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(13.dp))
+                    }
                 }
-            }
-            contact.phoneNumber?.let {
-                Text(it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1)
+                contact.phoneNumber?.let {
+                    Text(it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1)
+                }
             }
         }
     }
