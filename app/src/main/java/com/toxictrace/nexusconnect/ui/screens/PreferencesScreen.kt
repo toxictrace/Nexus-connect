@@ -68,6 +68,10 @@ fun PreferencesScreen(viewModel: MainViewModel) {
             settings = settings,
             onUpdate = { enabled -> viewModel.updateSettings { s -> s.copy(hapticFeedback = enabled) } }
         )
+        CallIconSection(
+            settings = settings,
+            onUpdate = { enabled -> viewModel.updateSettings { s -> s.copy(showCallTypeIcon = enabled) } }
+        )
         AppearanceSection(
             settings = settings,
             onUpdate = { updated -> viewModel.updateSettings { updated } }
@@ -307,6 +311,35 @@ private fun AppPickerDialog(apps: List<AppInfo>, loading: Boolean, current: Stri
 }
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
+
+@Composable
+private fun CallIconSection(settings: WidgetSettings, onUpdate: (Boolean) -> Unit) {
+    Column {
+        Text("CALL TYPE ICON", style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(8.dp))
+        SettingsCard {
+            Row(modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Surface(shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(44.dp)) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Call, null)
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Show call type icon", style = MaterialTheme.typography.titleMedium)
+                    Text("Incoming / Outgoing / Missed on tile",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = settings.showCallTypeIcon, onCheckedChange = onUpdate)
+            }
+        }
+    }
+}
 
 @Composable
 private fun FeedbackSection(settings: WidgetSettings, onUpdate: (Boolean) -> Unit) {

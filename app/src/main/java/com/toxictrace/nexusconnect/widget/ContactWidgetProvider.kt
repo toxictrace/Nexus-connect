@@ -15,6 +15,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
@@ -93,23 +94,30 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 Log.e(TAG, "Layout not found for ${cols}c${rows}r, using 4c3r")
                 context.resources.getIdentifier("widget_grid_4c3r", "layout", context.packageName)
             }
+            // Load last call types for all contacts if icon display is enabled
+            val showCallIcon = WidgetPrefs.getShowCallTypeIcon(context)
+            val callTypeMap: Map<String, Int> = if (showCallIcon) {
+                val phones = allTileContacts.mapNotNull { it.phoneNumber }
+                com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
+                    .getLastCallTypes(phones)
+            } else emptyMap()
+
             val views = RemoteViews(context.packageName, layoutRes)
             val pkg = context.packageName
 
             for (idx in 0 until maxTiles) {
-                val tileId  = context.resources.getIdentifier("tile_${cols}r${rows}_$idx",  "id", pkg)
-                val photoId = context.resources.getIdentifier("photo_${cols}r${rows}_$idx", "id", pkg)
-                val nameId  = context.resources.getIdentifier("name_${cols}r${rows}_$idx",  "id", pkg)
+                val tileId     = context.resources.getIdentifier("tile_${cols}r${rows}_$idx",      "id", pkg)
+                val photoId    = context.resources.getIdentifier("photo_${cols}r${rows}_$idx",     "id", pkg)
+                val nameId     = context.resources.getIdentifier("name_${cols}r${rows}_$idx",      "id", pkg)
+                val callIconId = context.resources.getIdentifier("call_icon_${cols}r${rows}_$idx", "id", pkg)
 
                 val contact = allTileContacts.getOrNull(idx)
                 if (contact != null) {
                     views.setViewVisibility(tileId, View.VISIBLE)
 
                     if (contact.photoUri != null) {
-                        // Real contact photo — full quality via PhotoProvider
                         views.setImageViewUri(photoId, PhotoProvider.uriForContact(contact.id))
                     } else {
-                        // No photo — use AvatarProvider (default silhouette or custom image)
                         val avatarIdentity = WidgetPrefs.getAvatarIdentity(context)
                         val avatarUri = if (avatarIdentity == "CUSTOM" &&
                             WidgetPrefs.getCustomAvatarUri(context).isNotBlank())
@@ -120,6 +128,27 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     }
 
                     views.setTextViewText(nameId, contact.name)
+
+                    // Call type icon
+                    if (showCallIcon && callIconId != 0 && contact.phoneNumber != null) {
+                        val norm = contact.phoneNumber.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                        val callType = callTypeMap[norm]
+                        val iconRes = when (callType) {
+                            android.provider.CallLog.Calls.INCOMING_TYPE  -> R.drawable.call_incoming
+                            android.provider.CallLog.Calls.OUTGOING_TYPE  -> R.drawable.call_outgoing
+                            android.provider.CallLog.Calls.MISSED_TYPE    -> R.drawable.call_missed
+                            5 -> R.drawable.call_rejected  // REJECTED / BLOCKED
+                            else -> if (callType != null) R.drawable.call_unknown else 0
+                        }
+                        if (iconRes != 0) {
+                            views.setViewVisibility(callIconId, View.VISIBLE)
+                            views.setImageViewResource(callIconId, iconRes)
+                        } else {
+                            views.setViewVisibility(callIconId, View.GONE)
+                        }
+                    } else if (callIconId != 0) {
+                        views.setViewVisibility(callIconId, View.GONE)
+                    }
 
                     val intent = Intent(context, ContactWidgetProvider::class.java).apply {
                         action = ACTION_CONTACT_CLICK

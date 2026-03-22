@@ -118,6 +118,36 @@ class CallLogRepository(private val context: Context) {
         }
     }
 
-    private fun normalizeNum(number: String): String =
+    /**
+     * Returns map of normalized_number → last call type for given contacts.
+     * Call types: INCOMING=1, OUTGOING=2, MISSED=3, REJECTED=5 (BLOCKED on some)
+     */
+    fun getLastCallTypes(phoneNumbers: List<String>): Map<String, Int> {
+        if (phoneNumbers.isEmpty()) return emptyMap()
+        val normSet = phoneNumbers.map { normalizeNum(it) }.toSet()
+        val result = mutableMapOf<String, Int>()
+        return try {
+            val cursor = context.contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.TYPE),
+                null, null,
+                "${CallLog.Calls.DATE} DESC"
+            ) ?: return emptyMap()
+            cursor.use {
+                val ni = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
+                while (it.moveToNext() && result.size < normSet.size) {
+                    val norm = normalizeNum(it.getString(ni) ?: continue)
+                    if (norm in normSet && norm !in result) {
+                        result[norm] = it.getInt(ti)
+                    }
+                }
+            }
+            result
+        } catch (e: Exception) {
+            Log.e(TAG, "getLastCallTypes: ${e.message}")
+            emptyMap()
+        }
+    }
         number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
 }

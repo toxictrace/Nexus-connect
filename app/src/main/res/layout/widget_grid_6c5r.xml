@@ -32,6 +32,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_0"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_1"
@@ -61,6 +69,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_1"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_2"
@@ -90,6 +106,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_3"
@@ -119,6 +143,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_3"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_4"
@@ -148,6 +180,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_4"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_5"
@@ -177,6 +217,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_5"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -208,6 +256,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_6"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_7"
@@ -237,6 +293,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_7"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_8"
@@ -266,6 +330,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_8"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_9"
@@ -295,6 +367,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_9"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_10"
@@ -324,6 +404,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_10"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_11"
@@ -353,6 +441,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_11"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -384,6 +480,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_12"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_13"
@@ -413,6 +517,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_13"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_14"
@@ -442,6 +554,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_14"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_15"
@@ -471,6 +591,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_15"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_16"
@@ -500,6 +628,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_16"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_17"
@@ -529,6 +665,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_17"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -560,6 +704,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_18"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_19"
@@ -589,6 +741,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_19"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_20"
@@ -618,6 +778,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_20"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_21"
@@ -647,6 +815,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_21"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_22"
@@ -676,6 +852,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_22"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_23"
@@ -705,6 +889,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_23"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
@@ -736,6 +928,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_24"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_25"
@@ -765,6 +965,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_25"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_26"
@@ -794,6 +1002,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_26"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_27"
@@ -823,6 +1039,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_27"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_28"
@@ -852,6 +1076,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_28"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
         <FrameLayout
             android:id="@+id/tile_6r5_29"
@@ -881,6 +1113,14 @@
                 android:paddingBottom="3dp"
                 android:paddingLeft="2dp"
                 android:paddingRight="2dp"/>
+            <ImageView
+                android:id="@+id/call_icon_6r5_29"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="3dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"/>
         </FrameLayout>
     </LinearLayout>
 </LinearLayout>

@@ -33,6 +33,9 @@ object WidgetPrefs {
             ClickAction.valueOf(sp(context).getString("click_action", "") ?: "")
         }.getOrDefault(ClickAction.SHOW_DIALOG)
 
+    fun getShowCallTypeIcon(context: Context): Boolean =
+        sp(context).getBoolean("show_call_type_icon", true)
+
     fun getShowUnknownNumbers(context: Context): Boolean =
         sp(context).getBoolean("show_unknown_numbers", true)
 
@@ -80,6 +83,7 @@ object WidgetPrefs {
             putString("custom_avatar_uri",      settings.customAvatarUri)
             putBoolean("show_unknown_numbers",  settings.showUnknownNumbers)
             putInt("unknown_numbers_days",      settings.unknownNumbersDays)
+            putBoolean("show_call_type_icon",   settings.showCallTypeIcon)
             putString("click_action",        settings.clickAction.name)
             putString("theme",              settings.theme.name)
             putBoolean("dynamic_colors",    settings.dynamicColors)

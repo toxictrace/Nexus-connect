@@ -31,7 +31,8 @@ data class WidgetSettings(
     val unknownNumbersDays: Int = 3,
     val messengerWhatsApp: String = "",
     val messengerViber: String = "",
-    val messengerTelegram: String = ""
+    val messengerTelegram: String = "",
+    val showCallTypeIcon: Boolean = true
 )
 
 class SettingsRepository(private val context: Context) {
@@ -55,6 +56,7 @@ class SettingsRepository(private val context: Context) {
         val MESSENGER_WHATSAPP   = stringPreferencesKey("messenger_whatsapp")
         val MESSENGER_VIBER      = stringPreferencesKey("messenger_viber")
         val MESSENGER_TELEGRAM   = stringPreferencesKey("messenger_telegram")
+        val SHOW_CALL_TYPE_ICON  = booleanPreferencesKey("show_call_type_icon")
         val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
     }
 
@@ -85,7 +87,8 @@ class SettingsRepository(private val context: Context) {
                 unknownNumbersDays = prefs[Keys.UNKNOWN_NUMBERS_DAYS] ?: 3,
                 messengerWhatsApp  = prefs[Keys.MESSENGER_WHATSAPP] ?: "",
                 messengerViber     = prefs[Keys.MESSENGER_VIBER] ?: "",
-                messengerTelegram  = prefs[Keys.MESSENGER_TELEGRAM] ?: ""
+                messengerTelegram  = prefs[Keys.MESSENGER_TELEGRAM] ?: "",
+                showCallTypeIcon   = prefs[Keys.SHOW_CALL_TYPE_ICON] ?: true
             )
         }
 
@@ -109,6 +112,7 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.MESSENGER_WHATSAPP]   = update.messengerWhatsApp
             prefs[Keys.MESSENGER_VIBER]      = update.messengerViber
             prefs[Keys.MESSENGER_TELEGRAM]   = update.messengerTelegram
+            prefs[Keys.SHOW_CALL_TYPE_ICON]  = update.showCallTypeIcon
         }
         val selectedIds = getSelectedContactIds()
         WidgetPrefs.sync(context, update, selectedIds)
