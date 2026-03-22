@@ -366,6 +366,7 @@ private fun FeedbackSection(settings: WidgetSettings, onUpdate: (Boolean) -> Uni
 
 // ── Appearance ────────────────────────────────────────────────────────────────
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
     Column {
@@ -396,15 +397,19 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
                     Text(stringResource(R.string.dynamic_colors_subtitle), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    androidx.compose.foundation.layout.FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                         AccentColors.forEachIndexed { idx, color ->
+                            val selected = settings.accentColorIndex == idx && !settings.dynamicColors
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(42.dp)
                                     .clip(CircleShape)
                                     .background(color)
                                     .then(
-                                        if (settings.accentColorIndex == idx && !settings.dynamicColors)
+                                        if (selected)
                                             Modifier.border(3.dp, Color.White, CircleShape)
                                         else Modifier
                                     )
@@ -413,8 +418,15 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
                                             accentColorIndex = idx,
                                             dynamicColors = false
                                         ))
-                                    }
-                            )
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (selected) {
+                                    Icon(Icons.Default.Check, null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp))
+                                }
+                            }
                         }
                     }
                 }

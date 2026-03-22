@@ -17,17 +17,25 @@ val AccentColors = listOf(
     Color(0xFF00695C), // Dark Teal
     Color(0xFF283593), // Indigo
     Color(0xFF558B2F), // Olive
+    Color(0xFF4A148C), // Deep Purple
+    Color(0xFF880E4F), // Pink
 )
 
 private fun lightScheme(primary: Color) = lightColorScheme(
-    primary          = primary,
-    onPrimary        = Color.White,
-    primaryContainer = primary.copy(alpha = 0.15f).compositeOver(Color.White),
-    secondary        = primary.copy(alpha = 0.7f).compositeOver(Color.White),
-    background       = Color(0xFFF5F5F7),
-    surface          = Color.White,
-    surfaceVariant   = Color(0xFFF0F1F5),
-    outline          = Color(0xFFE0E0E0)
+    primary             = primary,
+    onPrimary           = Color.White,
+    primaryContainer    = primary.copy(alpha = 0.12f).compositeOver(Color.White),
+    onPrimaryContainer  = primary,
+    secondary           = primary.copy(alpha = 0.75f).compositeOver(Color.White),
+    onSecondary         = Color.White,
+    background          = Color(0xFFF2F3F7),
+    onBackground        = Color(0xFF111111),
+    surface             = Color.White,
+    onSurface           = Color(0xFF111111),
+    surfaceVariant      = Color(0xFFE8EAF0),
+    onSurfaceVariant    = Color(0xFF444455),
+    outline             = Color(0xFFCCCDD8),
+    outlineVariant      = Color(0xFFE0E1EA)
 )
 
 private fun darkScheme(primary: Color) = darkColorScheme(
