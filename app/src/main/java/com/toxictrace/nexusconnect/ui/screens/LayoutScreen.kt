@@ -124,11 +124,11 @@ fun LayoutScreen(viewModel: MainViewModel) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(1, 3, 7).forEach { days ->
+                        listOf(0 to "∞", 1 to "1d", 3 to "3d", 7 to "7d").forEach { (days, label) ->
                             FilterChip(
                                 selected = draft.unknownNumbersDays == days,
                                 onClick = { draft = draft.copy(unknownNumbersDays = days) },
-                                label = { Text("${days}d") },
+                                label = { Text(label) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                                     selectedLabelColor = Color.White

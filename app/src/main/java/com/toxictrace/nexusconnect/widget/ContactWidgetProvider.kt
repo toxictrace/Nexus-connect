@@ -194,7 +194,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             maxCount: Int
         ): List<Contact> {
             if (!WidgetPrefs.getShowUnknownNumbers(context)) return emptyList()
-            val days = WidgetPrefs.getUnknownNumbersDays(context)
+            val days = WidgetPrefs.getUnknownNumbersDays(context) // 0 = unlimited
             val callLogRepo = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
             return callLogRepo.getUnknownRecentCalls(numberMap, days, maxCount)
                 .mapIndexed { idx, (number, _, type) ->
@@ -215,42 +215,78 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val avatarIdentity = WidgetPrefs.getAvatarIdentity(context)
             val customUri      = WidgetPrefs.getCustomAvatarUri(context)
 
-            // Custom image from gallery
+            // Custom image — centerCrop to fill tile without distortion
             if (avatarIdentity == "CUSTOM" && customUri.isNotBlank()) {
                 try {
                     val uri = android.net.Uri.parse(customUri)
-                    val opts = BitmapFactory.Options().apply { inSampleSize = 1 }
-                    context.contentResolver.openInputStream(uri)?.use { s ->
-                        val bmp = BitmapFactory.decodeStream(s, null, opts)
-                        if (bmp != null) return Bitmap.createScaledBitmap(bmp, size, size, true)
+                    // Decode bounds first
+                    val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    context.contentResolver.openInputStream(uri)?.use {
+                        BitmapFactory.decodeStream(it, null, boundsOpts)
+                    }
+                    val sampleSize = maxOf(1,
+                        minOf(boundsOpts.outWidth, boundsOpts.outHeight) / size)
+                    val opts = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+                    val src = context.contentResolver.openInputStream(uri)?.use {
+                        BitmapFactory.decodeStream(it, null, opts)
+                    }
+                    if (src != null) {
+                        // CenterCrop: scale so shorter side = size, then crop center
+                        val scale = size.toFloat() / minOf(src.width, src.height)
+                        val scaledW = (src.width * scale).toInt()
+                        val scaledH = (src.height * scale).toInt()
+                        val scaled = Bitmap.createScaledBitmap(src, scaledW, scaledH, true)
+                        val x = (scaledW - size) / 2
+                        val y = (scaledH - size) / 2
+                        return Bitmap.createBitmap(scaled, x, y, size, size)
                     }
                 } catch (_: Exception) {}
             }
 
-            // Default: colored background + white silhouette icon
+            // Default: dark gradient background + programmatic silhouette (no PNG needed)
             val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bmp)
-            val colors = intArrayOf(
-                0xFF1A3CA8.toInt(), 0xFF7B3FA0.toInt(), 0xFF007A6E.toInt(),
-                0xFF8B2252.toInt(), 0xFF2E7D32.toInt(), 0xFFB85C00.toInt()
-            )
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            paint.color = colors[(contact.id % colors.size).toInt()]
-            canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
+            val f = size.toFloat()
 
-            // Draw person icon from drawable
-            try {
-                val drawable = context.resources.getDrawable(
-                    com.toxictrace.nexusconnect.R.drawable.avatar_default, null)
-                drawable.setBounds(size / 8, size / 8, size * 7 / 8, size * 7 / 8)
-                drawable.draw(canvas)
-            } catch (_: Exception) {
-                // Fallback: white circle
-                paint.color = Color.WHITE
-                paint.alpha = 180
-                canvas.drawCircle(size / 2f, size * 2f / 5, size * 0.22f, paint)
-                canvas.drawCircle(size / 2f, size * 0.75f, size * 0.32f, paint)
+            // Background gradient: dark grey
+            val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            bgPaint.shader = android.graphics.RadialGradient(
+                f * 0.5f, f * 0.4f, f * 0.7f,
+                intArrayOf(0xFF555555.toInt(), 0xFF1A1A1A.toInt()),
+                floatArrayOf(0f, 1f),
+                android.graphics.Shader.TileMode.CLAMP
+            )
+            canvas.drawRect(0f, 0f, f, f, bgPaint)
+
+            // Silhouette: head + shoulders in white
+            val sp = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = 0xFFDDDDDD.toInt()
+                style = Paint.Style.FILL
             }
+            // Head
+            val headR = f * 0.20f
+            val headCX = f * 0.50f
+            val headCY = f * 0.36f
+            canvas.drawCircle(headCX, headCY, headR, sp)
+
+            // Shoulders/body — trapezoid
+            val path = android.graphics.Path()
+            path.moveTo(f * 0.10f, f * 1.05f)         // bottom-left (off screen)
+            path.lineTo(f * 0.20f, f * 0.62f)          // left shoulder
+            path.cubicTo(
+                f * 0.28f, f * 0.56f,
+                f * 0.38f, f * 0.53f,
+                headCX, f * 0.53f
+            )
+            path.cubicTo(
+                f * 0.62f, f * 0.53f,
+                f * 0.72f, f * 0.56f,
+                f * 0.80f, f * 0.62f
+            )
+            path.lineTo(f * 0.90f, f * 1.05f)
+            path.close()
+            canvas.drawPath(path, sp)
+
             return bmp
         }
     }

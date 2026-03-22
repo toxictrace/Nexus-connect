@@ -83,15 +83,18 @@ class CallLogRepository(private val context: Context) {
         days: Int,
         limit: Int = 20
     ): List<Triple<String, Long, Int>> {
-        val cutoff = System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L
+        // days=0 means unlimited (no time filter)
+        val cutoff = if (days > 0)
+            System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L
+        else 0L
         val seen = mutableSetOf<String>()
         val result = mutableListOf<Triple<String, Long, Int>>()
         return try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE, CallLog.Calls.TYPE),
-                "${CallLog.Calls.DATE} >= ?",
-                arrayOf(cutoff.toString()),
+                if (cutoff > 0) "${CallLog.Calls.DATE} >= ?" else null,
+                if (cutoff > 0) arrayOf(cutoff.toString()) else null,
                 "${CallLog.Calls.DATE} DESC"
             ) ?: return emptyList()
             cursor.use {
