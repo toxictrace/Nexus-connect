@@ -22,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import com.toxictrace.nexusconnect.data.model.AppTheme
 import androidx.compose.ui.res.stringResource
 import com.toxictrace.nexusconnect.R
+import com.toxictrace.nexusconnect.ui.screens.BatteryOptimizationBanner
 import com.toxictrace.nexusconnect.ui.screens.ContactsScreen
 import com.toxictrace.nexusconnect.ui.screens.LayoutScreen
 import com.toxictrace.nexusconnect.ui.screens.PermissionsScreen

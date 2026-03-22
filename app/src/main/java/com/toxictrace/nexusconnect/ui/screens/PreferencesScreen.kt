@@ -50,6 +50,7 @@ fun PreferencesScreen(viewModel: MainViewModel) {
     val scroll = rememberScrollState()
     val installedApps by viewModel.installedApps.collectAsState()
     val appsLoading by viewModel.appsLoading.collectAsState()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -697,7 +698,7 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
                 showRestoreDialog = false
                 viewModel.restoreBackup(
                     fileUri  = uri,
-                    onResult = { message = stringResource(R.string.restored_successfully) },
+                    onResult = { message = context.getString(R.string.restored_successfully) },
                     onError  = { err -> message = context.getString(R.string.backup_error, err) }
                 )
             },
