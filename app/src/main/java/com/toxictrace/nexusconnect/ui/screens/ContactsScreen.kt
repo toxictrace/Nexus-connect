@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -143,13 +144,16 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 }
 
                 itemsIndexed(selected, key = { _, c -> "sel_${c.id}" }) { idx, contact ->
+                    val onToggle  = remember(contact.id) { { viewModel.toggleContactSelection(contact.id) } }
+                    val onMoveUp  = remember(idx) { { if (idx > 0) viewModel.reorderSelected(idx, idx - 1) } }
+                    val onMoveDown = remember(idx, selected.size) { { if (idx < selected.lastIndex) viewModel.reorderSelected(idx, idx + 1) } }
                     SelectedContactItem(
-                        contact   = contact,
-                        position  = idx,
-                        total     = selected.size,
-                        onToggle  = { viewModel.toggleContactSelection(contact.id) },
-                        onMoveUp  = { if (idx > 0) viewModel.reorderSelected(idx, idx - 1) },
-                        onMoveDown = { if (idx < selected.lastIndex) viewModel.reorderSelected(idx, idx + 1) }
+                        contact    = contact,
+                        position   = idx,
+                        total      = selected.size,
+                        onToggle   = onToggle,
+                        onMoveUp   = onMoveUp,
+                        onMoveDown = onMoveDown
                     )
                 }
 
@@ -167,11 +171,9 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 }
 
                 // ── Unselected contacts ──
-                itemsIndexed(unselected, key = { _, c -> "uns_${c.id}" }) { _, contact ->
-                    UnselectedContactItem(
-                        contact  = contact,
-                        onToggle = { viewModel.toggleContactSelection(contact.id) }
-                    )
+                items(unselected, key = { c -> "uns_${c.id}" }) { contact ->
+                    val onToggle = remember(contact.id) { { viewModel.toggleContactSelection(contact.id) } }
+                    UnselectedContactItem(contact = contact, onToggle = onToggle)
                 }
             }
         }
@@ -213,6 +215,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
     }
 }
 
+@androidx.compose.runtime.NonRestartableComposable
 @Composable
 private fun SelectedContactItem(
     contact: Contact,
@@ -286,6 +289,7 @@ private fun SelectedContactItem(
     }
 }
 
+@androidx.compose.runtime.NonRestartableComposable
 @Composable
 private fun UnselectedContactItem(
     contact: Contact,
@@ -329,6 +333,7 @@ private fun UnselectedContactItem(
     }
 }
 
+@androidx.compose.runtime.NonRestartableComposable
 @Composable
 fun ContactAvatar(contact: Contact, size: Int = 40) {
     val colors = listOf(
