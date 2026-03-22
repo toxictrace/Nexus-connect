@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +38,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
     val contacts      by viewModel.displayContacts.collectAsState()
     val selectedCount by viewModel.selectedCount.collectAsState()
     val searchQuery   by viewModel.searchQuery.collectAsState()
+    val photoCache    by viewModel.photoCache.collectAsState()
 
     var hasContacts by remember {
         mutableStateOf(
@@ -58,6 +60,11 @@ fun ContactsScreen(viewModel: MainViewModel) {
             Manifest.permission.READ_CONTACTS,
             Manifest.permission.READ_CALL_LOG
         ))
+    }
+
+    // Preload photos when contacts list is ready
+    LaunchedEffect(contacts) {
+        if (contacts.isNotEmpty()) viewModel.preloadPhotos(contacts)
     }
 
     val selected   = contacts.filter { it.isSelected }
@@ -150,6 +157,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                         contact    = contact,
                         position   = idx,
                         total      = selected.size,
+                        photoCache = photoCache,
                         onToggle   = onToggle,
                         onMoveUp   = onMoveUp,
                         onMoveDown = onMoveDown
@@ -172,7 +180,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 // ── Unselected contacts ──
                 items(unselected, key = { c -> "uns_${c.id}" }) { contact ->
                     val onToggle = remember(contact.id) { { viewModel.toggleContactSelection(contact.id) } }
-                    UnselectedContactItem(contact = contact, onToggle = onToggle)
+                    UnselectedContactItem(contact = contact, onToggle = onToggle, photoCache = photoCache)
                 }
             }
         }
@@ -220,6 +228,7 @@ private fun SelectedContactItem(
     contact: Contact,
     position: Int,
     total: Int,
+    photoCache: Map<Long, android.graphics.Bitmap> = emptyMap(),
     onToggle: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit
@@ -243,7 +252,7 @@ private fun SelectedContactItem(
                 fontWeight = FontWeight.Bold)
         }
 
-        ContactAvatar(contact = contact, size = 44)
+        ContactAvatar(contact = contact, size = 44, photoCache = photoCache)
 
         Column(modifier = Modifier.weight(1f)) {
             Text(contact.name,
@@ -276,7 +285,8 @@ private fun SelectedContactItem(
 @Composable
 private fun UnselectedContactItem(
     contact: Contact,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    photoCache: Map<Long, android.graphics.Bitmap> = emptyMap()
 ) {
     Row(
         modifier = Modifier
@@ -287,7 +297,7 @@ private fun UnselectedContactItem(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Checkbox(checked = false, onCheckedChange = { onToggle() })
-        ContactAvatar(contact = contact, size = 46)
+        ContactAvatar(contact = contact, size = 46, photoCache = photoCache)
         Column(modifier = Modifier.weight(1f)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -317,44 +327,60 @@ private fun UnselectedContactItem(
 
 @androidx.compose.runtime.NonRestartableComposable
 @Composable
-fun ContactAvatar(contact: Contact, size: Int = 40) {
-    val colors = listOf(
-        Color(0xFF1A3CA8), Color(0xFF7B3FA0), Color(0xFF007A6E),
-        Color(0xFF8B2252), Color(0xFF2E7D32), Color(0xFFB85C00)
-    )
+fun ContactAvatar(
+    contact: Contact,
+    size: Int = 40,
+    photoCache: Map<Long, android.graphics.Bitmap> = emptyMap()
+) {
+    val colors = remember {
+        listOf(
+            Color(0xFF1A3CA8), Color(0xFF7B3FA0), Color(0xFF007A6E),
+            Color(0xFF8B2252), Color(0xFF2E7D32), Color(0xFFB85C00)
+        )
+    }
     val bg = colors[(contact.id % colors.size).toInt()]
+    val cachedBitmap = photoCache[contact.id]
 
     Box(
         modifier = Modifier.size(size.dp).clip(CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        if (contact.photoUri != null) {
-            val ctx = LocalContext.current
-            val req = remember(contact.id) {
-                ImageRequest.Builder(ctx)
-                    .data(contact.photoUri)
-                    .size(size * 3) // px for xxhdpi
-                    .memoryCacheKey("avatar_${contact.id}")
-                    .diskCacheKey("avatar_${contact.id}")
-                    .memoryCachePolicy(CachePolicy.ENABLED)
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .crossfade(false)
-                    .build()
+        when {
+            cachedBitmap != null -> {
+                // Preloaded — zero IO, instant draw
+                androidx.compose.foundation.Image(
+                    bitmap = cachedBitmap.asImageBitmap(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
-            AsyncImage(
-                model = req,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            Box(modifier = Modifier.fillMaxSize().background(bg))
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.9f),
-                modifier = Modifier.fillMaxSize(0.65f)
-            )
+            contact.photoUri != null -> {
+                // Not yet cached — AsyncImage while loading
+                val ctx = LocalContext.current
+                val req = remember(contact.id) {
+                    ImageRequest.Builder(ctx)
+                        .data(contact.photoUri)
+                        .memoryCacheKey("avatar_${contact.id}")
+                        .crossfade(false)
+                        .build()
+                }
+                AsyncImage(
+                    model = req,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            else -> {
+                Box(modifier = Modifier.fillMaxSize().background(bg))
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.9f),
+                    modifier = Modifier.fillMaxSize(0.65f)
+                )
+            }
         }
     }
 }

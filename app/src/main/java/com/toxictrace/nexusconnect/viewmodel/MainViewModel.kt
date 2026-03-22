@@ -16,6 +16,8 @@ import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 import com.toxictrace.nexusconnect.ui.screens.AppInfo
 import com.toxictrace.nexusconnect.widget.ContactWidgetProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -195,5 +197,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             com.toxictrace.nexusconnect.data.backup.BackupManager
                 .listBackups(getApplication(), android.net.Uri.parse(folderUriStr))
         } catch (_: Exception) { emptyList() }
+    }
+
+    // ── Photo preload cache ───────────────────────────────────────────────────
+
+    private val _photoCache = MutableStateFlow<Map<Long, android.graphics.Bitmap>>(emptyMap())
+    val photoCache: StateFlow<Map<Long, android.graphics.Bitmap>> = _photoCache.asStateFlow()
+
+    private var photoCacheJob: kotlinx.coroutines.Job? = null
+
+    fun preloadPhotos(contacts: List<Contact>) {
+        photoCacheJob?.cancel()
+        photoCacheJob = viewModelScope.launch(Dispatchers.IO) {
+            val ctx = getApplication<Application>()
+            val newCache = _photoCache.value.toMutableMap()
+            contacts.filter { it.photoUri != null && it.id !in newCache }.forEach { contact ->
+                if (!isActive) return@launch
+                try {
+                    val uri = android.net.Uri.parse(contact.photoUri)
+                    ctx.contentResolver.openInputStream(uri)?.use { stream ->
+                        val opts = android.graphics.BitmapFactory.Options().apply {
+                            inSampleSize = 2  // 1/4 size for list thumbnails
+                            inPreferredConfig = android.graphics.Bitmap.Config.RGB_565 // less memory
+                        }
+                        android.graphics.BitmapFactory.decodeStream(stream, null, opts)
+                            ?.let { bmp -> newCache[contact.id] = bmp }
+                    }
+                } catch (_: Exception) {}
+            }
+            _photoCache.value = newCache
+        }
     }
 }
