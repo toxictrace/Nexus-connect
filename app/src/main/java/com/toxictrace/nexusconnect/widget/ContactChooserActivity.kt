@@ -52,15 +52,8 @@ class ContactChooserActivity : ComponentActivity() {
         val name      = intent.getStringExtra("contact_name")  ?: ""
         val photoUri  = if (contactId > 0) PhotoProvider.uriForContact(contactId).toString() else null
 
-        // Fallback avatar: custom URI or default drawable resource
         val avatarIdentity = WidgetPrefs.getAvatarIdentity(this)
         val customUri = WidgetPrefs.getCustomAvatarUri(this)
-        val fallbackAvatarUri: Any = when {
-            avatarIdentity == "CUSTOM" && customUri.isNotBlank() ->
-                android.net.Uri.parse(customUri)
-            else ->
-                com.toxictrace.nexusconnect.R.drawable.avatar_default
-        }
         val stats     = loadCallStats(phone)
 
         val isDark = when (WidgetPrefs.getTheme(this)) {
@@ -91,7 +84,8 @@ class ContactChooserActivity : ComponentActivity() {
                     name             = name,
                     phone            = phone,
                     photoUri         = photoUri,
-                    fallbackAvatarUri = fallbackAvatarUri,
+                    avatarIdentity   = avatarIdentity,
+                    customUri        = customUri,
                     stats            = stats,
                     whatsAppPkg  = whatsAppPkg,
                     viberPkg     = viberPkg,
@@ -209,7 +203,7 @@ class ContactChooserActivity : ComponentActivity() {
 @Composable
 private fun ChooserSheet(
     name: String, phone: String, photoUri: String?,
-    fallbackAvatarUri: Any,
+    avatarIdentity: String, customUri: String,
     stats: CallStats,
     whatsAppPkg: String, viberPkg: String, telegramPkg: String,
     isInstalled: (String) -> Boolean,
@@ -253,11 +247,22 @@ private fun ChooserSheet(
                     ) {
                         if (photoUri != null) {
                             AsyncImage(model = photoUri, contentDescription = name,
-                                contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize())
+                        } else if (avatarIdentity == "CUSTOM" && customUri.isNotBlank()) {
+                            AsyncImage(
+                                model = android.net.Uri.parse(customUri),
+                                contentDescription = name,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize())
                         } else {
-                            // Default or custom avatar via AvatarProvider
-                            AsyncImage(model = fallbackAvatarUri, contentDescription = name,
-                                contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                            androidx.compose.foundation.Image(
+                                painter = androidx.compose.ui.res.painterResource(
+                                    com.toxictrace.nexusconnect.R.drawable.avatar_default),
+                                contentDescription = name,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
                     }
                     Column {

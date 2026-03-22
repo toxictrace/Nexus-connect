@@ -16,6 +16,19 @@
         <package android:name="org.telegram.messenger" />
         <package android:name="org.telegram.messenger.web" />
         <package android:name="org.thunderdog.challegram" />
+        <package android:name="im.molly.app" />
+        <package android:name="org.telegram.plus" />
+        <package android:name="com.nicegram.app" />
+        <package android:name="org.nagramx.messenger" />
+        <package android:name="app.nicegram" />
+        <package android:name="com.bitchute.nagram" />
+        <package android:name="nekogram.x" />
+        <package android:name="tw.nekomimi.nekogram" />
+        <!-- Query all launcher apps for messenger picker -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
     </queries>
 
     <application
