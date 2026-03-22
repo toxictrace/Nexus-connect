@@ -130,4 +130,21 @@
     <string name="last_call">Last call</string>
     <string name="unknown">Unknown</string>
     <string name="private_number">Private</string>
+    <string name="show_dialog_title">Show selection dialog</string>
+    <string name="show_dialog_subtitle">Choose how to call on every tap</string>
+    <string name="day_1">1d</string>
+    <string name="day_3">3d</string>
+    <string name="day_7">7d</string>
+    <string name="day_unlimited">∞</string>
+    <string name="language_menu_title">Language</string>
+    <string name="phone_call">Phone call</string>
+    <string name="direct_call_action">Direct call</string>
+    <string name="open_in_whatsapp">Open in WhatsApp</string>
+    <string name="open_in_viber">Open in Viber</string>
+    <string name="open_in_telegram">Open in Telegram</string>
+    <string name="calls">Calls</string>
+    <string name="total_time">Total time</string>
+    <string name="last_call_label">Last call</string>
+    <string name="seconds_short">%1$ds</string>
+    <string name="minutes_short">%1$dm %2$ds</string>
 </resources>

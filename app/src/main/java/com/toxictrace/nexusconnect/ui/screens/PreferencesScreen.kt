@@ -111,8 +111,8 @@ private fun ClickActionSection(settings: WidgetSettings, onUpdate: (WidgetSettin
         Spacer(Modifier.height(12.dp))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(
-                Triple(ClickAction.SHOW_DIALOG, "Show selection dialog", "Choose how to call on every tap"),
-                Triple(ClickAction.DIRECT_CALL, "Direct Call", stringResource(R.string.direct_call_subtitle))
+                Triple(ClickAction.SHOW_DIALOG, stringResource(R.string.show_dialog_title), stringResource(R.string.show_dialog_subtitle)),
+                Triple(ClickAction.DIRECT_CALL, stringResource(R.string.direct_call), stringResource(R.string.direct_call_subtitle))
             ).forEach { (action, title, subtitle) ->
                 ActionCard(
                     title = title, subtitle = subtitle,
@@ -752,6 +752,16 @@ private fun RestoreDialog(
 
 @Composable
 private fun LanguageSection(settings: WidgetSettings, onUpdate: (String) -> Unit) {
+    val options = listOf(
+        "system" to stringResource(R.string.language_system),
+        "en"     to stringResource(R.string.language_english),
+        "ru"     to stringResource(R.string.language_russian),
+    )
+    val currentLabel = options.firstOrNull { it.first == settings.language }?.second
+        ?: stringResource(R.string.language_system)
+
+    var expanded by remember { mutableStateOf(false) }
+
     Column {
         SectionHeader(
             title    = stringResource(R.string.language),
@@ -759,27 +769,50 @@ private fun LanguageSection(settings: WidgetSettings, onUpdate: (String) -> Unit
         )
         Spacer(Modifier.height(12.dp))
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
-            listOf(
-                Triple("system", stringResource(R.string.language_system),  Icons.Default.Language),
-                Triple("en",     stringResource(R.string.language_english), Icons.Default.Language),
-                Triple("ru",     stringResource(R.string.language_russian), Icons.Default.Language),
-            ).forEachIndexed { idx, (code, label, icon) ->
+            Box {
                 Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .clickable { onUpdate(code) }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = true }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
-                    Text(label, style = MaterialTheme.typography.titleMedium,
+                    Icon(Icons.Default.Language, null,
+                        tint = MaterialTheme.colorScheme.primary)
+                    Text(currentLabel,
+                        style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.weight(1f))
-                    RadioButton(
-                        selected = settings.language == code,
-                        onClick  = { onUpdate(code) }
-                    )
+                    Icon(Icons.Default.ArrowDropDown, null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (idx < 2) HorizontalDivider()
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth(0.7f)
+                ) {
+                    options.forEach { (code, label) ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    if (settings.language == code) {
+                                        Icon(Icons.Default.Check, null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(18.dp))
+                                    } else {
+                                        Spacer(Modifier.size(18.dp))
+                                    }
+                                    Text(label)
+                                }
+                            },
+                            onClick = {
+                                expanded = false
+                                onUpdate(code)
+                            }
+                        )
+                    }
+                }
             }
         }
     }

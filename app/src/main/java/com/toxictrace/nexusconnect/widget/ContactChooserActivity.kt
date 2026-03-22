@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
+import com.toxictrace.nexusconnect.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +45,11 @@ data class CallStats(
 )
 
 class ContactChooserActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val language = com.toxictrace.nexusconnect.util.LocaleHelper.getSavedLanguage(newBase)
+        super.attachBaseContext(com.toxictrace.nexusconnect.util.LocaleHelper.applyLocale(newBase, language))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -296,9 +303,9 @@ private fun ChooserSheet(
                     ) {
                         Row(modifier = Modifier.fillMaxWidth().padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly) {
-                            StatItem(Icons.Default.Call, stats.totalCalls.toString(), "Calls")
+                            StatItem(Icons.Default.Call, stats.totalCalls.toString(), stringResource(R.string.calls))
                             VerticalDivider(modifier = Modifier.height(44.dp))
-                            StatItem(Icons.Default.AccessTime, formatDuration(stats.totalDurationSec), "Total time")
+                            StatItem(Icons.Default.AccessTime, formatDuration(stats.totalDurationSec), stringResource(R.string.total_time))
                             VerticalDivider(modifier = Modifier.height(44.dp))
                             StatItem(
                                 icon = when (stats.lastCallType) {
@@ -307,7 +314,7 @@ private fun ChooserSheet(
                                     else -> Icons.Default.CallMissed
                                 },
                                 value = stats.lastCallDate?.let { formatDate(it) } ?: "—",
-                                label = "Last call", valueLines = 2
+                                label = stringResource(R.string.last_call_label), valueLines = 2
                             )
                         }
                     }
@@ -317,19 +324,19 @@ private fun ChooserSheet(
             item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) }
 
             // Phone
-            item { CallOption(Icons.Default.Call, "Phone call", "Direct call", Color(0xFF1A3CA8), haptic, ctx, onDial) }
+            item { CallOption(Icons.Default.Call, stringResource(R.string.phone_call), stringResource(R.string.direct_call_action), Color(0xFF1A3CA8), haptic, ctx, onDial) }
 
             if (hasWhatsApp) {
                 item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
-                item { CallOption(Icons.Default.Message, "WhatsApp", "Open in WhatsApp", Color(0xFF25D366), haptic, ctx, onWhatsApp) }
+                item { CallOption(Icons.Default.Message, "WhatsApp", stringResource(R.string.open_in_whatsapp), Color(0xFF25D366), haptic, ctx, onWhatsApp) }
             }
             if (hasViber) {
                 item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
-                item { CallOption(Icons.Default.PhoneAndroid, "Viber", "Open in Viber", Color(0xFF7360F2), haptic, ctx, onViber) }
+                item { CallOption(Icons.Default.PhoneAndroid, "Viber", stringResource(R.string.open_in_viber), Color(0xFF7360F2), haptic, ctx, onViber) }
             }
             if (hasTelegram) {
                 item { HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp)) }
-                item { CallOption(Icons.Default.Send, "Telegram", "Open in Telegram", Color(0xFF2AABEE), haptic, ctx, onTelegram) }
+                item { CallOption(Icons.Default.Send, "Telegram", stringResource(R.string.open_in_telegram), Color(0xFF2AABEE), haptic, ctx, onTelegram) }
             }
         }
     }

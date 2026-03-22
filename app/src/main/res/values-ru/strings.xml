@@ -130,4 +130,21 @@
     <string name="last_call">Последний звонок</string>
     <string name="unknown">Неизвестный</string>
     <string name="private_number">Скрытый номер</string>
+    <string name="show_dialog_title">Показать диалог выбора</string>
+    <string name="show_dialog_subtitle">Выбирать способ звонка при каждом нажатии</string>
+    <string name="day_1">1 д</string>
+    <string name="day_3">3 д</string>
+    <string name="day_7">7 д</string>
+    <string name="day_unlimited">∞</string>
+    <string name="language_menu_title">Язык</string>
+    <string name="phone_call">Звонок</string>
+    <string name="direct_call_action">Прямой звонок</string>
+    <string name="open_in_whatsapp">Открыть в WhatsApp</string>
+    <string name="open_in_viber">Открыть в Viber</string>
+    <string name="open_in_telegram">Открыть в Telegram</string>
+    <string name="calls">Звонков</string>
+    <string name="total_time">Общее время</string>
+    <string name="last_call_label">Последний звонок</string>
+    <string name="seconds_short">%1$dс</string>
+    <string name="minutes_short">%1$dм %2$dс</string>
 </resources>

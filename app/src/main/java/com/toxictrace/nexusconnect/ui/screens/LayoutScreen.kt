@@ -117,7 +117,13 @@ fun LayoutScreen(viewModel: MainViewModel) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(0 to "∞", 1 to "1d", 3 to "3d", 7 to "7d").forEach { (days, label) ->
+                        val dayLabels = listOf(
+                            0 to stringResource(R.string.day_unlimited),
+                            1 to stringResource(R.string.day_1),
+                            3 to stringResource(R.string.day_3),
+                            7 to stringResource(R.string.day_7)
+                        )
+                        dayLabels.forEach { (days, label) ->
                             FilterChip(
                                 selected = draft.unknownNumbersDays == days,
                                 onClick = { draft = draft.copy(unknownNumbersDays = days) },
