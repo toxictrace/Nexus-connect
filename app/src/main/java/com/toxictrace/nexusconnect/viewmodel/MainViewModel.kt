@@ -37,22 +37,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val installedApps: StateFlow<List<AppInfo>> = _installedApps.asStateFlow()
     val appsLoading = MutableStateFlow(true)
 
-    val selectedCount: StateFlow<Int> = _selectedIds.map { it.size }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    // Search query with debounce — prevents recomputation on every keystroke
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    val displayContacts: StateFlow<List<Contact>> = combine(_allContacts, _selectedIds) { all, ids ->
+    fun setSearchQuery(q: String) { _searchQuery.value = q }
+
+    val displayContacts: StateFlow<List<Contact>> = combine(
+        _allContacts, _selectedIds,
+        _searchQuery.debounce(120)
+    ) { all, ids, query ->
         val idSet = ids.toSet()
-        val selectedMap = all.associateBy { it.id }
-        val selectedOrdered = ids.mapNotNull { id -> selectedMap[id]?.copy(isSelected = true) }
-        val unselected = all
-            .filter { it.id !in idSet }
-            .map { it.copy(isSelected = false) }
+        // Selected: preserve order, mark as selected
+        val selectedMap = all.filter { it.id in idSet }.associateBy { it.id }
+        val selectedOrdered = ids.mapNotNull { id ->
+            selectedMap[id]?.let { if (it.isSelected) it else it.copy(isSelected = true) }
+        }
+        // Unselected: filter by search, already isSelected=false in model
+        val unselected = all.filter { it.id !in idSet }.let { list ->
+            if (query.isBlank()) list
+            else list.filter { it.name.contains(query, ignoreCase = true) ||
+                               it.phoneNumber?.contains(query) == true }
+        }
         selectedOrdered + unselected
     }
     .distinctUntilChanged()
     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    init {
+    val selectedCount: StateFlow<Int> = _selectedIds.map { it.size }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
         loadContacts()
         loadSavedSelection()
         loadInstalledApps()
@@ -91,9 +104,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (!hasPermission) return
 
         viewModelScope.launch {
-            contactsRepo.observeContacts().collect { list ->
-                _allContacts.value = list.sortedBy { it.name }
-            }
+            contactsRepo.observeContacts()
+                .distinctUntilChanged()
+                .collect { list ->
+                    _allContacts.value = list // already sorted in repository
+                }
         }
     }
 

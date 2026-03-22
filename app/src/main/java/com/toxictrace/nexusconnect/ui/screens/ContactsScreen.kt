@@ -35,7 +35,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
     val context       = LocalContext.current
     val contacts      by viewModel.displayContacts.collectAsState()
     val selectedCount by viewModel.selectedCount.collectAsState()
-    var searchQuery   by remember { mutableStateOf("") }
+    val searchQuery   by viewModel.searchQuery.collectAsState()
 
     var hasContacts by remember {
         mutableStateOf(
@@ -60,10 +60,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
     }
 
     val selected   = contacts.filter { it.isSelected }
-    val unselected = contacts.filter { !it.isSelected }.let { list ->
-        if (searchQuery.isBlank()) list
-        else list.filter { it.name.contains(searchQuery, ignoreCase = true) }
-    }
+    val unselected = contacts.filter { !it.isSelected }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -71,7 +68,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
             // Search bar with clear button
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { viewModel.setSearchQuery(it) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -79,7 +76,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 leadingIcon = { Icon(Icons.Default.Search, null) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
+                        IconButton(onClick = { viewModel.setSearchQuery("") }) {
                             Icon(Icons.Default.Clear, contentDescription = "Clear",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
