@@ -390,48 +390,65 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
                 showAuto = true)
         }
         Spacer(Modifier.height(12.dp))
-        SettingsCard {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        // Dynamic colors toggle — separate row at top
+        SettingsCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.dynamic_colors), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.dynamic_colors_subtitle), style = MaterialTheme.typography.bodySmall,
+                    Text(stringResource(R.string.dynamic_colors),
+                        style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.dynamic_colors_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(12.dp))
-                    androidx.compose.foundation.layout.FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                }
+                Switch(
+                    checked = settings.dynamicColors,
+                    onCheckedChange = { onUpdate(settings.copy(dynamicColors = it)) }
+                )
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+        // Accent colors — full width row below, enabled only when Monet is off
+        SettingsCard(contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AccentColors.forEachIndexed { idx, color ->
+                    val selected = settings.accentColorIndex == idx && !settings.dynamicColors
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .padding(3.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (settings.dynamicColors) color.copy(alpha = 0.35f) else color
+                            )
+                            .then(
+                                if (selected)
+                                    Modifier.border(2.5.dp, Color.White, CircleShape)
+                                else Modifier
+                            )
+                            .clickable(enabled = !settings.dynamicColors) {
+                                onUpdate(settings.copy(
+                                    accentColorIndex = idx,
+                                    dynamicColors = false
+                                ))
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
-                        AccentColors.forEachIndexed { idx, color ->
-                            val selected = settings.accentColorIndex == idx && !settings.dynamicColors
-                            Box(
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(CircleShape)
-                                    .background(color)
-                                    .then(
-                                        if (selected)
-                                            Modifier.border(3.dp, Color.White, CircleShape)
-                                        else Modifier
-                                    )
-                                    .clickable {
-                                        onUpdate(settings.copy(
-                                            accentColorIndex = idx,
-                                            dynamicColors = false
-                                        ))
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (selected) {
-                                    Icon(Icons.Default.Check, null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(18.dp))
-                                }
-                            }
+                        if (selected) {
+                            Icon(Icons.Default.Check, null,
+                                tint = Color.White,
+                                modifier = Modifier.fillMaxSize(0.45f))
                         }
                     }
                 }
-                Switch(checked = settings.dynamicColors,
-                    onCheckedChange = { onUpdate(settings.copy(dynamicColors = it)) })
             }
         }
     }
@@ -860,7 +877,7 @@ private fun SectionHeader(title: String, subtitle: String) {
 fun SettingsCard(contentPadding: PaddingValues = PaddingValues(16.dp), content: @Composable ColumnScope.() -> Unit) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
         Column(modifier = Modifier.padding(contentPadding), content = content)
     }
 }

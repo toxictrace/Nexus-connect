@@ -28,14 +28,14 @@ private fun lightScheme(primary: Color) = lightColorScheme(
     onPrimaryContainer  = primary,
     secondary           = primary.copy(alpha = 0.75f).compositeOver(Color.White),
     onSecondary         = Color.White,
-    background          = Color(0xFFF2F3F7),
+    background          = Color(0xFFECEDF2),   // darker background
     onBackground        = Color(0xFF111111),
-    surface             = Color.White,
+    surface             = Color(0xFFFFFFFF),   // pure white cards
     onSurface           = Color(0xFF111111),
-    surfaceVariant      = Color(0xFFE8EAF0),
-    onSurfaceVariant    = Color(0xFF444455),
-    outline             = Color(0xFFCCCDD8),
-    outlineVariant      = Color(0xFFE0E1EA)
+    surfaceVariant      = Color(0xFFDFE1EA),   // noticeably darker than surface
+    onSurfaceVariant    = Color(0xFF44455A),
+    outline             = Color(0xFFB8BAC8),   // more visible borders
+    outlineVariant      = Color(0xFFD0D2DF)
 )
 
 private fun darkScheme(primary: Color) = darkColorScheme(
