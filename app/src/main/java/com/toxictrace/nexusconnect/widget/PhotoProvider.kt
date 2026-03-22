@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.ContactsContract
 import android.util.Log
+import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 import java.io.File
 import java.io.FileOutputStream
 
@@ -32,33 +33,53 @@ class PhotoProvider : ContentProvider() {
         val contactId = uri.lastPathSegment?.toLongOrNull() ?: return null
         val ctx = context ?: return null
 
-        // Try to get photo URI from contacts database
-        val photoUri = getPhotoUri(contactId) ?: return null
-
-        return try {
-            // Open directly from contacts ContentResolver
-            ctx.contentResolver.openFileDescriptor(photoUri, "r")
-        } catch (e: Exception) {
-            Log.w(TAG, "Direct open failed, trying pipe: ${e.message}")
-            // Fallback: pipe through our process
-            try {
-                val pipe = ParcelFileDescriptor.createPipe()
-                val inputStream = ctx.contentResolver.openInputStream(photoUri)
-                    ?: return null
-                Thread {
-                    try {
-                        ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]).use { out ->
-                            inputStream.use { it.copyTo(out) }
-                        }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Pipe write failed: ${e.message}")
-                    }
-                }.start()
-                pipe[0]
-            } catch (e2: Exception) {
-                Log.e(TAG, "Pipe fallback failed: ${e2.message}")
-                null
+        // Try contact photo first
+        val photoUri = getPhotoUri(contactId)
+        if (photoUri != null) {
+            return try {
+                ctx.contentResolver.openFileDescriptor(photoUri, "r")
+            } catch (e: Exception) {
+                Log.w(TAG, "Direct open failed, trying pipe: ${e.message}")
+                try {
+                    val pipe = ParcelFileDescriptor.createPipe()
+                    val inputStream = ctx.contentResolver.openInputStream(photoUri) ?: return fallbackAvatar(ctx)
+                    Thread {
+                        try {
+                            ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]).use { out ->
+                                inputStream.use { it.copyTo(out) }
+                            }
+                        } catch (e: Exception) { Log.w(TAG, "Pipe write failed: ${e.message}") }
+                    }.start()
+                    pipe[0]
+                } catch (e2: Exception) { fallbackAvatar(ctx) }
             }
+        }
+
+        // No photo — return default or custom avatar
+        return fallbackAvatar(ctx)
+    }
+
+    private fun fallbackAvatar(ctx: android.content.Context): ParcelFileDescriptor? {
+        return try {
+            // Check for custom avatar first
+            val customUri = WidgetPrefs.getCustomAvatarUri(ctx)
+            val avatarIdentity = WidgetPrefs.getAvatarIdentity(ctx)
+            if (avatarIdentity == "CUSTOM" && customUri.isNotBlank()) {
+                ctx.contentResolver.openFileDescriptor(Uri.parse(customUri), "r")
+            } else {
+                // Default silhouette from drawable via cache file
+                val cacheFile = java.io.File(ctx.cacheDir, "avatar_default_cache.png")
+                if (!cacheFile.exists()) {
+                    ctx.resources.openRawResource(com.toxictrace.nexusconnect.R.drawable.avatar_default)
+                        .use { input ->
+                            java.io.FileOutputStream(cacheFile).use { output -> input.copyTo(output) }
+                        }
+                }
+                ParcelFileDescriptor.open(cacheFile, ParcelFileDescriptor.MODE_READ_ONLY)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "fallbackAvatar failed: ${e.message}")
+            null
         }
     }
 
