@@ -17,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.request.CachePolicy
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.viewmodel.MainViewModel
 
@@ -129,8 +130,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 contentPadding = PaddingValues(
                     top = 4.dp,
                     bottom = if (selectedCount > 0) 88.dp else 16.dp
-                ),
-                flingBehavior = rememberSmoothFlingBehavior()
+                )
             ) {
                 // ── Selected contacts ──
                 if (selected.isNotEmpty()) {
@@ -225,7 +225,7 @@ private fun SelectedContactItem(
     onMoveDown: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().graphicsLayer { },
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
@@ -308,7 +308,7 @@ private fun UnselectedContactItem(
     onToggle: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().graphicsLayer { },
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -344,11 +344,6 @@ private fun UnselectedContactItem(
 }
 
 @Composable
-private fun rememberSmoothFlingBehavior(): androidx.compose.foundation.gestures.FlingBehavior {
-    return androidx.compose.foundation.gestures.ScrollableDefaults.flingBehavior()
-}
-
-@Composable
 fun ContactAvatar(contact: Contact, size: Int = 40) {
     val colors = listOf(
         Color(0xFF1A3CA8), Color(0xFF7B3FA0), Color(0xFF007A6E),
@@ -361,14 +356,25 @@ fun ContactAvatar(contact: Contact, size: Int = 40) {
         contentAlignment = Alignment.Center
     ) {
         if (contact.photoUri != null) {
+            val ctx = LocalContext.current
+            val req = remember(contact.id) {
+                ImageRequest.Builder(ctx)
+                    .data(contact.photoUri)
+                    .size(size * 3) // px for xxhdpi
+                    .memoryCacheKey("avatar_${contact.id}")
+                    .diskCacheKey("avatar_${contact.id}")
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .crossfade(false)
+                    .build()
+            }
             AsyncImage(
-                model = contact.photoUri,
-                contentDescription = contact.name,
+                model = req,
+                contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // No photo — show silhouette on colored background
             Box(modifier = Modifier.fillMaxSize().background(bg))
             Icon(
                 imageVector = Icons.Default.Person,
