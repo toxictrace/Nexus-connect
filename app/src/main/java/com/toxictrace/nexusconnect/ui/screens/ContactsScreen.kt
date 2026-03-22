@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -224,20 +225,17 @@ private fun SelectedContactItem(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-        ),
-        elevation = CardDefaults.cardElevation(2.dp)
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+        tonalElevation = 0.dp
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Position number
             Box(
                 modifier = Modifier
                     .size(28.dp)
@@ -245,12 +243,10 @@ private fun SelectedContactItem(
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "${position + 1}",
+                Text("${position + 1}",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
+                    fontWeight = FontWeight.Bold)
             }
 
             ContactAvatar(contact = contact, size = 44)
@@ -258,30 +254,26 @@ private fun SelectedContactItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(contact.name,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold)
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 contact.phoneNumber?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1)
                 }
             }
 
-            // Move up/down buttons
             Column {
-                IconButton(
-                    onClick = onMoveUp,
-                    enabled = position > 0,
-                    modifier = Modifier.size(28.dp)
-                ) {
+                IconButton(onClick = onMoveUp, enabled = position > 0,
+                    modifier = Modifier.size(28.dp)) {
                     Icon(Icons.Default.KeyboardArrowUp, null,
                         modifier = Modifier.size(20.dp),
                         tint = if (position > 0) MaterialTheme.colorScheme.primary
                                else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                 }
-                IconButton(
-                    onClick = onMoveDown,
-                    enabled = position < total - 1,
-                    modifier = Modifier.size(28.dp)
-                ) {
+                IconButton(onClick = onMoveDown, enabled = position < total - 1,
+                    modifier = Modifier.size(28.dp)) {
                     Icon(Icons.Default.KeyboardArrowDown, null,
                         modifier = Modifier.size(20.dp),
                         tint = if (position < total - 1) MaterialTheme.colorScheme.primary
@@ -289,13 +281,8 @@ private fun SelectedContactItem(
                 }
             }
 
-            // Deselect (×)
-            IconButton(
-                onClick = onToggle,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(Icons.Default.Close, null,
-                    modifier = Modifier.size(18.dp),
+            IconButton(onClick = onToggle, modifier = Modifier.size(32.dp)) {
+                Icon(Icons.Default.Close, null, modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -307,13 +294,11 @@ private fun UnselectedContactItem(
     contact: Contact,
     onToggle: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
+    Surface(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(1.dp)
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -327,7 +312,10 @@ private fun UnselectedContactItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(contact.name, style = MaterialTheme.typography.titleMedium)
+                    Text(contact.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                     if (contact.isStarred) {
                         Icon(Icons.Default.Star, null,
                             tint = Color(0xFFFFC107),
@@ -336,7 +324,8 @@ private fun UnselectedContactItem(
                 }
                 contact.phoneNumber?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1)
                 }
             }
         }
