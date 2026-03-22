@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Required on Android 11+ to detect installed messengers -->
@@ -89,6 +90,15 @@
         <service
             android:name=".widget.ContactsObserverService"
             android:exported="false" />
+
+        <!-- Wakes up widget update after any call ends, even if app is killed -->
+        <receiver
+            android:name=".widget.CallStateReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
 
         <!-- Avatar ContentProvider — serves default silhouette and custom avatar at full quality -->
         <provider

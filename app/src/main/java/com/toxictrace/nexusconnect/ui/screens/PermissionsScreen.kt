@@ -49,6 +49,13 @@ val REQUIRED_PERMISSIONS = listOf(
         Icons.Default.Phone,
         required = false
     ),
+    PermissionInfo(
+        Manifest.permission.READ_PHONE_STATE,
+        "Phone State",
+        "Detect when calls end to update the widget automatically",
+        Icons.Default.PhoneCallback,
+        required = true
+    ),
 )
 
 @Composable
