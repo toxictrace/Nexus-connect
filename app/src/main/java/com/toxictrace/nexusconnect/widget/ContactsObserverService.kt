@@ -7,34 +7,51 @@ import android.database.ContentObserver
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.provider.CallLog
 import android.provider.ContactsContract
 
 /**
- * Lightweight foreground-less service that registers a ContentObserver
- * on the contacts database and calls ContactWidgetProvider.updateAllWidgets()
- * when something changes.
+ * Lightweight service that registers ContentObservers on contacts
+ * and call log — updates widget when either changes.
  */
 class ContactsObserverService : Service() {
 
-    private var observer: ContentObserver? = null
+    private var contactsObserver: ContentObserver? = null
+    private var callLogObserver: ContentObserver? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (observer == null) {
-            observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        val handler = Handler(Looper.getMainLooper())
+
+        if (contactsObserver == null) {
+            contactsObserver = object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean) {
                     ContactWidgetProvider.updateAllWidgets(applicationContext)
                 }
             }
             contentResolver.registerContentObserver(
-                ContactsContract.Contacts.CONTENT_URI, true, observer!!
+                ContactsContract.Contacts.CONTENT_URI, true, contactsObserver!!
             )
         }
+
+        if (callLogObserver == null) {
+            callLogObserver = object : ContentObserver(handler) {
+                override fun onChange(selfChange: Boolean) {
+                    ContactWidgetProvider.updateAllWidgets(applicationContext)
+                }
+            }
+            contentResolver.registerContentObserver(
+                CallLog.Calls.CONTENT_URI, true, callLogObserver!!
+            )
+        }
+
         return START_STICKY
     }
 
     override fun onDestroy() {
-        observer?.let { contentResolver.unregisterContentObserver(it) }
-        observer = null
+        contactsObserver?.let { contentResolver.unregisterContentObserver(it) }
+        callLogObserver?.let { contentResolver.unregisterContentObserver(it) }
+        contactsObserver = null
+        callLogObserver = null
         super.onDestroy()
     }
 
