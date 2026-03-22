@@ -345,7 +345,7 @@ private fun UnselectedContactItem(
 
 @Composable
 private fun rememberSmoothFlingBehavior(): androidx.compose.foundation.gestures.FlingBehavior {
-    return ScrollableDefaults.flingBehavior()
+    return androidx.compose.foundation.gestures.ScrollableDefaults.flingBehavior()
 }
 
 @Composable
