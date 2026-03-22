@@ -114,4 +114,7 @@ class CallLogRepository(private val context: Context) {
             emptyList()
         }
     }
+
+    private fun normalizeNum(number: String): String =
+        number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
 }
