@@ -1,19 +1,13 @@
 package com.toxictrace.nexusconnect.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -27,7 +21,9 @@ import androidx.navigation.compose.rememberNavController
 import com.toxictrace.nexusconnect.data.model.AppTheme
 import com.toxictrace.nexusconnect.ui.screens.ContactsScreen
 import com.toxictrace.nexusconnect.ui.screens.LayoutScreen
+import com.toxictrace.nexusconnect.ui.screens.PermissionsScreen
 import com.toxictrace.nexusconnect.ui.screens.PreferencesScreen
+import com.toxictrace.nexusconnect.ui.screens.REQUIRED_PERMISSIONS
 import com.toxictrace.nexusconnect.ui.theme.NexusConnectTheme
 import com.toxictrace.nexusconnect.viewmodel.MainViewModel
 
@@ -48,6 +44,25 @@ fun NexusApp() {
     val currentDest = navBackStack?.destination
     val settings by viewModel.settings.collectAsState()
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var permissionsGranted by remember {
+        mutableStateOf(
+            REQUIRED_PERMISSIONS.filter { it.required }.all {
+                androidx.core.content.ContextCompat.checkSelfPermission(
+                    context, it.permission
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            }
+        )
+    }
+
+    if (!permissionsGranted) {
+        val isDark2 = isSystemInDarkTheme()
+        NexusConnectTheme(darkTheme = isDark2) {
+            PermissionsScreen(onAllGranted = { permissionsGranted = true })
+        }
+        return
+    }
+
     val isSystemDark = isSystemInDarkTheme()
     val isDark = when (settings.theme) {
         AppTheme.DARK   -> true
@@ -64,25 +79,6 @@ fun NexusApp() {
             topBar = {
                 TopAppBar(
                     title = { Text("Nexus Connect", style = MaterialTheme.typography.titleLarge) },
-                    navigationIcon = {
-                        IconButton(onClick = { }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    },
-                    actions = {
-                        Box(
-                            modifier = Modifier
-                                .padding(end = 16.dp)
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.Person, contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp))
-                        }
-                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface
                     )

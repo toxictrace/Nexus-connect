@@ -594,10 +594,7 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
                     Text("Backup folder", style = MaterialTheme.typography.titleMedium)
                     Text(
                         if (settings.backupFolderUri.isBlank()) "Not selected"
-                        else settings.backupFolderUri
-                            .substringAfterLast("%3A")
-                            .substringAfterLast("/")
-                            .ifBlank { "Selected" },
+                        else decodeFolderUri(settings.backupFolderUri),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (settings.backupFolderUri.isBlank())
                             MaterialTheme.colorScheme.outline
@@ -740,6 +737,22 @@ private fun RestoreDialog(
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+private fun decodeFolderUri(uriStr: String): String {
+    return try {
+        // URI looks like: content://com.android.externalstorage.documents/tree/primary%3ADownload%2FNexus
+        val decoded = java.net.URLDecoder.decode(uriStr, "UTF-8")
+        // Extract path after "primary:" or "sdcard:"
+        val path = decoded.substringAfterLast("primary:")
+            .substringAfterLast("sdcard:")
+            .substringAfterLast(":")
+            .replace("/tree/", "")
+            .ifBlank { decoded.substringAfterLast("/") }
+        path.ifBlank { "Selected" }
+    } catch (_: Exception) {
+        uriStr.substringAfterLast("/").ifBlank { "Selected" }
+    }
+}
 
 @Composable
 private fun SectionHeader(title: String, subtitle: String) {
