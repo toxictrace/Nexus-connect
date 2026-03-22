@@ -4,6 +4,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
@@ -80,23 +82,10 @@ fun PreferencesScreen(viewModel: MainViewModel) {
             settings = settings,
             onUpdate = { updated -> viewModel.updateSettings { updated } }
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            OutlinedButton(onClick = { }, modifier = Modifier.weight(1f).height(56.dp),
-                shape = RoundedCornerShape(28.dp)) {
-                Icon(Icons.Default.Download, null)
-                Spacer(Modifier.width(8.dp))
-                Text("Import\nSettings", style = MaterialTheme.typography.labelMedium)
-            }
-            Button(onClick = { }, modifier = Modifier.weight(1f).height(56.dp),
-                shape = RoundedCornerShape(28.dp)) {
-                Icon(Icons.Default.Upload, null)
-                Spacer(Modifier.width(8.dp))
-                Text("Export\nSettings", style = MaterialTheme.typography.labelMedium)
-            }
-        }
+        BackupSection(
+            settings = settings,
+            viewModel = viewModel
+        )
         Spacer(Modifier.height(8.dp))
     }
 }
@@ -562,6 +551,192 @@ private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSet
             }
         }
     }
+}
+
+// ── Backup & Restore ──────────────────────────────────────────────────────────
+
+@Composable
+private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
+    val context = LocalContext.current
+    var message by remember { mutableStateOf<String?>(null) }
+    var showRestoreDialog by remember { mutableStateOf(false) }
+    var backups by remember { mutableStateOf<List<Pair<String, android.net.Uri>>>(emptyList()) }
+
+    // Folder picker
+    val folderPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            viewModel.updateSettings { s -> s.copy(backupFolderUri = uri.toString()) }
+        }
+    }
+
+    Column {
+        SectionHeader("BACKUP & RESTORE", "Save and restore your settings.")
+        Spacer(Modifier.height(12.dp))
+
+        SettingsCard(contentPadding = PaddingValues(0.dp)) {
+            // Folder selection
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable { folderPicker.launch(null) }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(Icons.Default.Folder, null,
+                    tint = MaterialTheme.colorScheme.primary)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Backup folder", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        if (settings.backupFolderUri.isBlank()) "Not selected"
+                        else settings.backupFolderUri
+                            .substringAfterLast("%3A")
+                            .substringAfterLast("/")
+                            .ifBlank { "Selected" },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (settings.backupFolderUri.isBlank())
+                            MaterialTheme.colorScheme.outline
+                        else MaterialTheme.colorScheme.primary
+                    )
+                }
+                Icon(Icons.Default.ChevronRight, null,
+                    tint = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.size(18.dp))
+            }
+
+            HorizontalDivider()
+
+            // Save backup
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .clickable(enabled = settings.backupFolderUri.isNotBlank()) {
+                        viewModel.saveBackup(
+                            onResult = { name -> message = "Saved: $name" },
+                            onError  = { err  -> message = "Error: $err" }
+                        )
+                    }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(Icons.Default.Upload, null,
+                    tint = if (settings.backupFolderUri.isNotBlank())
+                        MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Save backup", style = MaterialTheme.typography.titleMedium,
+                        color = if (settings.backupFolderUri.isBlank())
+                            MaterialTheme.colorScheme.outline else Color.Unspecified)
+                    Text("Save current settings to file",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+
+            HorizontalDivider()
+
+            // Restore backup
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .clickable(enabled = settings.backupFolderUri.isNotBlank()) {
+                        backups = viewModel.listBackups()
+                        showRestoreDialog = true
+                    }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(Icons.Default.Download, null,
+                    tint = if (settings.backupFolderUri.isNotBlank())
+                        MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Restore backup", style = MaterialTheme.typography.titleMedium,
+                        color = if (settings.backupFolderUri.isBlank())
+                            MaterialTheme.colorScheme.outline else Color.Unspecified)
+                    Text("Load settings from saved file",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        // Status message
+        message?.let { msg ->
+            Spacer(Modifier.height(8.dp))
+            Text(msg, style = MaterialTheme.typography.bodySmall,
+                color = if (msg.startsWith("Error"))
+                    MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 4.dp))
+            LaunchedEffect(msg) {
+                kotlinx.coroutines.delay(4000)
+                message = null
+            }
+        }
+    }
+
+    // Restore file picker dialog
+    if (showRestoreDialog) {
+        RestoreDialog(
+            backups   = backups,
+            onSelect  = { uri ->
+                showRestoreDialog = false
+                viewModel.restoreBackup(
+                    fileUri  = uri,
+                    onResult = { message = "Restored successfully" },
+                    onError  = { err -> message = "Error: $err" }
+                )
+            },
+            onDismiss = { showRestoreDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun RestoreDialog(
+    backups: List<Pair<String, android.net.Uri>>,
+    onSelect: (android.net.Uri) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select backup") },
+        text = {
+            if (backups.isEmpty()) {
+                Text("No backups found in selected folder.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
+                    items(backups) { (name, uri) ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .clickable { onSelect(uri) }
+                                .padding(vertical = 12.dp, horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(Icons.Default.Description, null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp))
+                            Text(name, style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f))
+                        }
+                        HorizontalDivider()
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

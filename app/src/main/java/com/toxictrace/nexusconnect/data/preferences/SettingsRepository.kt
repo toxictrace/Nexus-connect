@@ -32,7 +32,8 @@ data class WidgetSettings(
     val messengerWhatsApp: String = "",
     val messengerViber: String = "",
     val messengerTelegram: String = "",
-    val showCallTypeIcon: Boolean = true
+    val showCallTypeIcon: Boolean = true,
+    val backupFolderUri: String = ""
 )
 
 class SettingsRepository(private val context: Context) {
@@ -57,6 +58,7 @@ class SettingsRepository(private val context: Context) {
         val MESSENGER_VIBER      = stringPreferencesKey("messenger_viber")
         val MESSENGER_TELEGRAM   = stringPreferencesKey("messenger_telegram")
         val SHOW_CALL_TYPE_ICON  = booleanPreferencesKey("show_call_type_icon")
+        val BACKUP_FOLDER_URI    = stringPreferencesKey("backup_folder_uri")
         val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
     }
 
@@ -88,7 +90,8 @@ class SettingsRepository(private val context: Context) {
                 messengerWhatsApp  = prefs[Keys.MESSENGER_WHATSAPP] ?: "",
                 messengerViber     = prefs[Keys.MESSENGER_VIBER] ?: "",
                 messengerTelegram  = prefs[Keys.MESSENGER_TELEGRAM] ?: "",
-                showCallTypeIcon   = prefs[Keys.SHOW_CALL_TYPE_ICON] ?: true
+                showCallTypeIcon   = prefs[Keys.SHOW_CALL_TYPE_ICON] ?: true,
+                backupFolderUri    = prefs[Keys.BACKUP_FOLDER_URI] ?: ""
             )
         }
 
@@ -113,6 +116,7 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.MESSENGER_VIBER]      = update.messengerViber
             prefs[Keys.MESSENGER_TELEGRAM]   = update.messengerTelegram
             prefs[Keys.SHOW_CALL_TYPE_ICON]  = update.showCallTypeIcon
+            prefs[Keys.BACKUP_FOLDER_URI]    = update.backupFolderUri
         }
         val selectedIds = getSelectedContactIds()
         WidgetPrefs.sync(context, update, selectedIds)

@@ -134,6 +134,51 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             ContactWidgetProvider.updateAllWidgets(getApplication())
         }
     }
+
+    fun saveBackup(onResult: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val folderUri = android.net.Uri.parse(settings.value.backupFolderUri)
+                val selectedIds = settingsRepo.getSelectedContactIds()
+                val json = com.toxictrace.nexusconnect.data.backup.BackupManager
+                    .settingsToJson(settings.value, selectedIds)
+                val name = com.toxictrace.nexusconnect.data.backup.BackupManager
+                    .saveBackup(getApplication(), folderUri, json)
+                onResult(name)
+            } catch (e: Exception) {
+                onError(e.message ?: "Backup failed")
+            }
+        }
+    }
+
+    fun restoreBackup(fileUri: android.net.Uri, onResult: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val json = com.toxictrace.nexusconnect.data.backup.BackupManager
+                    .loadBackup(getApplication(), fileUri)
+                val (restoredSettings, restoredIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
+                    .jsonToSettings(json)
+                // Keep current backup folder
+                val folderUri = settings.value.backupFolderUri
+                settingsRepo.updateSettings(restoredSettings.copy(backupFolderUri = folderUri))
+                settingsRepo.saveSelectedContactIds(restoredIds)
+                _selectedIds.value = restoredIds
+                ContactWidgetProvider.updateAllWidgets(getApplication())
+                onResult()
+            } catch (e: Exception) {
+                onError(e.message ?: "Restore failed")
+            }
+        }
+    }
+
+    fun listBackups(): List<Pair<String, android.net.Uri>> {
+        val folderUriStr = settings.value.backupFolderUri
+        if (folderUriStr.isBlank()) return emptyList()
+        return try {
+            com.toxictrace.nexusconnect.data.backup.BackupManager
+                .listBackups(getApplication(), android.net.Uri.parse(folderUriStr))
+        } catch (_: Exception) { emptyList() }
+    }
 }
 
 enum class ContactSortMode(val label: String) {
