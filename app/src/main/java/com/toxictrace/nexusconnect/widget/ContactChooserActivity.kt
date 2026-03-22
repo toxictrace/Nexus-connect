@@ -51,6 +51,14 @@ class ContactChooserActivity : ComponentActivity() {
         val phone     = intent.getStringExtra("contact_phone") ?: ""
         val name      = intent.getStringExtra("contact_name")  ?: ""
         val photoUri  = if (contactId > 0) PhotoProvider.uriForContact(contactId).toString() else null
+
+        // Fallback avatar when contact has no photo
+        val avatarIdentity = WidgetPrefs.getAvatarIdentity(this)
+        val fallbackAvatarUri = if (avatarIdentity == "CUSTOM" &&
+            WidgetPrefs.getCustomAvatarUri(this).isNotBlank())
+            AvatarProvider.customUri().toString()
+        else
+            AvatarProvider.defaultUri().toString()
         val stats     = loadCallStats(phone)
 
         val isDark = when (WidgetPrefs.getTheme(this)) {
@@ -78,10 +86,11 @@ class ContactChooserActivity : ComponentActivity() {
                 accentIndex  = accentIndex
             ) {
                 ChooserSheet(
-                    name         = name,
-                    phone        = phone,
-                    photoUri     = photoUri,
-                    stats        = stats,
+                    name             = name,
+                    phone            = phone,
+                    photoUri         = photoUri,
+                    fallbackAvatarUri = fallbackAvatarUri,
+                    stats            = stats,
                     whatsAppPkg  = whatsAppPkg,
                     viberPkg     = viberPkg,
                     telegramPkg  = telegramPkg,
@@ -198,6 +207,7 @@ class ContactChooserActivity : ComponentActivity() {
 @Composable
 private fun ChooserSheet(
     name: String, phone: String, photoUri: String?,
+    fallbackAvatarUri: String,
     stats: CallStats,
     whatsAppPkg: String, viberPkg: String, telegramPkg: String,
     isInstalled: (String) -> Boolean,
@@ -243,12 +253,9 @@ private fun ChooserSheet(
                             AsyncImage(model = photoUri, contentDescription = name,
                                 contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                         } else {
-                            Text(
-                                name.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString(""),
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold
-                            )
+                            // Default or custom avatar via AvatarProvider
+                            AsyncImage(model = fallbackAvatarUri, contentDescription = name,
+                                contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                         }
                     }
                     Column {
