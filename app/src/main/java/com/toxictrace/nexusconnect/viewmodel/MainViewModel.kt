@@ -48,7 +48,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             .filter { it.id !in idSet }
             .map { it.copy(isSelected = false) }
         selectedOrdered + unselected
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }
+    .distinctUntilChanged()
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         loadContacts()

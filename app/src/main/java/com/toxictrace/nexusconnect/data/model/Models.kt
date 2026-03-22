@@ -1,36 +1,19 @@
 package com.toxictrace.nexusconnect.data.model
 
-import android.net.Uri
+import androidx.compose.runtime.Stable
 
+@Stable
 data class Contact(
     val id: Long,
     val name: String,
-    val photoUri: Uri? = null,
+    val photoUri: String? = null,   // String instead of Uri — stable for Compose
     val phoneNumber: String? = null,
     val isSelected: Boolean = false,
     val isStarred: Boolean = false,
-    val sortOrder: Int = 0,
-    val customAvatarIndex: Int = -1  // -1 = use default/initials, 0 = silhouette, 1-5 = vector avatars
+    val sortOrder: Int = 0
 )
 
-enum class ClickAction {
-    SHOW_DIALOG,
-    DIRECT_CALL
-}
-
-enum class FilterMode {
-    FAVORITES,
-    RECENTS,
-    FREQUENT
-}
-
-enum class AvatarIdentity {
-    DEFAULT,   // silhouette image
-    CUSTOM     // user-picked image from gallery
-}
-
-enum class AppTheme {
-    LIGHT,
-    DARK,
-    SYSTEM
-}
+enum class ClickAction { SHOW_DIALOG, DIRECT_CALL }
+enum class FilterMode  { FAVORITES, RECENTS, FREQUENT }
+enum class AvatarIdentity { DEFAULT, CUSTOM }
+enum class AppTheme { LIGHT, DARK, SYSTEM }

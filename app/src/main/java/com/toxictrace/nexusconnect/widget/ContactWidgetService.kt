@@ -78,7 +78,8 @@ class ContactWidgetFactory(
     }
 
     private fun loadPhoto(contact: Contact, maxPx: Int): Bitmap? {
-        val uri = contact.photoUri ?: return null
+        val uriStr = contact.photoUri ?: return null
+        val uri = android.net.Uri.parse(uriStr)
         return try {
             val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             context.contentResolver.openInputStream(uri)?.use { s ->

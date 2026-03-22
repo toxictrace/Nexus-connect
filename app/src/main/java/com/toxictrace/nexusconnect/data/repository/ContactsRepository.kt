@@ -2,7 +2,6 @@ package com.toxictrace.nexusconnect.data.repository
 
 import android.content.Context
 import android.database.ContentObserver
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
@@ -83,11 +82,11 @@ class ContactsRepository(private val context: Context) {
 
                 contacts.add(
                     Contact(
-                        id = id,
-                        name = name,
+                        id          = id,
+                        name        = name,
                         phoneNumber = number,
-                        photoUri = (photoStr ?: thumbStr)?.let { s -> Uri.parse(s) },
-                        isStarred = starred
+                        photoUri    = photoStr ?: thumbStr,
+                        isStarred   = starred
                     )
                 )
             }
