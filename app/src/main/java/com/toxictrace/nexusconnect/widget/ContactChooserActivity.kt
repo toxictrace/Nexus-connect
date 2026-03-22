@@ -350,7 +350,8 @@ private fun StatItem(icon: ImageVector, value: String, label: String, valueLines
         Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold,
             maxLines = valueLines, textAlign = TextAlign.Center)
         Text(label, style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center)
     }
 }
 
