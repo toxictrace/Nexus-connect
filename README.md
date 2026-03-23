@@ -18,13 +18,24 @@
 <a name="english"></a>
 ## 🇬🇧 English
 
+### Screenshots
+
+<p align="center">
+  <img src="screenshots/widget_dialog.jpg" width="200"/>
+  <img src="screenshots/contacts_screen.jpg" width="200"/>
+  <img src="screenshots/layout_screen.jpg" width="200"/>
+</p>
+<p align="center">
+  <img src="screenshots/preferences_1.jpg" width="200"/>
+  <img src="screenshots/preferences_2.jpg" width="200"/>
+  <img src="screenshots/preferences_3.jpg" width="200"/>
+</p>
+
+---
+
 ### What is Nexus Connect?
 
 Nexus Connect is a free, open-source Android widget app. Instead of unlocking your phone → opening the dialer → scrolling through hundreds of contacts → tapping a name, you just tap a face on your home screen. That's it.
-
-### Screenshots
-
-> *(add your screenshots here)*
 
 ### Features
 
@@ -100,7 +111,7 @@ cd Nexus-connect
 ./gradlew assembleDebug
 ```
 
-Requires **Android Studio** or **JDK 17+** with Gradle.  
+Requires **JDK 17+** with Gradle.  
 Min SDK: **26 (Android 8.0)** · Target SDK: **34 (Android 14)**
 
 ---
@@ -125,13 +136,24 @@ MIT License — see [LICENSE](LICENSE)
 <a name="русский"></a>
 ## 🇷🇺 Русский
 
+### Скриншоты
+
+<p align="center">
+  <img src="screenshots/widget_dialog.jpg" width="200"/>
+  <img src="screenshots/contacts_screen.jpg" width="200"/>
+  <img src="screenshots/layout_screen.jpg" width="200"/>
+</p>
+<p align="center">
+  <img src="screenshots/preferences_1.jpg" width="200"/>
+  <img src="screenshots/preferences_2.jpg" width="200"/>
+  <img src="screenshots/preferences_3.jpg" width="200"/>
+</p>
+
+---
+
 ### Что такое Nexus Connect?
 
 Nexus Connect — бесплатное приложение с открытым исходным кодом для Android. Вместо того чтобы разблокировать телефон → открывать звонилку → листать сотни контактов → нажимать на имя, вы просто нажимаете на фотографию на рабочем столе. Вот и всё.
-
-### Скриншоты
-
-> *(добавьте скриншоты сюда)*
 
 ### Возможности
 
@@ -207,7 +229,7 @@ cd Nexus-connect
 ./gradlew assembleDebug
 ```
 
-Требуется **Android Studio** или **JDK 17+** с Gradle.  
+Требуется **JDK 17+** с Gradle.  
 Min SDK: **26 (Android 8.0)** · Target SDK: **34 (Android 14)**
 
 ---
