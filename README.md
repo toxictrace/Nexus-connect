@@ -1,7 +1,7 @@
 # Nexus Connect
 
 <p align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="96" alt="Nexus Connect"/>
+  <img src="app/src/main/res/mipmap-xxhdpi/ic_launcher.png" width="96" alt="Nexus Connect"/>
 </p>
 
 <p align="center">
