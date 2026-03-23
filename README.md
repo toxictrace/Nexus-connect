@@ -21,7 +21,7 @@
 ### Screenshots
 
 <p align="center">
-  <img src="screenshots/widget_dialog.jpg" width="200"/>
+  
   <img src="screenshots/contacts_screen.jpg" width="200"/>
   <img src="screenshots/layout_screen.jpg" width="200"/>
 </p>
