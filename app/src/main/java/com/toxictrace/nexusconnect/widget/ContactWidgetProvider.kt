@@ -96,6 +96,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             }
             // Load last call types for all contacts if icon display is enabled
             val showCallIcon = WidgetPrefs.getShowCallTypeIcon(context)
+            val callIconStyle = WidgetPrefs.getCallIconStyle(context) // NONE, MATERIAL, GLASS
             val callTypeMap: Map<String, Int> = if (showCallIcon) {
                 val phones = allTileContacts.mapNotNull { it.phoneNumber }
                 com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
@@ -130,15 +131,21 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     views.setTextViewText(nameId, contact.name)
 
                     // Call type icon
-                    if (showCallIcon && callIconId != 0 && contact.phoneNumber != null) {
+                    if (showCallIcon && callIconStyle != "NONE" && callIconId != 0 && contact.phoneNumber != null) {
                         val norm = contact.phoneNumber.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
                         val callType = callTypeMap[norm]
+                        val glass = callIconStyle == "GLASS"
                         val iconRes = when (callType) {
-                            android.provider.CallLog.Calls.INCOMING_TYPE  -> R.drawable.call_incoming
-                            android.provider.CallLog.Calls.OUTGOING_TYPE  -> R.drawable.call_outgoing
-                            android.provider.CallLog.Calls.MISSED_TYPE    -> R.drawable.call_missed
-                            5 -> R.drawable.call_rejected  // REJECTED / BLOCKED
-                            else -> if (callType != null) R.drawable.call_unknown else 0
+                            android.provider.CallLog.Calls.INCOMING_TYPE ->
+                                if (glass) R.drawable.call_incoming_glass else R.drawable.call_incoming
+                            android.provider.CallLog.Calls.OUTGOING_TYPE ->
+                                if (glass) R.drawable.call_outgoing_glass else R.drawable.call_outgoing
+                            android.provider.CallLog.Calls.MISSED_TYPE ->
+                                if (glass) R.drawable.call_missed_glass else R.drawable.call_missed
+                            5 -> if (glass) R.drawable.call_rejected_glass else R.drawable.call_rejected
+                            else -> if (callType != null)
+                                if (glass) R.drawable.call_unknown_glass else R.drawable.call_unknown
+                            else 0
                         }
                         if (iconRes != 0) {
                             views.setViewVisibility(callIconId, View.VISIBLE)

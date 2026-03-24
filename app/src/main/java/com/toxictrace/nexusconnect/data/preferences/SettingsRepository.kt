@@ -33,6 +33,7 @@ data class WidgetSettings(
     val messengerViber: String = "",
     val messengerTelegram: String = "",
     val showCallTypeIcon: Boolean = true,
+    val callIconStyle: String = "MATERIAL", // NONE, MATERIAL, GLASS
     val backupFolderUri: String = "",
     val language: String = "system"
 )
@@ -59,6 +60,7 @@ class SettingsRepository(private val context: Context) {
         val MESSENGER_VIBER      = stringPreferencesKey("messenger_viber")
         val MESSENGER_TELEGRAM   = stringPreferencesKey("messenger_telegram")
         val SHOW_CALL_TYPE_ICON  = booleanPreferencesKey("show_call_type_icon")
+        val CALL_ICON_STYLE      = stringPreferencesKey("call_icon_style")
         val BACKUP_FOLDER_URI    = stringPreferencesKey("backup_folder_uri")
         val LANGUAGE             = stringPreferencesKey("language")
         val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
@@ -93,6 +95,7 @@ class SettingsRepository(private val context: Context) {
                 messengerViber     = prefs[Keys.MESSENGER_VIBER] ?: "",
                 messengerTelegram  = prefs[Keys.MESSENGER_TELEGRAM] ?: "",
                 showCallTypeIcon   = prefs[Keys.SHOW_CALL_TYPE_ICON] ?: true,
+                callIconStyle      = prefs[Keys.CALL_ICON_STYLE] ?: "MATERIAL",
                 backupFolderUri    = prefs[Keys.BACKUP_FOLDER_URI] ?: "",
                 language           = prefs[Keys.LANGUAGE] ?: "system"
             )
@@ -119,6 +122,7 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.MESSENGER_VIBER]      = update.messengerViber
             prefs[Keys.MESSENGER_TELEGRAM]   = update.messengerTelegram
             prefs[Keys.SHOW_CALL_TYPE_ICON]  = update.showCallTypeIcon
+            prefs[Keys.CALL_ICON_STYLE]      = update.callIconStyle
             prefs[Keys.BACKUP_FOLDER_URI]    = update.backupFolderUri
             prefs[Keys.LANGUAGE]             = update.language
         }

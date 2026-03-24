@@ -147,4 +147,9 @@
     <string name="last_call_label">Последний звонок</string>
     <string name="seconds_short">%1$dс</string>
     <string name="minutes_short">%1$dм %2$dс</string>
+    <string name="call_icon_style">Стиль иконок звонков</string>
+    <string name="call_icon_style_subtitle">Выберите стиль иконок на плитках виджета</string>
+    <string name="call_icon_none">Без иконок</string>
+    <string name="call_icon_material">Material</string>
+    <string name="call_icon_glass">Glass</string>
 </resources>

@@ -36,6 +36,9 @@ object WidgetPrefs {
     fun getShowCallTypeIcon(context: Context): Boolean =
         sp(context).getBoolean("show_call_type_icon", true)
 
+    fun getCallIconStyle(context: Context): String =
+        sp(context).getString("call_icon_style", "MATERIAL") ?: "MATERIAL"
+
     fun getShowUnknownNumbers(context: Context): Boolean =
         sp(context).getBoolean("show_unknown_numbers", true)
 
@@ -84,6 +87,7 @@ object WidgetPrefs {
             putBoolean("show_unknown_numbers",  settings.showUnknownNumbers)
             putInt("unknown_numbers_days",      settings.unknownNumbersDays)
             putBoolean("show_call_type_icon",   settings.showCallTypeIcon)
+            putString("call_icon_style",        settings.callIconStyle)
             putString("click_action",        settings.clickAction.name)
             putString("theme",              settings.theme.name)
             putBoolean("dynamic_colors",    settings.dynamicColors)

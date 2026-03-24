@@ -75,7 +75,7 @@ fun PreferencesScreen(viewModel: MainViewModel) {
         )
         CallIconSection(
             settings = settings,
-            onUpdate = { enabled -> viewModel.updateSettings { s -> s.copy(showCallTypeIcon = enabled) } }
+            onUpdate = { updated -> viewModel.updateSettings { updated } }
         )
         AppearanceSection(
             settings = settings,
@@ -314,29 +314,76 @@ private fun AppPickerDialog(apps: List<AppInfo>, loading: Boolean, current: Stri
 // ── Feedback ──────────────────────────────────────────────────────────────────
 
 @Composable
-private fun CallIconSection(settings: WidgetSettings, onUpdate: (Boolean) -> Unit) {
+private fun CallIconSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
+    val options = listOf(
+        "NONE"     to stringResource(R.string.call_icon_none),
+        "MATERIAL" to stringResource(R.string.call_icon_material),
+        "GLASS"    to stringResource(R.string.call_icon_glass),
+    )
+    val currentLabel = options.firstOrNull { it.first == settings.callIconStyle }?.second
+        ?: stringResource(R.string.call_icon_material)
+    var expanded by remember { mutableStateOf(false) }
+
     Column {
-        Text(stringResource(R.string.call_type_icon), style = MaterialTheme.typography.labelMedium,
+        Text(stringResource(R.string.call_type_icon),
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
-        SettingsCard {
-            Row(modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Surface(shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.size(44.dp)) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Call, null)
+        SettingsCard(contentPadding = PaddingValues(0.dp)) {
+            Box {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clickable { expanded = true }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Surface(shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.size(44.dp)) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.Call, null)
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.call_icon_style),
+                            style = MaterialTheme.typography.titleMedium)
+                        Text(currentLabel,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Icon(Icons.Default.ArrowDropDown, null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    options.forEach { (style, label) ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    if (settings.callIconStyle == style) {
+                                        Icon(Icons.Default.Check, null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(18.dp))
+                                    } else {
+                                        Spacer(Modifier.size(18.dp))
+                                    }
+                                    Text(label)
+                                }
+                            },
+                            onClick = {
+                                expanded = false
+                                onUpdate(settings.copy(
+                                    callIconStyle   = style,
+                                    showCallTypeIcon = style != "NONE"
+                                ))
+                            }
+                        )
                     }
                 }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.show_call_type_icon), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.call_type_icon_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(checked = settings.showCallTypeIcon, onCheckedChange = onUpdate)
             }
         }
     }

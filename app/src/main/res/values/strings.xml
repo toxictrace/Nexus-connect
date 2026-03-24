@@ -147,4 +147,9 @@
     <string name="last_call_label">Last call</string>
     <string name="seconds_short">%1$ds</string>
     <string name="minutes_short">%1$dm %2$ds</string>
+    <string name="call_icon_style">Call icon style</string>
+    <string name="call_icon_style_subtitle">Choose icon style for call type on tiles</string>
+    <string name="call_icon_none">No icons</string>
+    <string name="call_icon_material">Material</string>
+    <string name="call_icon_glass">Glass</string>
 </resources>
