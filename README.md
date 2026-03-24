@@ -1,7 +1,7 @@
 # Nexus Connect
 
 <p align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="96" alt="Nexus Connect"/>
+  <img src="app/src/main/res/mipmap-xxhdpi/ic_launcher.png" width="96" alt="Nexus Connect"/>
 </p>
 
 <p align="center">
@@ -21,8 +21,8 @@
 ### Screenshots
 
 <p align="center">
-  <img src="screenshots/widget_dialog.jpg" width="200"/>
-  <img src="screenshots/contacts_screen.jpg" width="200"/>
+  
+  
   <img src="screenshots/layout_screen.jpg" width="200"/>
 </p>
 <p align="center">
@@ -139,8 +139,7 @@ MIT License — see [LICENSE](LICENSE)
 ### Скриншоты
 
 <p align="center">
-  <img src="screenshots/widget_dialog.jpg" width="200"/>
-  <img src="screenshots/contacts_screen.jpg" width="200"/>
+  
   <img src="screenshots/layout_screen.jpg" width="200"/>
 </p>
 <p align="center">
