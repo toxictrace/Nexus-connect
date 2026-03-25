@@ -2,6 +2,9 @@ name: Build Release APK
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -49,8 +52,25 @@ jobs:
             app/build/outputs/apk/release/app-release-unsigned.apk \
             app/build/outputs/apk/release/app-release-signed.apk
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Get version name
+        id: version
+        run: |
+          VERSION=$(grep versionName app/build.gradle | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: release-apk
-          path: app/build/outputs/apk/release/app-release-signed.apk
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Nexus Connect v${{ steps.version.outputs.version }}
+          files: app/build/outputs/apk/release/app-release-signed.apk
+          generate_release_notes: false
+          body: |
+            ## Nexus Connect v${{ steps.version.outputs.version }}
+
+            ### Installation
+            1. Download `app-release-signed.apk`
+            2. Install on Android 8.0+
+            3. Add Nexus Connect widget to home screen
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
