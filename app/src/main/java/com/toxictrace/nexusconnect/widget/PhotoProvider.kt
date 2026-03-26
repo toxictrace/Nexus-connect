@@ -10,7 +10,8 @@ import android.util.Log
 
 /**
  * Serves contact photos to the widget via setImageViewUri.
- * Only handles real contact photos — no fallback here.
+ * URI includes a version timestamp so the launcher cache is invalidated
+ * when contacts change.
  */
 class PhotoProvider : ContentProvider() {
 
@@ -18,14 +19,22 @@ class PhotoProvider : ContentProvider() {
         private const val TAG = "PhotoProvider"
         const val AUTHORITY = "com.toxictrace.nexusconnect.photos"
 
+        // Incremented on every widget update — forces launcher to reload photos
+        @Volatile private var cacheVersion: Long = System.currentTimeMillis()
+
+        fun invalidateCache() {
+            cacheVersion = System.currentTimeMillis()
+        }
+
         fun uriForContact(contactId: Long): Uri =
-            Uri.parse("content://$AUTHORITY/$contactId")
+            Uri.parse("content://$AUTHORITY/$contactId?v=$cacheVersion")
     }
 
     override fun onCreate(): Boolean = true
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
-        val contactId = uri.lastPathSegment?.toLongOrNull() ?: return null
+        // lastPathSegment may be "123?v=..." — parse only the numeric part
+        val contactId = uri.lastPathSegment?.substringBefore("?")?.toLongOrNull() ?: return null
         val ctx = context ?: return null
         val photoUri = getPhotoUri(contactId) ?: return null
         return try {

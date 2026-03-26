@@ -25,6 +25,7 @@ class ContactsObserverService : Service() {
         if (contactsObserver == null) {
             contactsObserver = object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean) {
+                    PhotoProvider.invalidateCache() // force launcher to reload photos
                     ContactWidgetProvider.updateAllWidgets(applicationContext)
                 }
             }

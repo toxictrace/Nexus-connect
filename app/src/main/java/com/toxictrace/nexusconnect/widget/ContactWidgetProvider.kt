@@ -39,6 +39,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val size = Math.sqrt(bytesPerTile / 2.0).toInt()
             return size.coerceIn(100, 500)
         }        fun updateAllWidgets(context: Context) {
+            PhotoProvider.invalidateCache()
             val mgr = AppWidgetManager.getInstance(context)
             val ids = mgr.getAppWidgetIds(
                 ComponentName(context, ContactWidgetProvider::class.java)
