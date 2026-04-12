@@ -153,4 +153,11 @@
     <string name="call_icon_material">Material</string>
     <string name="call_icon_glass">Glass</string>
     <!-- Диагностика -->�    <string name="diagnostics">ДИАГНОСТИКА</string>�    <string name="diagnostics_subtitle">Экспорт журнала для диагностики ошибок.</string>�    <string name="save_log">Сохранить лог</string>�    <string name="save_log_subtitle">Экспортировать лог в папку резервных копий</string>�    <string name="save_log_no_folder">Сначала выберите папку для резервных копий</string>�    <string name="log_saved">Сохранено: %1$s</string>�
+    <!-- Диагностика -->
+    <string name="diagnostics">ДИАГНОСТИКА</string>
+    <string name="diagnostics_subtitle">Экспорт журнала для диагностики ошибок.</string>
+    <string name="save_log">Сохранить лог</string>
+    <string name="save_log_subtitle">Экспортировать лог в папку резервных копий</string>
+    <string name="save_log_no_folder">Сначала выберите папку для резервных копий</string>
+    <string name="log_saved">Сохранено: %1$s</string>
 </resources>

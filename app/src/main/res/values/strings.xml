@@ -153,4 +153,11 @@
     <string name="call_icon_material">Material</string>
     <string name="call_icon_glass">Glass</string>
     <!-- Diagnostics -->Â    <string name="diagnostics">DIAGNOSTICS</string>Â    <string name="diagnostics_subtitle">Export application log for troubleshooting.</string>Â    <string name="save_log">Save log</string>Â    <string name="save_log_subtitle">Export current log to backup folder</string>Â    <string name="save_log_no_folder">Select a backup folder first</string>Â    <string name="log_saved">Saved: %1$s</string>Â
+    <!-- Diagnostics -->
+    <string name="diagnostics">DIAGNOSTICS</string>
+    <string name="diagnostics_subtitle">Export application log for troubleshooting.</string>
+    <string name="save_log">Save log</string>
+    <string name="save_log_subtitle">Export current log to backup folder</string>
+    <string name="save_log_no_folder">Select a backup folder first</string>
+    <string name="log_saved">Saved: %1$s</string>
 </resources>
