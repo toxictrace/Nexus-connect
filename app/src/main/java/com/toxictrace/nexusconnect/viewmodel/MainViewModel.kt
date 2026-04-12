@@ -3,7 +3,6 @@ package com.toxictrace.nexusconnect.viewmodel
 import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -14,17 +13,17 @@ import com.toxictrace.nexusconnect.data.preferences.SettingsRepository
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 import com.toxictrace.nexusconnect.ui.screens.AppInfo
+import com.toxictrace.nexusconnect.util.AppLogger
 import com.toxictrace.nexusconnect.widget.ContactWidgetProvider
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val settingsRepo  = SettingsRepository(application)
-    private val contactsRepo  = ContactsRepository(application)
+    private val settingsRepo = SettingsRepository(application)
+    private val contactsRepo = ContactsRepository(application)
 
     val settings: StateFlow<WidgetSettings> = settingsRepo.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WidgetSettings())
@@ -64,6 +63,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
+        AppLogger.i("MainViewModel", "init")
         loadContacts()
         loadSavedSelection()
         loadInstalledApps()
@@ -73,26 +73,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadInstalledApps() {
         viewModelScope.launch(Dispatchers.IO) {
-            val pm = getApplication<Application>().packageManager
-            val launcherIntent = android.content.Intent(android.content.Intent.ACTION_MAIN)
-                .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
-            val apps = pm.queryIntentActivities(launcherIntent, PackageManager.MATCH_ALL)
-                .map { it.activityInfo.packageName }
-                .distinct()
-                .filter { it != getApplication<Application>().packageName }
-                .mapNotNull { pkg ->
-                    runCatching {
-                        val info = pm.getApplicationInfo(pkg, 0)
-                        val label = pm.getApplicationLabel(info).toString()
-                        val iconBmp = runCatching {
-                            pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
+            AppLogger.i("MainViewModel", "loadInstalledApps started")
+            try {
+                val pm = getApplication<Application>().packageManager
+                val launcherIntent = android.content.Intent(android.content.Intent.ACTION_MAIN)
+                    .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+                val apps = pm.queryIntentActivities(launcherIntent, PackageManager.MATCH_ALL)
+                    .map { it.activityInfo.packageName }
+                    .distinct()
+                    .filter { it != getApplication<Application>().packageName }
+                    .mapNotNull { pkg ->
+                        runCatching {
+                            val info = pm.getApplicationInfo(pkg, 0)
+                            val label = pm.getApplicationLabel(info).toString()
+                            val iconBmp = runCatching {
+                                pm.getApplicationIcon(pkg).toBitmap(48, 48).asImageBitmap()
+                            }.getOrNull()
+                            AppInfo(pkg, label, iconBmp)
                         }.getOrNull()
-                        AppInfo(pkg, label, iconBmp)
-                    }.getOrNull()
-                }
-                .sortedBy { it.label.lowercase() }
-            _installedApps.value = apps
-            appsLoading.value = false
+                    }
+                    .sortedBy { it.label.lowercase() }
+                _installedApps.value = apps
+                appsLoading.value = false
+                AppLogger.i("MainViewModel", "loadInstalledApps done: ${apps.size} apps")
+            } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "loadInstalledApps failed", e)
+                appsLoading.value = false
+            }
         }
     }
 
@@ -100,17 +107,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val hasPermission = ContextCompat.checkSelfPermission(
             getApplication(), Manifest.permission.READ_CONTACTS
         ) == PackageManager.PERMISSION_GRANTED
-        if (!hasPermission) return
+        if (!hasPermission) {
+            AppLogger.w("MainViewModel", "loadContacts: READ_CONTACTS permission not granted")
+            return
+        }
         viewModelScope.launch {
-            contactsRepo.observeContacts()
-                .distinctUntilChanged()
-                .collect { list -> _allContacts.value = list }
+            AppLogger.i("MainViewModel", "loadContacts: starting observer")
+            try {
+                contactsRepo.observeContacts()
+                    .distinctUntilChanged()
+                    .collect { list ->
+                        AppLogger.i("MainViewModel", "contacts updated: ${list.size} contacts")
+                        _allContacts.value = list
+                    }
+            } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "loadContacts failed", e)
+            }
         }
     }
 
     private fun loadSavedSelection() {
         viewModelScope.launch {
-            _selectedIds.value = settingsRepo.getSelectedContactIds()
+            try {
+                _selectedIds.value = settingsRepo.getSelectedContactIds()
+                AppLogger.i("MainViewModel", "loadSavedSelection: ${_selectedIds.value.size} ids")
+            } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "loadSavedSelection failed", e)
+            }
         }
     }
 
@@ -119,9 +142,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val maxTiles = settings.value.columns * settings.value.tileHeightDp
         if (contactId in current) {
             current.remove(contactId)
+            AppLogger.i("MainViewModel", "contact deselected: id=$contactId")
         } else {
-            if (current.size >= maxTiles) return
+            if (current.size >= maxTiles) {
+                AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
+                return
+            }
             current.add(contactId)
+            AppLogger.i("MainViewModel", "contact selected: id=$contactId")
         }
         _selectedIds.value = current
         viewModelScope.launch {
@@ -136,6 +164,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val item = current.removeAt(fromIndex)
         current.add(toIndex, item)
         _selectedIds.value = current
+        AppLogger.i("MainViewModel", "reorderSelected: $fromIndex -> $toIndex")
         viewModelScope.launch {
             settingsRepo.saveSelectedContactIds(current)
             ContactWidgetProvider.updateAllWidgets(getApplication())
@@ -143,6 +172,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun applyAndUpdateWidget() {
+        AppLogger.i("MainViewModel", "applyAndUpdateWidget")
         viewModelScope.launch {
             ContactWidgetProvider.updateAllWidgets(getApplication())
         }
@@ -150,22 +180,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateSettings(update: (WidgetSettings) -> WidgetSettings) {
         viewModelScope.launch {
-            settingsRepo.updateSettings(update(settings.value))
-            ContactWidgetProvider.updateAllWidgets(getApplication())
+            try {
+                settingsRepo.updateSettings(update(settings.value))
+                ContactWidgetProvider.updateAllWidgets(getApplication())
+                AppLogger.i("MainViewModel", "settings updated")
+            } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "updateSettings failed", e)
+            }
         }
     }
 
     fun saveBackup(onResult: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
+                AppLogger.i("MainViewModel", "saveBackup started")
                 val folderUri = android.net.Uri.parse(settings.value.backupFolderUri)
                 val selectedIds = settingsRepo.getSelectedContactIds()
                 val json = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .settingsToJson(settings.value, selectedIds)
                 val name = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .saveBackup(getApplication(), folderUri, json)
+                AppLogger.i("MainViewModel", "saveBackup success: $name")
                 onResult(name)
             } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "saveBackup failed", e)
                 onError(e.message ?: "Backup failed")
             }
         }
@@ -174,6 +212,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun restoreBackup(fileUri: android.net.Uri, onResult: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
+                AppLogger.i("MainViewModel", "restoreBackup started: $fileUri")
                 val json = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .loadBackup(getApplication(), fileUri)
                 val (restoredSettings, restoredIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
@@ -183,8 +222,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 settingsRepo.saveSelectedContactIds(restoredIds)
                 _selectedIds.value = restoredIds
                 ContactWidgetProvider.updateAllWidgets(getApplication())
+                AppLogger.i("MainViewModel", "restoreBackup success: ${restoredIds.size} contacts restored")
                 onResult()
             } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "restoreBackup failed", e)
                 onError(e.message ?: "Restore failed")
             }
         }
@@ -196,7 +237,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         return try {
             com.toxictrace.nexusconnect.data.backup.BackupManager
                 .listBackups(getApplication(), android.net.Uri.parse(folderUriStr))
-        } catch (_: Exception) { emptyList() }
+        } catch (e: Exception) {
+            AppLogger.e("MainViewModel", "listBackups failed", e)
+            emptyList()
+        }
+    }
+
+    fun saveLog(onResult: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                AppLogger.i("MainViewModel", "saveLog requested")
+                val folderUri = android.net.Uri.parse(settings.value.backupFolderUri)
+                val name = AppLogger.exportToFolder(getApplication(), folderUri)
+                AppLogger.i("MainViewModel", "saveLog success: $name")
+                onResult(name)
+            } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "saveLog failed", e)
+                onError(e.message ?: "Export failed")
+            }
+        }
     }
 
     // ── Photo preload cache ───────────────────────────────────────────────────
@@ -217,13 +276,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val uri = android.net.Uri.parse(contact.photoUri)
                     ctx.contentResolver.openInputStream(uri)?.use { stream ->
                         val opts = android.graphics.BitmapFactory.Options().apply {
-                            inSampleSize = 2  // 1/4 size for list thumbnails
-                            inPreferredConfig = android.graphics.Bitmap.Config.RGB_565 // less memory
+                            inSampleSize = 2
+                            inPreferredConfig = android.graphics.Bitmap.Config.RGB_565
                         }
                         android.graphics.BitmapFactory.decodeStream(stream, null, opts)
                             ?.let { bmp -> newCache[contact.id] = bmp }
                     }
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    AppLogger.w("MainViewModel", "preloadPhotos: failed for contact ${contact.id}: ${e.message}")
+                }
             }
             _photoCache.value = newCache
         }

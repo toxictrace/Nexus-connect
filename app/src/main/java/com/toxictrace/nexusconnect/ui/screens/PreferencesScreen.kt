@@ -89,12 +89,15 @@ fun PreferencesScreen(viewModel: MainViewModel) {
             settings = settings,
             viewModel = viewModel
         )
+        DiagnosticsSection(
+            settings = settings,
+            viewModel = viewModel
+        )
         LanguageSection(
             settings = settings,
             onUpdate = { lang ->
                 viewModel.updateSettings { s -> s.copy(language = lang) }
                 com.toxictrace.nexusconnect.util.LocaleHelper.saveLanguage(context, lang)
-                // Restart activity to apply locale
                 (context as? android.app.Activity)?.recreate()
             }
         )
@@ -377,7 +380,7 @@ private fun CallIconSection(settings: WidgetSettings, onUpdate: (WidgetSettings)
                             onClick = {
                                 expanded = false
                                 onUpdate(settings.copy(
-                                    callIconStyle   = style,
+                                    callIconStyle    = style,
                                     showCallTypeIcon = style != "NONE"
                                 ))
                             }
@@ -437,7 +440,6 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
                 showAuto = true)
         }
         Spacer(Modifier.height(12.dp))
-        // Dynamic colors toggle — separate row at top
         SettingsCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -458,7 +460,6 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
             }
         }
         Spacer(Modifier.height(4.dp))
-        // Accent colors — full width row below, enabled only when Monet is off
         SettingsCard(contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -515,7 +516,6 @@ private fun ThemeCard(
             Box(modifier = Modifier.fillMaxWidth().height(60.dp).clip(RoundedCornerShape(8.dp))
                 .background(if (isDark) Color(0xFF1A1A2E) else Color.White)) {
                 if (showAuto) {
-                    // Half light / half dark for System
                     Row(modifier = Modifier.fillMaxSize()) {
                         Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color.White))
                         Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFF1A1A2E)))
@@ -563,8 +563,6 @@ private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSet
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
-
-            // Option 1: Default silhouette
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clickable { onUpdate(settings.copy(avatarIdentity = AvatarIdentity.DEFAULT)) }
@@ -572,7 +570,6 @@ private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSet
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Preview of silhouette
                 Box(
                     modifier = Modifier.size(56.dp).clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
@@ -595,7 +592,6 @@ private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSet
 
             HorizontalDivider()
 
-            // Option 2: Custom image from gallery
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clickable { galleryLauncher.launch("image/*") }
@@ -603,7 +599,6 @@ private fun AvatarIdentitySection(settings: WidgetSettings, onUpdate: (WidgetSet
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Preview of selected image
                 Box(
                     modifier = Modifier.size(56.dp).clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
@@ -650,7 +645,6 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
     var showRestoreDialog by remember { mutableStateOf(false) }
     var backups by remember { mutableStateOf<List<Pair<String, android.net.Uri>>>(emptyList()) }
 
-    // Folder picker
     val folderPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
@@ -669,15 +663,13 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
         Spacer(Modifier.height(12.dp))
 
         SettingsCard(contentPadding = PaddingValues(0.dp)) {
-            // Folder selection
             Row(
                 modifier = Modifier.fillMaxWidth().clickable { folderPicker.launch(null) }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(Icons.Default.Folder, null,
-                    tint = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Default.Folder, null, tint = MaterialTheme.colorScheme.primary)
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.backup_folder), style = MaterialTheme.typography.titleMedium)
                     Text(
@@ -696,7 +688,6 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
 
             HorizontalDivider()
 
-            // Save backup
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clickable(enabled = settings.backupFolderUri.isNotBlank()) {
@@ -725,7 +716,6 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
 
             HorizontalDivider()
 
-            // Restore backup
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clickable(enabled = settings.backupFolderUri.isNotBlank()) {
@@ -751,7 +741,6 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
             }
         }
 
-        // Status message
         message?.let { msg ->
             Spacer(Modifier.height(8.dp))
             Text(msg, style = MaterialTheme.typography.bodySmall,
@@ -766,7 +755,6 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
         }
     }
 
-    // Restore file picker dialog
     if (showRestoreDialog) {
         RestoreDialog(
             backups   = backups,
@@ -822,6 +810,77 @@ private fun RestoreDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
     )
+}
+
+// ── Diagnostics ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun DiagnosticsSection(settings: WidgetSettings, viewModel: MainViewModel) {
+    val context = LocalContext.current
+    var message by remember { mutableStateOf<String?>(null) }
+
+    Column {
+        SectionHeader(
+            title    = stringResource(R.string.diagnostics),
+            subtitle = stringResource(R.string.diagnostics_subtitle)
+        )
+        Spacer(Modifier.height(12.dp))
+        SettingsCard(contentPadding = PaddingValues(0.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = settings.backupFolderUri.isNotBlank()) {
+                        viewModel.saveLog(
+                            onResult = { name -> message = context.getString(R.string.log_saved, name) },
+                            onError  = { err  -> message = context.getString(R.string.backup_error, err) }
+                        )
+                    }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    Icons.Default.BugReport,
+                    contentDescription = null,
+                    tint = if (settings.backupFolderUri.isNotBlank())
+                        MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        stringResource(R.string.save_log),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (settings.backupFolderUri.isBlank())
+                            MaterialTheme.colorScheme.outline else Color.Unspecified
+                    )
+                    Text(
+                        if (settings.backupFolderUri.isBlank())
+                            stringResource(R.string.save_log_no_folder)
+                        else
+                            stringResource(R.string.save_log_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        message?.let { msg ->
+            Spacer(Modifier.height(8.dp))
+            Text(
+                msg,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (msg.startsWith("Error"))
+                    MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+            LaunchedEffect(msg) {
+                kotlinx.coroutines.delay(4000)
+                message = null
+            }
+        }
+    }
 }
 
 // ── Language ──────────────────────────────────────────────────────────────────
@@ -898,9 +957,7 @@ private fun LanguageSection(settings: WidgetSettings, onUpdate: (String) -> Unit
 
 private fun decodeFolderUri(uriStr: String): String {
     return try {
-        // URI looks like: content://com.android.externalstorage.documents/tree/primary%3ADownload%2FNexus
         val decoded = java.net.URLDecoder.decode(uriStr, "UTF-8")
-        // Extract path after "primary:" or "sdcard:"
         val path = decoded.substringAfterLast("primary:")
             .substringAfterLast("sdcard:")
             .substringAfterLast(":")
