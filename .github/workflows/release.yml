@@ -3,8 +3,8 @@ name: Build Release APK
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
@@ -25,17 +25,9 @@ jobs:
         with:
           gradle-version: '8.2'
 
-      - name: Generate keystore
+      - name: Decode keystore
         run: |
-          keytool -genkeypair \
-            -alias nexus \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -keystore nexus.jks \
-            -storepass nexus123 \
-            -keypass nexus123 \
-            -dname "CN=Nexus Connect, OU=Dev, O=NexusConnect, L=City, ST=State, C=US"
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > nexus.jks
 
       - name: Build Release APK
         run: gradle assembleRelease
@@ -47,10 +39,10 @@ jobs:
             -sigalg SHA256withRSA \
             -digestalg SHA-256 \
             -keystore nexus.jks \
-            -storepass nexus123 \
-            -keypass nexus123 \
+            -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
+            -keypass ${{ secrets.KEYSTORE_PASSWORD }} \
             app/build/outputs/apk/release/app-release-unsigned.apk \
-            nexus
+            ${{ secrets.KEYSTORE_ALIAS }}
           $ANDROID_HOME/build-tools/34.0.0/zipalign -v 4 \
             app/build/outputs/apk/release/app-release-unsigned.apk \
             app/build/outputs/apk/release/app-release-signed.apk
