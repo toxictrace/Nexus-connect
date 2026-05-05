@@ -25,9 +25,17 @@ jobs:
         with:
           gradle-version: '8.2'
 
-      - name: Decode keystore
+      - name: Generate keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > nexus.jks
+          keytool -genkeypair \
+            -alias nexus \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -keystore nexus.jks \
+            -storepass nexus123 \
+            -keypass nexus123 \
+            -dname "CN=Nexus Connect, OU=Dev, O=NexusConnect, L=City, ST=State, C=US"
 
       - name: Build Release APK
         run: gradle assembleRelease
@@ -36,14 +44,13 @@ jobs:
         run: |
           $JAVA_HOME/bin/jarsigner \
             -verbose \
-            -storetype PKCS12 \
             -sigalg SHA256withRSA \
             -digestalg SHA-256 \
             -keystore nexus.jks \
-            -storepass ${{ secrets.STORE_PASSWORD }} \
-            -keypass ${{ secrets.KEY_PASSWORD }} \
+            -storepass nexus123 \
+            -keypass nexus123 \
             app/build/outputs/apk/release/app-release-unsigned.apk \
-            ${{ secrets.KEY_ALIAS }}
+            nexus
           $ANDROID_HOME/build-tools/34.0.0/zipalign -v 4 \
             app/build/outputs/apk/release/app-release-unsigned.apk \
             app/build/outputs/apk/release/app-release-signed.apk
