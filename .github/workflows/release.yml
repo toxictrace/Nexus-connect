@@ -25,35 +25,17 @@ jobs:
         with:
           gradle-version: '8.2'
 
-      - name: Generate keystore
+      - name: Decode keystore
         run: |
-          keytool -genkeypair \
-            -alias nexus \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -keystore nexus.jks \
-            -storepass nexus123 \
-            -keypass nexus123 \
-            -dname "CN=Nexus Connect, OU=Dev, O=NexusConnect, L=City, ST=State, C=US"
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > nexus.jks
 
-      - name: Build Release APK
+      - name: Build and Sign Release APK
+        env:
+          KEYSTORE_PATH: nexus.jks
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: gradle assembleRelease
-
-      - name: Sign APK
-        run: |
-          $JAVA_HOME/bin/jarsigner \
-            -verbose \
-            -sigalg SHA256withRSA \
-            -digestalg SHA-256 \
-            -keystore nexus.jks \
-            -storepass nexus123 \
-            -keypass nexus123 \
-            app/build/outputs/apk/release/app-release-unsigned.apk \
-            nexus
-          $ANDROID_HOME/build-tools/34.0.0/zipalign -v 4 \
-            app/build/outputs/apk/release/app-release-unsigned.apk \
-            app/build/outputs/apk/release/app-release-signed.apk
 
       - name: Get version name
         id: version
@@ -65,20 +47,20 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nexus-connect-v${{ steps.version.outputs.version }}
-          path: app/build/outputs/apk/release/app-release-signed.apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: Nexus Connect v${{ steps.version.outputs.version }}
-          files: app/build/outputs/apk/release/app-release-signed.apk
+          files: app/build/outputs/apk/release/app-release-unsigned.apk
           generate_release_notes: false
           body: |
             ## Nexus Connect v${{ steps.version.outputs.version }}
 
             ### Installation
-            1. Download `app-release-signed.apk`
+            1. Download `app-release-unsigned.apk`
             2. Install on Android 8.0+
             3. Add Nexus Connect widget to home screen
         env:
