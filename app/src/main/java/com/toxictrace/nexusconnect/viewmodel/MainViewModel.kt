@@ -38,9 +38,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val installedApps: StateFlow<List<AppInfo>> = _installedApps.asStateFlow()
     val appsLoading = MutableStateFlow(true)
 
-    val selectedCount: StateFlow<Int> = _selectedIds
-        .map { it.size }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val selectedCount: StateFlow<Int> = combine(_selectedIds, _allContacts) { ids, all ->
+        val allIds = all.map { it.id }.toSet()
+        ids.count { it in allIds }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val displayContacts: StateFlow<List<Contact>> = combine(
         _allContacts, _selectedIds, _searchQuery.debounce(120)

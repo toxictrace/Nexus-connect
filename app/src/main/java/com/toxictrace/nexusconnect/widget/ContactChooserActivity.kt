@@ -233,14 +233,9 @@ private fun ChooserSheet(
     onViber: () -> Unit, onTelegram: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val hasWhatsApp = isInstalled(whatsAppPkg.ifBlank { "com.whatsapp" }) ||
-            isInstalled("com.whatsapp") || isInstalled("com.whatsapp.w4b")
-    val hasViber    = isInstalled(viberPkg.ifBlank { "com.viber.voip" }) ||
-            isInstalled("com.viber.voip") || isInstalled("air.WL.android.viber")
-    val hasTelegram = isInstalled(telegramPkg) ||
-            isInstalled("org.telegram.messenger") ||
-            isInstalled("org.telegram.messenger.web") ||
-            isInstalled("org.thunderdog.challegram")
+    val hasWhatsApp = whatsAppPkg.isNotBlank() && isInstalled(whatsAppPkg)
+    val hasViber    = viberPkg.isNotBlank() && isInstalled(viberPkg)
+    val hasTelegram = telegramPkg.isNotBlank() && isInstalled(telegramPkg)
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
