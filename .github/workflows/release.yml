@@ -47,20 +47,20 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nexus-connect-v${{ steps.version.outputs.version }}
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          path: app/build/outputs/apk/release/app-release.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: Nexus Connect v${{ steps.version.outputs.version }}
-          files: app/build/outputs/apk/release/app-release-unsigned.apk
+          files: app/build/outputs/apk/release/app-release.apk
           generate_release_notes: false
           body: |
             ## Nexus Connect v${{ steps.version.outputs.version }}
 
             ### Installation
-            1. Download `app-release-unsigned.apk`
+            1. Download `app-release.apk`
             2. Install on Android 8.0+
             3. Add Nexus Connect widget to home screen
         env:
