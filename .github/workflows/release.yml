@@ -39,10 +39,10 @@ jobs:
             -sigalg SHA256withRSA \
             -digestalg SHA-256 \
             -keystore nexus.jks \
-            -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
+            -storepass ${{ secrets.STORE_PASSWORD }} \
             -keypass ${{ secrets.KEY_PASSWORD }} \
             app/build/outputs/apk/release/app-release-unsigned.apk \
-            ${{ secrets.KEYSTORE_ALIAS }}
+            ${{ secrets.KEY_ALIAS }}
           $ANDROID_HOME/build-tools/34.0.0/zipalign -v 4 \
             app/build/outputs/apk/release/app-release-unsigned.apk \
             app/build/outputs/apk/release/app-release-signed.apk
