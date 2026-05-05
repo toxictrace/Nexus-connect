@@ -36,6 +36,7 @@ jobs:
         run: |
           $JAVA_HOME/bin/jarsigner \
             -verbose \
+            -storetype PKCS12 \
             -sigalg SHA256withRSA \
             -digestalg SHA-256 \
             -keystore nexus.jks \
