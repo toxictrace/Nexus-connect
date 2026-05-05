@@ -18,6 +18,7 @@ import android.widget.RemoteViews
 import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
+import com.toxictrace.nexusconnect.util.AppLogger
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 
 class ContactWidgetProvider : AppWidgetProvider() {
@@ -55,7 +56,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val rows        = WidgetPrefs.getRows(context).coerceIn(3, 6)
             val selectedIds = WidgetPrefs.getSelectedContactIds(context)
             val maxTiles    = cols * rows
+            val filterFavDbg = WidgetPrefs.getFilterFavorites(context)
+            val filterRecDbg = WidgetPrefs.getFilterRecents(context)
+            val filterFreqDbg = WidgetPrefs.getFilterFrequent(context)
             Log.d(TAG, "cols=$cols rows=$rows maxTiles=$maxTiles")
+            AppLogger.i(TAG, "buildAndPush: selectedIds=${selectedIds.size} ids=$selectedIds")
+            AppLogger.i(TAG, "buildAndPush: filterFavorites=$filterFavDbg filterRecents=$filterRecDbg filterFrequent=$filterFreqDbg")
 
             val allContacts = try {
                 ContactsRepository(context).loadContacts()

@@ -53,12 +53,10 @@ fun ContactsScreen(viewModel: MainViewModel) {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         hasContacts = results[Manifest.permission.READ_CONTACTS] == true
-        if (hasContacts) viewModel.loadContacts()
     }
 
     LaunchedEffect(hasContacts) {
-        if (hasContacts) viewModel.loadContacts()
-        else permLauncher.launch(arrayOf(
+        if (!hasContacts) permLauncher.launch(arrayOf(
             Manifest.permission.READ_CONTACTS,
             Manifest.permission.READ_CALL_LOG
         ))
