@@ -52,24 +52,39 @@ class CallLogRepository(private val context: Context) {
      */
     fun getRecentContactIds(numberToContactId: Map<String, Long>, limit: Int = 50): List<Long> {
         val seen = linkedSetOf<Long>()
+        val missedNums = mutableListOf<String>()
         try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
-                arrayOf(CallLog.Calls.NUMBER),
+                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.CACHED_NAME),
                 null, null,
                 "${CallLog.Calls.DATE} DESC"
             ) ?: return emptyList()
 
             cursor.use {
-                val numIdx = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val numIdx  = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val nameIdx = it.getColumnIndex(CallLog.Calls.CACHED_NAME)
                 while (it.moveToNext() && seen.size < limit) {
                     val number = it.getString(numIdx) ?: continue
-                    val contactId = numberToContactId[normalizeNum(number)] ?: continue
-                    seen.add(contactId)
+                    val norm = normalizeNum(number)
+                    val contactId = numberToContactId[norm]
+                    if (contactId != null) {
+                        seen.add(contactId)
+                    } else {
+                        val name = if (nameIdx >= 0) it.getString(nameIdx) else null
+                        if (!name.isNullOrBlank() && missedNums.size < 10) {
+                            missedNums.add("$name($number->$norm)")
+                        }
+                    }
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "getRecentContactIds: ${e.message}")
+        }
+        if (missedNums.isNotEmpty()) {
+            Log.d(TAG, "recent unmatched contacts: $missedNums")
+            android.util.Log.d("CallLogRepo", "recent unmatched: $missedNums")
+            com.toxictrace.nexusconnect.util.AppLogger.i(TAG, "recent unmatched: $missedNums")
         }
         return seen.toList()
     }
