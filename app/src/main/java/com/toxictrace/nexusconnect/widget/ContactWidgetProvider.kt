@@ -268,19 +268,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             }
             val callLogRepo = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
 
-            // 2. Frequent — medium priority
-            if (filterFrequent) {
-                val frequentIds = callLogRepo.getFrequentContactIds(numberMap, 50)
-                AppLogger.i(TAG, "frequentIds: ${frequentIds.size} ids=$frequentIds")
-                frequentIds.forEach { id ->
-                    val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
-                    if (usedIds.add(c.id)) result.add(c)
-                    if (result.size >= maxTiles) return result.take(maxTiles)
-                }
-                AppLogger.i(TAG, "after frequent: result.size=${result.size} maxTiles=$maxTiles")
-            }
-
-            // 3. Recents — lowest priority
+            // 2. Recents — higher priority than frequent
             if (filterRecents) {
                 val recentsDays = WidgetPrefs.getRecentsDays(context)
                 val recentIds = callLogRepo.getRecentContactIds(numberMap, 50, recentsDays)
@@ -297,6 +285,18 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     if (result.size >= maxTiles) return result.take(maxTiles)
                 }
             }
+            // 3. Frequent — lowest priority
+            if (filterFrequent) {
+                val frequentIds = callLogRepo.getFrequentContactIds(numberMap, 50)
+                AppLogger.i(TAG, "frequentIds: ${frequentIds.size} ids=$frequentIds")
+                frequentIds.forEach { id ->
+                    val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
+                    if (usedIds.add(c.id)) result.add(c)
+                    if (result.size >= maxTiles) return result.take(maxTiles)
+                }
+                AppLogger.i(TAG, "after frequent: result.size=${result.size} maxTiles=$maxTiles")
+            }
+
 
             return result.take(maxTiles)
         }
