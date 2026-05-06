@@ -160,4 +160,6 @@
     <string name="save_log_no_folder">Сначала выберите папку для резервных копий</string>
     <string name="log_saved">Сохранено: %1$s</string>
     <string name="today">Сегодня</string>
+    <string name="recents_days">Период недавних</string>
+    <string name="recents_days_subtitle">Считать недавним только в этот период</string>
 </resources>

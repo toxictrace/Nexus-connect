@@ -282,7 +282,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
             // 3. Recents — lowest priority
             if (filterRecents) {
-                val recentIds = callLogRepo.getRecentContactIds(numberMap, 50)
+                val recentsDays = WidgetPrefs.getRecentsDays(context)
+                val recentIds = callLogRepo.getRecentContactIds(numberMap, 50, recentsDays)
                 val recentNames = recentIds.mapNotNull { id ->
                     allContacts.firstOrNull { it.id == id }?.let { "$id(${it.name})" }
                 }

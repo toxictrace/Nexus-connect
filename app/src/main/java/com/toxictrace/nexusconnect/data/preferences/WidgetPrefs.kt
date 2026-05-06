@@ -45,6 +45,9 @@ object WidgetPrefs {
     fun getUnknownNumbersDays(context: Context): Int =
         sp(context).getInt("unknown_numbers_days", 3)
 
+    fun getRecentsDays(context: Context): Int =
+        sp(context).getInt("recents_days", 3)
+
     fun getAvatarIdentity(context: Context): String =
         sp(context).getString("avatar_identity", "DEFAULT") ?: "DEFAULT"
 
@@ -96,6 +99,7 @@ object WidgetPrefs {
             putString("messenger_viber",    settings.messengerViber)
             putString("messenger_telegram", settings.messengerTelegram)
             putString("selected_ids",      selectedIds.joinToString(","))
+            putInt("recents_days",          settings.recentsDays)
             apply()
         }
     }

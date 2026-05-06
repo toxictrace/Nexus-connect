@@ -160,4 +160,6 @@
     <string name="save_log_no_folder">Select a backup folder first</string>
     <string name="log_saved">Saved: %1$s</string>
     <string name="today">Today</string>
+    <string name="recents_days">Recents period</string>
+    <string name="recents_days_subtitle">Show as recent only within this period</string>
 </resources>

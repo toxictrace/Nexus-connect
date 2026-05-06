@@ -50,14 +50,16 @@ class CallLogRepository(private val context: Context) {
     /**
      * Returns contact IDs ordered by most recent call (latest first).
      */
-    fun getRecentContactIds(numberToContactId: Map<String, Long>, limit: Int = 50): List<Long> {
+    fun getRecentContactIds(numberToContactId: Map<String, Long>, limit: Int = 50, days: Int = 0): List<Long> {
         val seen = linkedSetOf<Long>()
         val missedNums = mutableListOf<String>()
+        val cutoff = if (days > 0) System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L else 0L
         try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
-                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.CACHED_NAME),
-                null, null,
+                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.CACHED_NAME, CallLog.Calls.DATE),
+                if (cutoff > 0) "${CallLog.Calls.DATE} >= ?" else null,
+                if (cutoff > 0) arrayOf(cutoff.toString()) else null,
                 "${CallLog.Calls.DATE} DESC"
             ) ?: return emptyList()
 

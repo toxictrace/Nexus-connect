@@ -35,7 +35,8 @@ data class WidgetSettings(
     val showCallTypeIcon: Boolean = true,
     val callIconStyle: String = "MATERIAL", // NONE, MATERIAL, GLASS
     val backupFolderUri: String = "",
-    val language: String = "system"
+    val language: String = "system",
+    val recentsDays: Int = 3
 )
 
 class SettingsRepository(private val context: Context) {
@@ -63,6 +64,7 @@ class SettingsRepository(private val context: Context) {
         val CALL_ICON_STYLE      = stringPreferencesKey("call_icon_style")
         val BACKUP_FOLDER_URI    = stringPreferencesKey("backup_folder_uri")
         val LANGUAGE             = stringPreferencesKey("language")
+        val RECENTS_DAYS         = intPreferencesKey("recents_days")
         val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
     }
 
@@ -97,7 +99,8 @@ class SettingsRepository(private val context: Context) {
                 showCallTypeIcon   = prefs[Keys.SHOW_CALL_TYPE_ICON] ?: true,
                 callIconStyle      = prefs[Keys.CALL_ICON_STYLE] ?: "MATERIAL",
                 backupFolderUri    = prefs[Keys.BACKUP_FOLDER_URI] ?: "",
-                language           = prefs[Keys.LANGUAGE] ?: "system"
+                language           = prefs[Keys.LANGUAGE] ?: "system",
+                recentsDays        = prefs[Keys.RECENTS_DAYS] ?: 3
             )
         }
 
@@ -125,6 +128,7 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.CALL_ICON_STYLE]      = update.callIconStyle
             prefs[Keys.BACKUP_FOLDER_URI]    = update.backupFolderUri
             prefs[Keys.LANGUAGE]             = update.language
+            prefs[Keys.RECENTS_DAYS]         = update.recentsDays
         }
         val selectedIds = getSelectedContactIds()
         WidgetPrefs.sync(context, update, selectedIds)
