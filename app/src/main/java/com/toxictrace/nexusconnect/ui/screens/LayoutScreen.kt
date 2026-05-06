@@ -111,41 +111,7 @@ fun LayoutScreen(viewModel: MainViewModel) {
                     }
                 }
             }
-            if (draft.filterRecents) {
-                HorizontalDivider()
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.recents_days),
-                            style = MaterialTheme.typography.titleMedium)
-                        Text(stringResource(R.string.recents_days_subtitle),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val dayLabels = listOf(
-                            1 to stringResource(R.string.day_1),
-                            3 to stringResource(R.string.day_3),
-                            7 to stringResource(R.string.day_7),
-                            0 to stringResource(R.string.day_unlimited)
-                        )
-                        dayLabels.forEach { (days, label) ->
-                            FilterChip(
-                                selected = draft.recentsDays == days,
-                                onClick = { draft = draft.copy(recentsDays = days) },
-                                label = { Text(label) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = Color.White
-                                )
-                            )
-                        }
-                    }
-                }
-            }
+
             HorizontalDivider()
             FilterCheckItem(
                 icon = { Icon(Icons.Default.BarChart, null) },
