@@ -395,10 +395,14 @@ private fun formatDuration(seconds: Long): String {
 }
 
 private fun formatDate(ts: Long, todayLabel: String = "Today"): String {
-    val diff = System.currentTimeMillis() - ts
     val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(ts))
+    val calNow = java.util.Calendar.getInstance()
+    val calTs  = java.util.Calendar.getInstance().also { it.timeInMillis = ts }
+    val isToday = calNow.get(java.util.Calendar.YEAR) == calTs.get(java.util.Calendar.YEAR) &&
+                  calNow.get(java.util.Calendar.DAY_OF_YEAR) == calTs.get(java.util.Calendar.DAY_OF_YEAR)
+    val diff = System.currentTimeMillis() - ts
     return when {
-        diff < TimeUnit.DAYS.toMillis(1) -> "$todayLabel\n$time"
+        isToday -> "$todayLabel\n$time"
         diff < TimeUnit.DAYS.toMillis(7) -> SimpleDateFormat("EEE\n", Locale.getDefault()).format(Date(ts)) + time
         else -> SimpleDateFormat("dd.MM.yy\n", Locale.getDefault()).format(Date(ts)) + time
     }
