@@ -219,11 +219,14 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
             // 2. Frequent — medium priority
             if (filterFrequent) {
-                callLogRepo.getFrequentContactIds(numberMap, 50).forEach { id ->
+                val frequentIds = callLogRepo.getFrequentContactIds(numberMap, 50)
+                AppLogger.i(TAG, "frequentIds: ${frequentIds.size} ids=$frequentIds")
+                frequentIds.forEach { id ->
                     val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
                     if (usedIds.add(c.id)) result.add(c)
                     if (result.size >= maxTiles) return result.take(maxTiles)
                 }
+                AppLogger.i(TAG, "after frequent: result.size=${result.size} maxTiles=$maxTiles")
             }
 
             // 3. Recents — lowest priority
