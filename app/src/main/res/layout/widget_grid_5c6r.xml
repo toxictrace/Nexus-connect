@@ -1125,4 +1125,17 @@
                 android:visibility="gone"/>
         </FrameLayout>
     </LinearLayout>
+    <FrameLayout
+        android:id="@+id/btn_call_log"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:background="#CC000000"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_call_log"
+            android:scaleType="fitCenter"/>
+    </FrameLayout>
 </LinearLayout>
