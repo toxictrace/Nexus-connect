@@ -233,11 +233,16 @@ class ContactWidgetProvider : AppWidgetProvider() {
             // 3. Recents — lowest priority
             if (filterRecents) {
                 val recentIds = callLogRepo.getRecentContactIds(numberMap, 50)
-                AppLogger.i(TAG, "recentIds from callLog: ${recentIds.size} ids=$recentIds")
-                AppLogger.i(TAG, "numberMap size: ${numberMap.size}")
+                val recentNames = recentIds.mapNotNull { id ->
+                    allContacts.firstOrNull { it.id == id }?.let { "$id(${it.name})" }
+                }
+                AppLogger.i(TAG, "recentIds: ${recentIds.size} contacts=$recentNames")
                 recentIds.forEach { id ->
                     val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
-                    if (usedIds.add(c.id)) result.add(c)
+                    if (usedIds.add(c.id)) {
+                        result.add(c)
+                        AppLogger.i(TAG, "recent added: ${c.name} id=${c.id}")
+                    }
                     if (result.size >= maxTiles) return result.take(maxTiles)
                 }
             }
