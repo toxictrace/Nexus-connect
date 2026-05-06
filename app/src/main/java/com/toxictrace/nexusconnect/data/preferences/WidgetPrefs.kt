@@ -48,6 +48,9 @@ object WidgetPrefs {
     fun getRecentsDays(context: Context): Int =
         sp(context).getInt("recents_days", 3)
 
+    fun getShowCallLogButton(context: Context): Boolean =
+        sp(context).getBoolean("show_call_log_button", false)
+
     fun getAvatarIdentity(context: Context): String =
         sp(context).getString("avatar_identity", "DEFAULT") ?: "DEFAULT"
 
@@ -100,6 +103,7 @@ object WidgetPrefs {
             putString("messenger_telegram", settings.messengerTelegram)
             putString("selected_ids",      selectedIds.joinToString(","))
             putInt("recents_days",          settings.recentsDays)
+            putBoolean("show_call_log_button", settings.showCallLogButton)
             apply()
         }
     }

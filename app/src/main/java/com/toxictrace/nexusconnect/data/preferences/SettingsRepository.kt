@@ -36,7 +36,8 @@ data class WidgetSettings(
     val callIconStyle: String = "MATERIAL", // NONE, MATERIAL, GLASS
     val backupFolderUri: String = "",
     val language: String = "system",
-    val recentsDays: Int = 3
+    val recentsDays: Int = 3,
+    val showCallLogButton: Boolean = false
 )
 
 class SettingsRepository(private val context: Context) {
@@ -65,6 +66,7 @@ class SettingsRepository(private val context: Context) {
         val BACKUP_FOLDER_URI    = stringPreferencesKey("backup_folder_uri")
         val LANGUAGE             = stringPreferencesKey("language")
         val RECENTS_DAYS         = intPreferencesKey("recents_days")
+        val SHOW_CALL_LOG_BUTTON = booleanPreferencesKey("show_call_log_button")
         val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
     }
 
@@ -100,7 +102,8 @@ class SettingsRepository(private val context: Context) {
                 callIconStyle      = prefs[Keys.CALL_ICON_STYLE] ?: "MATERIAL",
                 backupFolderUri    = prefs[Keys.BACKUP_FOLDER_URI] ?: "",
                 language           = prefs[Keys.LANGUAGE] ?: "system",
-                recentsDays        = prefs[Keys.RECENTS_DAYS] ?: 3
+                recentsDays        = prefs[Keys.RECENTS_DAYS] ?: 3,
+                showCallLogButton  = prefs[Keys.SHOW_CALL_LOG_BUTTON] ?: false
             )
         }
 
@@ -129,6 +132,7 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.BACKUP_FOLDER_URI]    = update.backupFolderUri
             prefs[Keys.LANGUAGE]             = update.language
             prefs[Keys.RECENTS_DAYS]         = update.recentsDays
+            prefs[Keys.SHOW_CALL_LOG_BUTTON] = update.showCallLogButton
         }
         val selectedIds = getSelectedContactIds()
         WidgetPrefs.sync(context, update, selectedIds)

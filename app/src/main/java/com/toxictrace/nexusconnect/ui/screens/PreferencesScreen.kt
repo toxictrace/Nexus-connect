@@ -89,6 +89,10 @@ fun PreferencesScreen(viewModel: MainViewModel) {
             settings = settings,
             viewModel = viewModel
         )
+        CallLogButtonSection(
+            settings = settings,
+            onUpdate = { updated -> viewModel.updateSettings { updated } }
+        )
         DiagnosticsSection(
             settings = settings,
             viewModel = viewModel
@@ -810,6 +814,47 @@ private fun RestoreDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
     )
+}
+
+// ── Call Log Button ──────────────────────────────────────────────────────────
+
+@Composable
+private fun CallLogButtonSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
+    Column {
+        SectionHeader(
+            title    = stringResource(R.string.call_log_button),
+            subtitle = stringResource(R.string.call_log_button_subtitle)
+        )
+        Spacer(Modifier.height(12.dp))
+        SettingsCard {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.History, null)
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.call_log_button_show),
+                        style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.call_log_button_show_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(
+                    checked = settings.showCallLogButton,
+                    onCheckedChange = { onUpdate(settings.copy(showCallLogButton = it)) }
+                )
+            }
+        }
+    }
 }
 
 // ── Diagnostics ───────────────────────────────────────────────────────────────

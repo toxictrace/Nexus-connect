@@ -25,7 +25,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val TAG = "NexusWidget"
-        const val ACTION_CONTACT_CLICK = "com.toxictrace.nexusconnect.ACTION_CONTACT_CLICK"
+        const val ACTION_CONTACT_CLICK  = "com.toxictrace.nexusconnect.ACTION_CONTACT_CLICK"
+        const val ACTION_OPEN_CALL_LOG  = "com.toxictrace.nexusconnect.ACTION_OPEN_CALL_LOG"
         const val EXTRA_CONTACT_ID    = "extra_contact_id"
         const val EXTRA_CONTACT_PHONE = "extra_contact_phone"
         const val EXTRA_CONTACT_NAME  = "extra_contact_name"
@@ -206,6 +207,25 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     views.setOnClickPendingIntent(tileId, pi)
                 } else {
                     views.setViewVisibility(tileId, View.INVISIBLE)
+                }
+            }
+
+            // Call log button
+            val showCallLogBtn = WidgetPrefs.getShowCallLogButton(context)
+            val callLogBtnId = context.resources.getIdentifier("btn_call_log", "id", context.packageName)
+            if (callLogBtnId != 0) {
+                if (showCallLogBtn) {
+                    views.setViewVisibility(callLogBtnId, android.view.View.VISIBLE)
+                    val callLogIntent = Intent(context, ContactWidgetProvider::class.java).apply {
+                        action = ACTION_OPEN_CALL_LOG
+                    }
+                    val callLogPi = PendingIntent.getBroadcast(
+                        context, 9999, callLogIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    views.setOnClickPendingIntent(callLogBtnId, callLogPi)
+                } else {
+                    views.setViewVisibility(callLogBtnId, android.view.View.GONE)
                 }
             }
 
@@ -419,6 +439,19 @@ class ContactWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         Log.d(TAG, "onReceive action=${intent.action}")
+        if (intent.action == ACTION_OPEN_CALL_LOG) {
+            AppLogger.i(TAG, "open call log")
+            val i = Intent(Intent.ACTION_VIEW).apply {
+                type = "vnd.android.cursor.dir/calls"
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            if (i.resolveActivity(context.packageManager) != null) {
+                context.startActivity(i)
+            } else {
+                val fallback = Intent(Intent.ACTION_DIAL).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(fallback)
+            }
+        }
         if (intent.action == ACTION_CONTACT_CLICK) {
             val id    = intent.getLongExtra(EXTRA_CONTACT_ID, -1L)
             val phone = intent.getStringExtra(EXTRA_CONTACT_PHONE)
