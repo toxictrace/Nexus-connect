@@ -56,12 +56,13 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val rows        = WidgetPrefs.getRows(context).coerceIn(3, 6)
             val selectedIds = WidgetPrefs.getSelectedContactIds(context)
             val maxTiles    = cols * rows
-            val filterFavDbg = WidgetPrefs.getFilterFavorites(context)
-            val filterRecDbg = WidgetPrefs.getFilterRecents(context)
+            val filterFavDbg  = WidgetPrefs.getFilterFavorites(context)
+            val filterRecDbg  = WidgetPrefs.getFilterRecents(context)
             val filterFreqDbg = WidgetPrefs.getFilterFrequent(context)
             Log.d(TAG, "cols=$cols rows=$rows maxTiles=$maxTiles")
-            AppLogger.i(TAG, "buildAndPush: selectedIds=${selectedIds.size} ids=$selectedIds")
+            AppLogger.i(TAG, "buildAndPush: cols=$cols rows=$rows maxTiles=$maxTiles selectedIds=${selectedIds.size} ids=$selectedIds")
             AppLogger.i(TAG, "buildAndPush: filterFavorites=$filterFavDbg filterRecents=$filterRecDbg filterFrequent=$filterFreqDbg")
+            AppLogger.i(TAG, "buildAndPush: sharedPrefs_raw filterFrequent=${context.getSharedPreferences("nexus_widget_prefs", android.content.Context.MODE_PRIVATE).getBoolean("filter_frequent", false)}")
 
             val allContacts = try {
                 ContactsRepository(context).loadContacts()
