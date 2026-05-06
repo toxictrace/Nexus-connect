@@ -308,7 +308,7 @@ private fun ChooserSheet(
                                     CallLog.Calls.OUTGOING_TYPE -> Icons.Default.CallMade
                                     else -> Icons.Default.CallMissed
                                 },
-                                value = stats.lastCallDate?.let { formatDate(it) } ?: "—",
+                                value = stats.lastCallDate?.let { formatDate(it, ctx.getString(R.string.today)) } ?: "—",
                                 label = stringResource(R.string.last_call_label), valueLines = 2
                             )
                         }
@@ -394,11 +394,11 @@ private fun formatDuration(seconds: Long): String {
     return when { h > 0 -> "${h}h ${m}m"; m > 0 -> "${m}m ${s}s"; else -> "${s}s" }
 }
 
-private fun formatDate(ts: Long): String {
+private fun formatDate(ts: Long, todayLabel: String = "Today"): String {
     val diff = System.currentTimeMillis() - ts
     val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(ts))
     return when {
-        diff < TimeUnit.DAYS.toMillis(1) -> "Today\n$time"
+        diff < TimeUnit.DAYS.toMillis(1) -> "$todayLabel\n$time"
         diff < TimeUnit.DAYS.toMillis(7) -> SimpleDateFormat("EEE\n", Locale.getDefault()).format(Date(ts)) + time
         else -> SimpleDateFormat("dd.MM.yy\n", Locale.getDefault()).format(Date(ts)) + time
     }
