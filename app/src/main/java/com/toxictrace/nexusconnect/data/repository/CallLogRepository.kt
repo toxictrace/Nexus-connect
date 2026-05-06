@@ -165,6 +165,35 @@ class CallLogRepository(private val context: Context) {
         }
     }
 
+
+    fun getLastCallTypesByNorm(norms: List<String>): Map<String, Int> {
+        if (norms.isEmpty()) return emptyMap()
+        val normSet = norms.toSet()
+        val result = mutableMapOf<String, Int>()
+        return try {
+            val cursor = context.contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.TYPE),
+                null, null,
+                "${CallLog.Calls.DATE} DESC"
+            ) ?: return emptyMap()
+            cursor.use {
+                val ni = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
+                while (it.moveToNext() && result.size < normSet.size) {
+                    val norm = normalizeNum(it.getString(ni) ?: continue)
+                    if (norm in normSet && norm !in result) {
+                        result[norm] = it.getInt(ti)
+                    }
+                }
+            }
+            result
+        } catch (e: Exception) {
+            Log.e(TAG, "getLastCallTypesByNorm: ${e.message}")
+            emptyMap()
+        }
+    }
+
     private fun normalizeNum(number: String): String =
         number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
 }
