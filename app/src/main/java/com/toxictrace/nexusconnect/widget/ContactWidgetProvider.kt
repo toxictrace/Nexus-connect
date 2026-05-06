@@ -128,10 +128,14 @@ class ContactWidgetProvider : AppWidgetProvider() {
             // Load last call types for all contacts if icon display is enabled
             val showCallIcon = WidgetPrefs.getShowCallTypeIcon(context)
             val callIconStyle = WidgetPrefs.getCallIconStyle(context) // NONE, MATERIAL, GLASS
+            // Use all known norms from numberMap for accurate matching
+            val tileContactIds = allTileContacts.map { it.id }.toSet()
+            val tileNorms = numberMap.entries
+                .filter { it.value in tileContactIds }
+                .map { it.key }
             val callTypeMap: Map<String, Int> = if (showCallIcon) {
-                val phones = allTileContacts.mapNotNull { it.phoneNumber }
                 com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
-                    .getLastCallTypes(phones)
+                    .getLastCallTypesByNorm(tileNorms)
             } else emptyMap()
 
             val views = RemoteViews(context.packageName, layoutRes)
