@@ -116,7 +116,10 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     numberMap[norm] = it.id
                 }
             }
-            val unknowns = buildUnknownContacts(context, numberMap, maxTiles - contacts.size)
+            val unknownSlots = maxTiles - contacts.size
+            AppLogger.i(TAG, "unknown slots: $unknownSlots contacts.size=${contacts.size} maxTiles=$maxTiles")
+            val unknowns = buildUnknownContacts(context, numberMap, unknownSlots)
+            AppLogger.i(TAG, "unknowns found: ${unknowns.size}")
             val allTileContacts = (contacts + unknowns).take(maxTiles)
             Log.d(TAG, "total tiles=${allTileContacts.size} (${contacts.size} known + ${unknowns.size} unknown)")
 

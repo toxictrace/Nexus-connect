@@ -150,10 +150,10 @@ fun LayoutScreen(viewModel: MainViewModel) {
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         val dayLabels = listOf(
-                            0 to stringResource(R.string.day_unlimited),
                             1 to stringResource(R.string.day_1),
                             3 to stringResource(R.string.day_3),
-                            7 to stringResource(R.string.day_7)
+                            7 to stringResource(R.string.day_7),
+                            0 to stringResource(R.string.day_unlimited)
                         )
                         dayLabels.forEach { (days, label) ->
                             FilterChip(
