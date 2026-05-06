@@ -162,4 +162,9 @@
     <string name="today">Сегодня</string>
     <string name="recents_days">Период недавних</string>
     <string name="recents_days_subtitle">Считать недавним только в этот период</string>
+    <!-- Кнопка журнала звонков -->
+    <string name="call_log_button">КНОПКА ЖУРНАЛА ЗВОНКОВ</string>
+    <string name="call_log_button_subtitle">Показывать кнопку на виджете для открытия журнала звонков.</string>
+    <string name="call_log_button_show">Показывать кнопку журнала</string>
+    <string name="call_log_button_show_subtitle">Открывает журнал звонков с виджета</string>
 </resources>
