@@ -87,11 +87,34 @@ class ContactWidgetProvider : AppWidgetProvider() {
             Log.d(TAG, "contacts=${contacts.size}")
 
             // Fill remaining tiles with unknown numbers from call log
-            val numberMap = allContacts
-                .filter { it.phoneNumber != null }
-                .associate {
-                    it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7) to it.id
+            // Build numberMap using ALL phone numbers for each contact
+            val numberMap = mutableMapOf<String, Long>()
+            try {
+                val cursor = context.contentResolver.query(
+                    android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    arrayOf(
+                        android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+                        android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER
+                    ),
+                    null, null, null
+                )
+                cursor?.use {
+                    val idIdx  = it.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
+                    val numIdx = it.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    while (it.moveToNext()) {
+                        val id  = it.getLong(idIdx)
+                        val num = it.getString(numIdx) ?: continue
+                        val norm = num.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                        if (norm.isNotBlank()) numberMap[norm] = id
+                    }
                 }
+            } catch (e: Exception) {
+                // fallback to single-number map
+                allContacts.filter { it.phoneNumber != null }.forEach {
+                    val norm = it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                    numberMap[norm] = it.id
+                }
+            }
             val unknowns = buildUnknownContacts(context, numberMap, maxTiles - contacts.size)
             val allTileContacts = (contacts + unknowns).take(maxTiles)
             Log.d(TAG, "total tiles=${allTileContacts.size} (${contacts.size} known + ${unknowns.size} unknown)")
@@ -211,11 +234,34 @@ class ContactWidgetProvider : AppWidgetProvider() {
             if (result.size >= maxTiles) return result.take(maxTiles)
 
             // Build number→id map for call log lookups
-            val numberMap = allContacts
-                .filter { it.phoneNumber != null }
-                .associate {
-                    it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7) to it.id
+            // Build numberMap using ALL phone numbers for each contact
+            val numberMap = mutableMapOf<String, Long>()
+            try {
+                val cursor = context.contentResolver.query(
+                    android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    arrayOf(
+                        android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+                        android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER
+                    ),
+                    null, null, null
+                )
+                cursor?.use {
+                    val idIdx  = it.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
+                    val numIdx = it.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    while (it.moveToNext()) {
+                        val id  = it.getLong(idIdx)
+                        val num = it.getString(numIdx) ?: continue
+                        val norm = num.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                        if (norm.isNotBlank()) numberMap[norm] = id
+                    }
                 }
+            } catch (e: Exception) {
+                // fallback to single-number map
+                allContacts.filter { it.phoneNumber != null }.forEach {
+                    val norm = it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                    numberMap[norm] = it.id
+                }
+            }
             val callLogRepo = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
 
             // 2. Frequent — medium priority
