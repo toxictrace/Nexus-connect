@@ -147,7 +147,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val tileContactIds = allTileContacts.map { it.id }.toSet()
             val tileNorms = numberMap.entries
                 .filter { it.value in tileContactIds }
-                .map { it.key }
+                .map { it.key }.toMutableList()
+            // Also add unknown numbers (negative IDs) directly
+            allTileContacts.filter { it.id < 0 && it.phoneNumber != null }.forEach {
+                val norm = it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                if (norm.isNotBlank()) tileNorms.add(norm)
+            }
             val callTypeMap: Map<String, Int> = if (showCallIcon) {
                 com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
                     .getLastCallTypesByNorm(tileNorms)
@@ -182,8 +187,14 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
                     // Call type icon — check all norms for this contact
                     if (showCallIcon && callIconStyle != "NONE" && callIconId != 0) {
-                        val contactNorms = numberMap.entries.filter { it.value == contact.id }.map { it.key }
-                        val callType = contactNorms.firstNotNullOfOrNull { callTypeMap[it] }
+                        val callType = if (contact.id < 0 && contact.phoneNumber != null) {
+                            // Unknown number — look up directly by phone norm
+                            val norm = contact.phoneNumber.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                            callTypeMap[norm]
+                        } else {
+                            val contactNorms = numberMap.entries.filter { it.value == contact.id }.map { it.key }
+                            contactNorms.firstNotNullOfOrNull { callTypeMap[it] }
+                        }
                         val glass = callIconStyle == "GLASS"
                         val iconRes = when (callType) {
                             android.provider.CallLog.Calls.INCOMING_TYPE ->
@@ -307,14 +318,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
             if (filterRecents || WidgetPrefs.getShowUnknownNumbers(context)) {
                 val recentsDays = WidgetPrefs.getRecentsDays(context)
                 val unknownDays = WidgetPrefs.getUnknownNumbersDays(context)
-                val days = when {
-                    filterRecents && WidgetPrefs.getShowUnknownNumbers(context) ->
-                        if (recentsDays == 0 || unknownDays == 0) 0
-                        else maxOf(recentsDays, unknownDays)
-                    filterRecents -> recentsDays
-                    else -> unknownDays
-                }
-                val mixed = callLogRepo.getRecentMixed(numberMap, days, maxTiles)
+                val mixed = callLogRepo.getRecentMixed(
+                    numberMap,
+                    contactDays = if (filterRecents) recentsDays else -1,
+                    unknownDays = if (WidgetPrefs.getShowUnknownNumbers(context)) unknownDays else -1,
+                    limit = maxTiles
+                )
                 AppLogger.i(TAG, "mixed recents: ${mixed.size} days=$days")
                 var unknownCount = 1
                 mixed.forEach { (id, phone) ->

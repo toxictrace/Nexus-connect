@@ -202,12 +202,26 @@ class CallLogRepository(private val context: Context) {
      * Known contacts returned as positive IDs, unknown as negative IDs.
      * This ensures unknown numbers with newer calls appear before older known contacts.
      */
+    /**
+     * contactDays/unknownDays: 0 = unlimited, -1 = disabled (don't include this type)
+     */
     fun getRecentMixed(
         numberToContactId: Map<String, Long>,
-        days: Int = 0,
+        contactDays: Int = 0,
+        unknownDays: Int = 0,
         limit: Int = 50
-    ): List<Pair<Long, String?>> { // Pair<contactId_or_negativeIdx, phoneNumber_if_unknown>
-        val cutoff = if (days > 0) System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L else 0L
+    ): List<Pair<Long, String?>> {
+        val now = System.currentTimeMillis()
+        val contactCutoff = if (contactDays > 0) now - contactDays * 24 * 60 * 60 * 1000L else 0L
+        val unknownCutoff = if (unknownDays > 0) now - unknownDays * 24 * 60 * 60 * 1000L else 0L
+        // Use the broader cutoff for the query, filter individually
+        val queryCutoff = when {
+            contactDays == -1 && unknownDays == -1 -> return emptyList()
+            contactDays == -1 -> unknownCutoff
+            unknownDays == -1 -> contactCutoff
+            contactDays == 0 || unknownDays == 0 -> 0L
+            else -> minOf(contactCutoff, unknownCutoff)
+        }
         val seenContacts = linkedSetOf<Long>()
         val seenUnknownNorms = linkedSetOf<String>()
         val result = mutableListOf<Pair<Long, String?>>()
@@ -215,22 +229,28 @@ class CallLogRepository(private val context: Context) {
         try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
-                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.CACHED_NAME, CallLog.Calls.DATE),
-                if (cutoff > 0) "${CallLog.Calls.DATE} >= ?" else null,
-                if (cutoff > 0) arrayOf(cutoff.toString()) else null,
+                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE),
+                if (queryCutoff > 0) "${CallLog.Calls.DATE} >= ?" else null,
+                if (queryCutoff > 0) arrayOf(queryCutoff.toString()) else null,
                 "${CallLog.Calls.DATE} DESC"
             ) ?: return emptyList()
             cursor.use {
                 val numIdx  = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val dateIdx = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
                 while (it.moveToNext() && result.size < limit) {
                     val number = it.getString(numIdx) ?: continue
+                    val date = it.getLong(dateIdx)
                     val norm = normalizeNum(number)
                     val contactId = numberToContactId[norm]
                     if (contactId != null) {
+                        if (contactDays == -1) continue
+                        if (contactCutoff > 0 && date < contactCutoff) continue
                         if (seenContacts.add(contactId)) {
                             result.add(Pair(contactId, null))
                         }
                     } else if (number.isNotBlank() && number != "-1" && number != "-2") {
+                        if (unknownDays == -1) continue
+                        if (unknownCutoff > 0 && date < unknownCutoff) continue
                         if (seenUnknownNorms.add(norm)) {
                             result.add(Pair(-(unknownIdx++).toLong(), number))
                         }
