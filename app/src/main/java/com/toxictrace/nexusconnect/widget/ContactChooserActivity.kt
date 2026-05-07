@@ -139,9 +139,30 @@ class ContactChooserActivity : ComponentActivity() {
         }
     }
 
-    private fun loadCallStats(phone: String): CallStats {
-        if (phone.isBlank()) return CallStats(null, 0, 0L, 0)
-        val norm = phone.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+    private fun loadCallStats(phone: String, contactId: Long): CallStats {
+        if (phone.isBlank() && contactId <= 0) return CallStats(null, 0, 0L, 0)
+        val norms = mutableSetOf<String>()
+        if (phone.isNotBlank()) {
+            norms.add(phone.replace(Regex("[\s\-().+]"), "").takeLast(7))
+        }
+        if (contactId > 0) {
+            try {
+                val cur = contentResolver.query(
+                    android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    arrayOf(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER),
+                    "${android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+                    arrayOf(contactId.toString()), null
+                )
+                cur?.use {
+                    val ni = it.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    while (it.moveToNext()) {
+                        val n = it.getString(ni) ?: continue
+                        norms.add(n.replace(Regex("[\s\-().+]"), "").takeLast(7))
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+        if (norms.isEmpty()) return CallStats(null, 0, 0L, 0)
         return try {
             val cursor = contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -157,8 +178,8 @@ class ContactChooserActivity : ComponentActivity() {
                 val ui = it.getColumnIndexOrThrow(CallLog.Calls.DURATION)
                 val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
                 while (it.moveToNext()) {
-                    val n = it.getString(ni)?.replace(Regex("[\\s\\-().+]"), "")?.takeLast(7) ?: continue
-                    if (n == norm) {
+                    val n = it.getString(ni)?.replace(Regex("[\s\-().+]"), "")?.takeLast(7) ?: continue
+                    if (n in norms) {
                         if (lastDate == null) { lastDate = it.getLong(di); lastType = it.getInt(ti) }
                         total++; dur += it.getLong(ui)
                     }
@@ -167,7 +188,6 @@ class ContactChooserActivity : ComponentActivity() {
             CallStats(lastDate, total, dur, lastType)
         } catch (e: Exception) { CallStats(null, 0, 0L, 0) }
     }
-
     private fun isInstalled(pkg: String): Boolean {
         if (pkg.isBlank()) return false
         return runCatching { packageManager.getPackageInfo(pkg, 0); true }.getOrDefault(false)
