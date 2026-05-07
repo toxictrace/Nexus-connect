@@ -196,6 +196,53 @@ class CallLogRepository(private val context: Context) {
         }
     }
 
+
+    /**
+     * Returns recent calls (known + unknown) sorted by date DESC.
+     * Known contacts returned as positive IDs, unknown as negative IDs.
+     * This ensures unknown numbers with newer calls appear before older known contacts.
+     */
+    fun getRecentMixed(
+        numberToContactId: Map<String, Long>,
+        days: Int = 0,
+        limit: Int = 50
+    ): List<Pair<Long, String?>> { // Pair<contactId_or_negativeIdx, phoneNumber_if_unknown>
+        val cutoff = if (days > 0) System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L else 0L
+        val seenContacts = linkedSetOf<Long>()
+        val seenUnknownNorms = linkedSetOf<String>()
+        val result = mutableListOf<Pair<Long, String?>>()
+        var unknownIdx = 1
+        try {
+            val cursor = context.contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.CACHED_NAME, CallLog.Calls.DATE),
+                if (cutoff > 0) "${CallLog.Calls.DATE} >= ?" else null,
+                if (cutoff > 0) arrayOf(cutoff.toString()) else null,
+                "${CallLog.Calls.DATE} DESC"
+            ) ?: return emptyList()
+            cursor.use {
+                val numIdx  = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                while (it.moveToNext() && result.size < limit) {
+                    val number = it.getString(numIdx) ?: continue
+                    val norm = normalizeNum(number)
+                    val contactId = numberToContactId[norm]
+                    if (contactId != null) {
+                        if (seenContacts.add(contactId)) {
+                            result.add(Pair(contactId, null))
+                        }
+                    } else if (number.isNotBlank() && number != "-1" && number != "-2") {
+                        if (seenUnknownNorms.add(norm)) {
+                            result.add(Pair(-(unknownIdx++).toLong(), number))
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getRecentMixed: ${e.message}")
+        }
+        return result
+    }
+
     private fun normalizeNum(number: String): String =
         number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
 }

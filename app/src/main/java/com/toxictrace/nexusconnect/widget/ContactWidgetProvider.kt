@@ -116,32 +116,23 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     numberMap[norm] = it.id
                 }
             }
-            // Unknown numbers fill slots after favorites+recents, before frequent
-            val showUnknown = WidgetPrefs.getShowUnknownNumbers(context)
-            val remainingAfterKnown = maxTiles - contacts.size
-            val unknowns = if (showUnknown && remainingAfterKnown > 0)
-                buildUnknownContacts(context, numberMap, remainingAfterKnown)
-            else emptyList()
-            AppLogger.i(TAG, "unknown slots: $remainingAfterKnown unknowns found: ${unknowns.size}")
-
-            // Frequent fills whatever is left after unknowns
+            // Frequent fills remaining slots after favorites+recents+unknown
             val filterFreqWidget = WidgetPrefs.getFilterFrequent(context)
-            val contactsPlusUnknown = contacts + unknowns
-            val frequentSlots = maxTiles - contactsPlusUnknown.size
+            val frequentSlots = maxTiles - contacts.size
             val frequentContacts = if (filterFreqWidget && frequentSlots > 0) {
-                val usedIds = contactsPlusUnknown.map { it.id }.toMutableSet()
+                val usedIds2 = contacts.map { it.id }.toMutableSet()
                 val callLogRepo2 = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
                 val freq = mutableListOf<Contact>()
                 callLogRepo2.getFrequentContactIds(numberMap, 50).forEach { id ->
                     val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
-                    if (usedIds.add(c.id)) freq.add(c)
+                    if (usedIds2.add(c.id)) freq.add(c)
                     if (freq.size >= frequentSlots) return@forEach
                 }
                 freq
             } else emptyList()
 
-            val allTileContacts = (contactsPlusUnknown + frequentContacts).take(maxTiles)
-            Log.d(TAG, "total tiles=\${allTileContacts.size} known=\${contacts.size} unknown=\${unknowns.size} frequent=\${frequentContacts.size}")
+            val allTileContacts = (contacts + frequentContacts).take(maxTiles)
+            AppLogger.i(TAG, "total tiles=${allTileContacts.size} known=${contacts.size} frequent=${frequentContacts.size}")
 
             val layoutRes = context.resources.getIdentifier(
                 "widget_grid_${cols}c${rows}r", "layout", context.packageName
@@ -312,34 +303,42 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val callLogRepo = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
 
             // 2. Recents — higher priority than frequent
-            if (filterRecents) {
+            // Known + unknown sorted by date together
+            if (filterRecents || WidgetPrefs.getShowUnknownNumbers(context)) {
                 val recentsDays = WidgetPrefs.getRecentsDays(context)
-                val recentIds = callLogRepo.getRecentContactIds(numberMap, 50, recentsDays)
-                val recentNames = recentIds.mapNotNull { id ->
-                    allContacts.firstOrNull { it.id == id }?.let { "$id(${it.name})" }
+                val unknownDays = WidgetPrefs.getUnknownNumbersDays(context)
+                val days = when {
+                    filterRecents && WidgetPrefs.getShowUnknownNumbers(context) ->
+                        if (recentsDays == 0 || unknownDays == 0) 0
+                        else maxOf(recentsDays, unknownDays)
+                    filterRecents -> recentsDays
+                    else -> unknownDays
                 }
-                AppLogger.i(TAG, "recentIds: ${recentIds.size} contacts=$recentNames")
-                recentIds.forEach { id ->
-                    val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
-                    if (usedIds.add(c.id)) {
-                        result.add(c)
-                        AppLogger.i(TAG, "recent added: ${c.name} id=${c.id}")
+                val mixed = callLogRepo.getRecentMixed(numberMap, days, maxTiles)
+                AppLogger.i(TAG, "mixed recents: ${mixed.size} days=$days")
+                var unknownCount = 1
+                mixed.forEach { (id, phone) ->
+                    if (result.size >= maxTiles) return result.take(maxTiles)
+                    if (id > 0) {
+                        if (!filterRecents) return@forEach
+                        val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
+                        if (usedIds.add(c.id)) {
+                            result.add(c)
+                            AppLogger.i(TAG, "recent added: ${c.name} id=${c.id}")
+                        }
+                    } else {
+                        if (!WidgetPrefs.getShowUnknownNumbers(context)) return@forEach
+                        if (phone.isNullOrBlank()) return@forEach
+                        val unknownContact = Contact(
+                            id          = -(unknownCount++).toLong(),
+                            name        = phone,
+                            phoneNumber = phone
+                        )
+                        result.add(unknownContact)
+                        AppLogger.i(TAG, "unknown added: $phone")
                     }
-                    if (result.size >= maxTiles) return result.take(maxTiles)
                 }
             }
-            // 3. Frequent — lowest priority
-            if (filterFrequent) {
-                val frequentIds = callLogRepo.getFrequentContactIds(numberMap, 50)
-                AppLogger.i(TAG, "frequentIds: ${frequentIds.size} ids=$frequentIds")
-                frequentIds.forEach { id ->
-                    val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
-                    if (usedIds.add(c.id)) result.add(c)
-                    if (result.size >= maxTiles) return result.take(maxTiles)
-                }
-                AppLogger.i(TAG, "after frequent: result.size=${result.size} maxTiles=$maxTiles")
-            }
-
 
             return result.take(maxTiles)
         }
