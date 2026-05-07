@@ -74,7 +74,7 @@ class ContactChooserActivity : ComponentActivity() {
 
         val avatarIdentity = WidgetPrefs.getAvatarIdentity(this)
         val customUri = WidgetPrefs.getCustomAvatarUri(this)
-        val stats     = loadCallStats(phone)
+        val stats     = loadCallStats(phone, contactId)
 
         val isDark = when (WidgetPrefs.getTheme(this)) {
             "DARK"   -> true
