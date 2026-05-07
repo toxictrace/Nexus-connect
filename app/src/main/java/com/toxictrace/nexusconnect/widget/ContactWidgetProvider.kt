@@ -116,12 +116,32 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     numberMap[norm] = it.id
                 }
             }
-            val unknownSlots = maxTiles - contacts.size
-            AppLogger.i(TAG, "unknown slots: $unknownSlots contacts.size=${contacts.size} maxTiles=$maxTiles")
-            val unknowns = buildUnknownContacts(context, numberMap, unknownSlots)
-            AppLogger.i(TAG, "unknowns found: ${unknowns.size}")
-            val allTileContacts = (contacts + unknowns).take(maxTiles)
-            Log.d(TAG, "total tiles=${allTileContacts.size} (${contacts.size} known + ${unknowns.size} unknown)")
+            // Unknown numbers fill slots after favorites+recents, before frequent
+            val showUnknown = WidgetPrefs.getShowUnknownNumbers(context)
+            val remainingAfterKnown = maxTiles - contacts.size
+            val unknowns = if (showUnknown && remainingAfterKnown > 0)
+                buildUnknownContacts(context, numberMap, remainingAfterKnown)
+            else emptyList()
+            AppLogger.i(TAG, "unknown slots: $remainingAfterKnown unknowns found: ${unknowns.size}")
+
+            // Frequent fills whatever is left after unknowns
+            val filterFreqWidget = WidgetPrefs.getFilterFrequent(context)
+            val contactsPlusUnknown = contacts + unknowns
+            val frequentSlots = maxTiles - contactsPlusUnknown.size
+            val frequentContacts = if (filterFreqWidget && frequentSlots > 0) {
+                val usedIds = contactsPlusUnknown.map { it.id }.toMutableSet()
+                val callLogRepo2 = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
+                val freq = mutableListOf<Contact>()
+                callLogRepo2.getFrequentContactIds(numberMap, 50).forEach { id ->
+                    val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
+                    if (usedIds.add(c.id)) freq.add(c)
+                    if (freq.size >= frequentSlots) return@forEach
+                }
+                freq
+            } else emptyList()
+
+            val allTileContacts = (contactsPlusUnknown + frequentContacts).take(maxTiles)
+            Log.d(TAG, "total tiles=\${allTileContacts.size} known=\${contacts.size} unknown=\${unknowns.size} frequent=\${frequentContacts.size}")
 
             val layoutRes = context.resources.getIdentifier(
                 "widget_grid_${cols}c${rows}r", "layout", context.packageName
@@ -169,10 +189,10 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
                     views.setTextViewText(nameId, contact.name)
 
-                    // Call type icon
-                    if (showCallIcon && callIconStyle != "NONE" && callIconId != 0 && contact.phoneNumber != null) {
-                        val norm = contact.phoneNumber.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
-                        val callType = callTypeMap[norm]
+                    // Call type icon — check all norms for this contact
+                    if (showCallIcon && callIconStyle != "NONE" && callIconId != 0) {
+                        val contactNorms = numberMap.entries.filter { it.value == contact.id }.map { it.key }
+                        val callType = contactNorms.firstNotNullOfOrNull { callTypeMap[it] }
                         val glass = callIconStyle == "GLASS"
                         val iconRes = when (callType) {
                             android.provider.CallLog.Calls.INCOMING_TYPE ->
