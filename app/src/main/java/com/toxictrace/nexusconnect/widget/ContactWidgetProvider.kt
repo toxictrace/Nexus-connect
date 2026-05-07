@@ -324,7 +324,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     unknownDays = if (WidgetPrefs.getShowUnknownNumbers(context)) unknownDays else -1,
                     limit = maxTiles
                 )
-                AppLogger.i(TAG, "mixed recents: ${mixed.size} days=$days")
+                AppLogger.i(TAG, "mixed recents: ${mixed.size} contactDays=$recentsDays unknownDays=$unknownDays")
                 var unknownCount = 1
                 mixed.forEach { (id, phone) ->
                     if (result.size >= maxTiles) return result.take(maxTiles)
