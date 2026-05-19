@@ -9,24 +9,36 @@ import android.os.IBinder
 import android.os.Looper
 import android.provider.CallLog
 import android.provider.ContactsContract
+import com.toxictrace.nexusconnect.util.AppLogger
 
 /**
  * Lightweight service that registers ContentObservers on contacts
  * and call log — updates widget when either changes.
+ * Debounce 2s to prevent infinite update loops.
  */
 class ContactsObserverService : Service() {
 
     private var contactsObserver: ContentObserver? = null
     private var callLogObserver: ContentObserver? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var pendingUpdate: Runnable? = null
+
+    private fun scheduleWidgetUpdate(source: String) {
+        pendingUpdate?.let { handler.removeCallbacks(it) }
+        val r = Runnable {
+            AppLogger.i("ContactsObserverService", "widget update triggered by: $source")
+            PhotoProvider.invalidateCache()
+            ContactWidgetProvider.updateAllWidgets(applicationContext)
+        }
+        pendingUpdate = r
+        handler.postDelayed(r, 2000)
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val handler = Handler(Looper.getMainLooper())
-
         if (contactsObserver == null) {
             contactsObserver = object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean) {
-                    PhotoProvider.invalidateCache() // force launcher to reload photos
-                    ContactWidgetProvider.updateAllWidgets(applicationContext)
+                    scheduleWidgetUpdate("contacts")
                 }
             }
             contentResolver.registerContentObserver(
@@ -37,7 +49,7 @@ class ContactsObserverService : Service() {
         if (callLogObserver == null) {
             callLogObserver = object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean) {
-                    ContactWidgetProvider.updateAllWidgets(applicationContext)
+                    scheduleWidgetUpdate("calllog")
                 }
             }
             contentResolver.registerContentObserver(
@@ -49,6 +61,7 @@ class ContactsObserverService : Service() {
     }
 
     override fun onDestroy() {
+        pendingUpdate?.let { handler.removeCallbacks(it) }
         contactsObserver?.let { contentResolver.unregisterContentObserver(it) }
         callLogObserver?.let { contentResolver.unregisterContentObserver(it) }
         contactsObserver = null
