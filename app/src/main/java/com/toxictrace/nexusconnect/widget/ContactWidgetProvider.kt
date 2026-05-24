@@ -332,7 +332,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 .forEach { norms.add(it) }
 
             tileContacts.filter { it.id < 0 && it.phoneNumber != null }.forEach {
-                val norm = it.phoneNumber.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                val norm = it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
                 if (norm.isNotBlank()) norms.add(norm)
             }
             return norms
