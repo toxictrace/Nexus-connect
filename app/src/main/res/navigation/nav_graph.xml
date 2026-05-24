@@ -1,23 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<navigation
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/contactsFragment">
+    app:startDestination="@id/mainFragment">
 
     <fragment
-        android:id="@+id/contactsFragment"
-        android:name="com.nexusconnect.widget.ui.contacts.ContactsFragment"
-        android:label="Contacts" />
-
-    <fragment
-        android:id="@+id/layoutFragment"
-        android:name="com.nexusconnect.widget.ui.layout.LayoutFragment"
-        android:label="Layout" />
-
-    <fragment
-        android:id="@+id/preferencesFragment"
-        android:name="com.nexusconnect.widget.ui.preferences.PreferencesFragment"
-        android:label="Preferences" />
+        android:id="@+id/mainFragment"
+        android:name="com.toxictrace.nexusconnect.ui.MainFragment"
+        android:label="Nexus Connect"
+        tools:layout="@layout/fragment_main" />
 
 </navigation>
