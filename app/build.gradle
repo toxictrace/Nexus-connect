@@ -18,8 +18,18 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
 
+    signingConfigs {
+        release {
+            storeFile rootProject.file(System.getenv("KEYSTORE_PATH") ?: "nexus.jks")
+            storePassword System.getenv("STORE_PASSWORD") ?: "nexus123"
+            keyAlias System.getenv("KEY_ALIAS") ?: "nexus"
+            keyPassword System.getenv("KEY_PASSWORD") ?: "nexus123"
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
