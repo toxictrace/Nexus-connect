@@ -91,6 +91,7 @@ fun PreferencesScreen(viewModel: MainViewModel) {
         )
         CallLogButtonSection(
             settings = settings,
+            apps = installedApps,
             onUpdate = { updated -> viewModel.updateSettings { updated } }
         )
         DiagnosticsSection(
@@ -819,7 +820,8 @@ private fun RestoreDialog(
 // ── Call Log Button ──────────────────────────────────────────────────────────
 
 @Composable
-private fun CallLogButtonSection(settings: WidgetSettings, onUpdate: (WidgetSettings) -> Unit) {
+private fun CallLogButtonSection(settings: WidgetSettings, apps: List<AppInfo>, onUpdate: (WidgetSettings) -> Unit) {
+    var showCallLogAppPicker by remember { mutableStateOf(false) }
     Column {
         SectionHeader(
             title    = stringResource(R.string.call_log_button),
@@ -853,7 +855,29 @@ private fun CallLogButtonSection(settings: WidgetSettings, onUpdate: (WidgetSett
                     onCheckedChange = { onUpdate(settings.copy(showCallLogButton = it)) }
                 )
             }
+            if (settings.showCallLogButton) {
+                HorizontalDivider()
+                MessengerRow(
+                    label = stringResource(R.string.call_log_app),
+                    currentPkg = settings.callLogAppPackage,
+                    allApps = apps,
+                    onClick = { showCallLogAppPicker = true }
+                )
+            }
         }
+    }
+
+    if (showCallLogAppPicker) {
+        AppPickerDialog(
+            apps      = apps,
+            loading   = false,
+            current   = settings.callLogAppPackage,
+            onSelect  = { pkg ->
+                onUpdate(settings.copy(callLogAppPackage = pkg))
+                showCallLogAppPicker = false
+            },
+            onDismiss = { showCallLogAppPicker = false }
+        )
     }
 }
 

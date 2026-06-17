@@ -167,4 +167,5 @@
     <string name="call_log_button_subtitle">Показывать кнопку на виджете для открытия журнала звонков.</string>
     <string name="call_log_button_show">Показывать кнопку журнала</string>
     <string name="call_log_button_show_subtitle">Открывает журнал звонков с виджета</string>
+    <string name="call_log_app">Приложение журнала</string>
 </resources>

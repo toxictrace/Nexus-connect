@@ -419,6 +419,21 @@ class ContactWidgetProvider : AppWidgetProvider() {
         Log.d(TAG, "onReceive action=${intent.action}")
         if (intent.action == ACTION_OPEN_CALL_LOG) {
             AppLogger.i(TAG, "open call log")
+            val preferredPkg = WidgetPrefs.getCallLogAppPackage(context)
+            if (preferredPkg.isNotBlank()) {
+                val iPkg = Intent(Intent.ACTION_VIEW).apply {
+                    type = "vnd.android.cursor.dir/calls"
+                    setPackage(preferredPkg)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                if (iPkg.resolveActivity(context.packageManager) != null) {
+                    AppLogger.i(TAG, "open call log: using preferred package $preferredPkg")
+                    context.startActivity(iPkg)
+                    return
+                } else {
+                    AppLogger.w(TAG, "open call log: preferred package $preferredPkg can't handle intent, falling back")
+                }
+            }
             val i = Intent(Intent.ACTION_VIEW).apply {
                 type = "vnd.android.cursor.dir/calls"
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

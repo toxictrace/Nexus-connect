@@ -51,6 +51,9 @@ object WidgetPrefs {
     fun getShowCallLogButton(context: Context): Boolean =
         sp(context).getBoolean("show_call_log_button", false)
 
+    fun getCallLogAppPackage(context: Context): String =
+        sp(context).getString("call_log_app_package", "") ?: ""
+
     fun getAvatarIdentity(context: Context): String =
         sp(context).getString("avatar_identity", "DEFAULT") ?: "DEFAULT"
 
@@ -104,6 +107,7 @@ object WidgetPrefs {
             putString("selected_ids",      selectedIds.joinToString(","))
             putInt("recents_days",          settings.recentsDays)
             putBoolean("show_call_log_button", settings.showCallLogButton)
+            putString("call_log_app_package", settings.callLogAppPackage)
             apply()
         }
     }

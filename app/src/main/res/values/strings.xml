@@ -167,4 +167,5 @@
     <string name="call_log_button_subtitle">Show a button on the widget to open the call log.</string>
     <string name="call_log_button_show">Show call log button</string>
     <string name="call_log_button_show_subtitle">Opens the dialer call log from the widget</string>
+    <string name="call_log_app">Call log app</string>
 </resources>
