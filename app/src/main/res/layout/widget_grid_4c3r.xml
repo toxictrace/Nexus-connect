@@ -457,7 +457,7 @@
         android:id="@+id/btn_call_log"
         android:layout_width="match_parent"
         android:layout_height="36dp"
-        android:background="#CC000000"
+        android:background="@android:color/transparent"
         android:visibility="gone">
         <ImageView
             android:layout_width="24dp"
