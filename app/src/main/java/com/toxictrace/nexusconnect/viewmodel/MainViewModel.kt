@@ -132,8 +132,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val saved = settingsRepo.getSelectedContactIds()
                 val currentSettings = settings.value
-                val maxTiles = currentSettings.columns * currentSettings.tileHeightDp -
-                    if (currentSettings.showCallLogButton) currentSettings.columns else 0
+                val maxTiles = currentSettings.columns * currentSettings.tileHeightDp
                 val trimmed = if (saved.size > maxTiles) {
                     AppLogger.w("MainViewModel", "loadSavedSelection: trimming ${saved.size} ids to maxTiles=$maxTiles")
                     val cut = saved.take(maxTiles)
@@ -150,7 +149,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleContactSelection(contactId: Long) {
         val current = _selectedIds.value.toMutableList()
-        val maxTiles = settings.value.columns * settings.value.tileHeightDp - if (settings.value.showCallLogButton) settings.value.columns else 0
+        val maxTiles = settings.value.columns * settings.value.tileHeightDp
         if (contactId in current) {
             current.remove(contactId)
             AppLogger.i("MainViewModel", "contact deselected: id=$contactId")
