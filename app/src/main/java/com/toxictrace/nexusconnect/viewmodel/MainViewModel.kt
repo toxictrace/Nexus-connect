@@ -130,8 +130,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadSavedSelection() {
         viewModelScope.launch {
             try {
-                _selectedIds.value = settingsRepo.getSelectedContactIds()
-                AppLogger.i("MainViewModel", "loadSavedSelection: ${_selectedIds.value.size} ids")
+                val saved = settingsRepo.getSelectedContactIds()
+                val currentSettings = settings.value
+                val maxTiles = currentSettings.columns * currentSettings.tileHeightDp -
+                    if (currentSettings.showCallLogButton) currentSettings.columns else 0
+                val trimmed = if (saved.size > maxTiles) {
+                    AppLogger.w("MainViewModel", "loadSavedSelection: trimming ${saved.size} ids to maxTiles=$maxTiles")
+                    val cut = saved.take(maxTiles)
+                    settingsRepo.saveSelectedContactIds(cut)
+                    cut
+                } else saved
+                _selectedIds.value = trimmed
+                AppLogger.i("MainViewModel", "loadSavedSelection: ${trimmed.size} ids maxTiles=$maxTiles")
             } catch (e: Exception) {
                 AppLogger.e("MainViewModel", "loadSavedSelection failed", e)
             }
