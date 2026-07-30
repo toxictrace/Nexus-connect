@@ -263,7 +263,6 @@ private fun ChooserSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
