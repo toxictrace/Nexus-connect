@@ -140,7 +140,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleContactSelection(contactId: Long) {
         val current = _selectedIds.value.toMutableList()
-        val maxTiles = settings.value.columns * settings.value.tileHeightDp
+        val maxTiles = settings.value.columns * settings.value.tileHeightDp - if (settings.value.showCallLogButton) settings.value.columns else 0
         if (contactId in current) {
             current.remove(contactId)
             AppLogger.i("MainViewModel", "contact deselected: id=$contactId")

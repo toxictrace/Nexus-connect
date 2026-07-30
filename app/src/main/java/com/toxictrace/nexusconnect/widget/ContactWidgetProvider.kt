@@ -60,7 +60,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
             val cols = WidgetPrefs.getColumns(context).coerceIn(3, 6)
             val rows = WidgetPrefs.getRows(context).coerceIn(3, 6)
-            val maxTiles = cols * rows
+            val showCallLogBtnForTiles = WidgetPrefs.getShowCallLogButton(context)
+            val maxTiles = cols * rows - if (showCallLogBtnForTiles) cols else 0
 
             AppLogger.i(TAG, "buildAndPush: cols=$cols rows=$rows maxTiles=$maxTiles")
 
@@ -131,7 +132,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val layoutRes = getWidgetLayoutRes(context, cols, rows)
             val views = RemoteViews(context.packageName, layoutRes)
             val pkg = context.packageName
-            val maxTiles = cols * rows
+            val showCallLogBtnForTiles = WidgetPrefs.getShowCallLogButton(context)
+            val maxTiles = cols * rows - if (showCallLogBtnForTiles) cols else 0
 
             val showCallIcon = WidgetPrefs.getShowCallTypeIcon(context)
             val callIconStyle = WidgetPrefs.getCallIconStyle(context)
