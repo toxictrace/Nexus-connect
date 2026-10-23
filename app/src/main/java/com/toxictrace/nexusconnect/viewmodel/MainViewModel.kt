@@ -16,6 +16,7 @@ import com.toxictrace.nexusconnect.ui.screens.AppInfo
 import com.toxictrace.nexusconnect.util.AppLogger
 import com.toxictrace.nexusconnect.widget.ContactWidgetProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedIds  = MutableStateFlow<List<Long>>(emptyList())
     private val _searchQuery  = MutableStateFlow("")
     private val selectionSaveMutex = Mutex()
+    private var contactsObserverJob: Job? = null
 
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -49,22 +51,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val displayContacts: StateFlow<List<Contact>> = combine(
         _allContacts, _selectedIds, _searchQuery.debounce(120)
     ) { all, ids, query ->
-        val idSet = ids.toSet()
-        val selectedMap = all.filter { it.id in idSet }.associateBy { it.id }
-        val selectedOrdered = ids.mapNotNull { id ->
-            selectedMap[id]?.let { if (it.isSelected) it else it.copy(isSelected = true) }
-        }
-        val unselected = all.filter { it.id !in idSet }.let { list ->
-            if (query.isBlank()) list
-            else list.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                it.phoneNumber?.contains(query) == true
-            }
-        }
-        selectedOrdered + unselected
+        ContactDisplayList.build(all, ids, query)
     }
-    .distinctUntilChanged()
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         AppLogger.i("MainViewModel", "init")
@@ -115,7 +105,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             AppLogger.w("MainViewModel", "loadContacts: READ_CONTACTS permission not granted")
             return
         }
-        viewModelScope.launch {
+        if (contactsObserverJob?.isActive == true) {
+            AppLogger.i("MainViewModel", "loadContacts: observer already active")
+            return
+        }
+
+        contactsObserverJob = viewModelScope.launch {
             AppLogger.i("MainViewModel", "loadContacts: starting observer")
             try {
                 contactsRepo.observeContacts()
@@ -151,20 +146,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleContactSelection(contactId: Long) {
-        val current = _selectedIds.value.toMutableList()
+        val current = _selectedIds.value
         val maxTiles = settings.value.columns * settings.value.tileHeightDp
+        val updated = ContactSelectionOperations.toggle(current, contactId, maxTiles)
+        if (updated == null) {
+            AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
+            return
+        }
+
         if (contactId in current) {
-            current.remove(contactId)
             AppLogger.i("MainViewModel", "contact deselected: id=$contactId")
         } else {
-            if (current.size >= maxTiles) {
-                AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
-                return
-            }
-            current.add(contactId)
             AppLogger.i("MainViewModel", "contact selected: id=$contactId")
         }
-        _selectedIds.value = current
+        _selectedIds.value = updated
         persistSelectedSelection()
     }
 
@@ -174,32 +169,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * direction: -1 moves up, +1 moves down.
      */
     fun moveSelected(contactId: Long, direction: Int) {
-        if (direction != -1 && direction != 1) {
-            AppLogger.w("MainViewModel", "moveSelected ignored: invalid direction=$direction")
+        val current = _selectedIds.value
+        val updated = ContactSelectionOperations.move(current, contactId, direction)
+        if (updated == null) {
+            AppLogger.w(
+                "MainViewModel",
+                "moveSelected ignored: id=$contactId direction=$direction cannot be applied"
+            )
             return
         }
 
-        val current = _selectedIds.value.toMutableList()
         val fromIndex = current.indexOf(contactId)
-        if (fromIndex == -1) {
-            AppLogger.w("MainViewModel", "moveSelected ignored: contact id=$contactId is not selected")
-            return
-        }
-
         val toIndex = fromIndex + direction
-        if (toIndex !in current.indices) {
-            AppLogger.i("MainViewModel", "moveSelected boundary: id=$contactId index=$fromIndex direction=$direction")
-            return
-        }
-
-        val neighbor = current[toIndex]
-        current[toIndex] = contactId
-        current[fromIndex] = neighbor
-        _selectedIds.value = current
+        _selectedIds.value = updated
 
         AppLogger.i(
             "MainViewModel",
-            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${current.joinToString(",")}"
+            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${updated.joinToString(",")}"
         )
         persistSelectedSelection()
     }
