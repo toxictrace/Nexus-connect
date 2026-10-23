@@ -21,9 +21,10 @@ android {
     signingConfigs {
         release {
             storeFile rootProject.file(System.getenv("KEYSTORE_PATH") ?: "nexus.jks")
-            storePassword System.getenv("STORE_PASSWORD") ?: "nexus123"
-            keyAlias System.getenv("KEY_ALIAS") ?: "nexus"
-            keyPassword System.getenv("KEY_PASSWORD") ?: "nexus123"
+            // Release signing credentials must come from the environment, never hard-coded defaults.
+            storePassword System.getenv("STORE_PASSWORD") ?: ""
+            keyAlias System.getenv("KEY_ALIAS") ?: ""
+            keyPassword System.getenv("KEY_PASSWORD") ?: ""
         }
     }
 
