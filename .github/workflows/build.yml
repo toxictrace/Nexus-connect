@@ -29,6 +29,20 @@ jobs:
         run: chmod +x ./gradlew
         continue-on-error: true
 
+      # This temporary key is only for installing and testing this CI build.
+      # It will not match any existing production/release signing key.
+      - name: Create temporary release signing key
+        run: |
+          keytool -genkeypair -v \
+            -keystore nexus.jks \
+            -storepass nexus123 \
+            -alias nexus \
+            -keypass nexus123 \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Nexus Connect CI Test, OU=Testing, O=Nexus Connect, L=CI, S=CI, C=US"
+
       - name: Build Debug and Release APKs
         run: gradle assembleDebug assembleRelease
 
