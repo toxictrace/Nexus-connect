@@ -11,8 +11,8 @@ android {
         applicationId "com.toxictrace.nexusconnect"
         minSdk 26
         targetSdk 34
-        versionCode 62
-        versionName "0.19.42"
+        versionCode 69
+        versionName "0.19.43-test7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -21,9 +21,10 @@ android {
     signingConfigs {
         release {
             storeFile rootProject.file(System.getenv("KEYSTORE_PATH") ?: "nexus.jks")
-            storePassword System.getenv("STORE_PASSWORD") ?: "nexus123"
-            keyAlias System.getenv("KEY_ALIAS") ?: "nexus"
-            keyPassword System.getenv("KEY_PASSWORD") ?: "nexus123"
+            // Release signing credentials must come from the environment, never hard-coded defaults.
+            storePassword System.getenv("STORE_PASSWORD") ?: ""
+            keyAlias System.getenv("KEY_ALIAS") ?: ""
+            keyPassword System.getenv("KEY_PASSWORD") ?: ""
         }
     }
 
@@ -81,6 +82,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
 
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     androidTestImplementation platform('androidx.compose:compose-bom:2024.10.00')
