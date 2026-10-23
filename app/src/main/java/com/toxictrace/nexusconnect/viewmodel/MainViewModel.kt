@@ -16,6 +16,7 @@ import com.toxictrace.nexusconnect.ui.screens.AppInfo
 import com.toxictrace.nexusconnect.util.AppLogger
 import com.toxictrace.nexusconnect.widget.ContactWidgetProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedIds  = MutableStateFlow<List<Long>>(emptyList())
     private val _searchQuery  = MutableStateFlow("")
     private val selectionSaveMutex = Mutex()
+    private var contactsObserverJob: Job? = null
 
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -103,7 +105,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             AppLogger.w("MainViewModel", "loadContacts: READ_CONTACTS permission not granted")
             return
         }
-        viewModelScope.launch {
+        if (contactsObserverJob?.isActive == true) {
+            AppLogger.i("MainViewModel", "loadContacts: observer already active")
+            return
+        }
+
+        contactsObserverJob = viewModelScope.launch {
             AppLogger.i("MainViewModel", "loadContacts: starting observer")
             try {
                 contactsRepo.observeContacts()
