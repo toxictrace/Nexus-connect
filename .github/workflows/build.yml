@@ -43,6 +43,9 @@ jobs:
           test -s "$KEYSTORE_PATH" || (echo "Decoded keystore is empty" && exit 1)
           chmod 600 "$KEYSTORE_PATH"
 
+      - name: Run unit tests
+        run: gradle testDebugUnitTest
+
       - name: Build Debug and Release APKs
         run: gradle assembleDebug assembleRelease
 
