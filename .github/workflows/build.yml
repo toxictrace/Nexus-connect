@@ -9,6 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KEYSTORE_PATH: ${{ github.workspace }}/nexus.jks
+      STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
     steps:
       - name: Checkout code
@@ -29,19 +34,14 @@ jobs:
         run: chmod +x ./gradlew
         continue-on-error: true
 
-      # This temporary key is only for installing and testing this CI build.
-      # It will not match any existing production/release signing key.
-      - name: Create temporary release signing key
+      - name: Restore release signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          keytool -genkeypair -v \
-            -keystore nexus.jks \
-            -storepass nexus123 \
-            -alias nexus \
-            -keypass nexus123 \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Nexus Connect CI Test, OU=Testing, O=Nexus Connect, L=CI, S=CI, C=US"
+          test -n "$KEYSTORE_BASE64" || (echo "KEYSTORE_BASE64 secret is missing" && exit 1)
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+          test -s "$KEYSTORE_PATH" || (echo "Decoded keystore is empty" && exit 1)
+          chmod 600 "$KEYSTORE_PATH"
 
       - name: Build Debug and Release APKs
         run: gradle assembleDebug assembleRelease
