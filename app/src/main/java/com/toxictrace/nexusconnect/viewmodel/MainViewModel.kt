@@ -19,6 +19,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -31,6 +33,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _allContacts  = MutableStateFlow<List<Contact>>(emptyList())
     private val _selectedIds  = MutableStateFlow<List<Long>>(emptyList())
     private val _searchQuery  = MutableStateFlow("")
+    private val selectionSaveMutex = Mutex()
 
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -162,22 +165,64 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             AppLogger.i("MainViewModel", "contact selected: id=$contactId")
         }
         _selectedIds.value = current
-        viewModelScope.launch {
-            settingsRepo.saveSelectedContactIds(current)
-            ContactWidgetProvider.updateAllWidgets(getApplication())
-        }
+        persistSelectedSelection()
     }
 
-    fun reorderSelected(fromIndex: Int, toIndex: Int) {
+    /**
+     * Move a selected contact by its stable ID, not by a UI index that can
+     * change after recomposition or another quick tap.
+     * direction: -1 moves up, +1 moves down.
+     */
+    fun moveSelected(contactId: Long, direction: Int) {
+        if (direction != -1 && direction != 1) {
+            AppLogger.w("MainViewModel", "moveSelected ignored: invalid direction=$direction")
+            return
+        }
+
         val current = _selectedIds.value.toMutableList()
-        if (fromIndex !in current.indices || toIndex !in current.indices) return
-        val item = current.removeAt(fromIndex)
-        current.add(toIndex, item)
+        val fromIndex = current.indexOf(contactId)
+        if (fromIndex == -1) {
+            AppLogger.w("MainViewModel", "moveSelected ignored: contact id=$contactId is not selected")
+            return
+        }
+
+        val toIndex = fromIndex + direction
+        if (toIndex !in current.indices) {
+            AppLogger.i("MainViewModel", "moveSelected boundary: id=$contactId index=$fromIndex direction=$direction")
+            return
+        }
+
+        val neighbor = current[toIndex]
+        current[toIndex] = contactId
+        current[fromIndex] = neighbor
         _selectedIds.value = current
-        AppLogger.i("MainViewModel", "reorderSelected: $fromIndex -> $toIndex")
+
+        AppLogger.i(
+            "MainViewModel",
+            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${current.joinToString(",")}"
+        )
+        persistSelectedSelection()
+    }
+
+    /**
+     * Serialize writes and read the latest state only after obtaining the lock.
+     * This prevents a slower, older save from overwriting a newer contact order.
+     */
+    private fun persistSelectedSelection() {
         viewModelScope.launch {
-            settingsRepo.saveSelectedContactIds(current)
-            ContactWidgetProvider.updateAllWidgets(getApplication())
+            selectionSaveMutex.withLock {
+                val latestIds = _selectedIds.value.toList()
+                try {
+                    settingsRepo.saveSelectedContactIds(latestIds)
+                    ContactWidgetProvider.updateAllWidgets(getApplication())
+                    AppLogger.i(
+                        "MainViewModel",
+                        "selection persisted: count=${latestIds.size} order=${latestIds.joinToString(",")}"
+                    )
+                } catch (e: Exception) {
+                    AppLogger.e("MainViewModel", "persistSelectedSelection failed", e)
+                }
+            }
         }
     }
 
