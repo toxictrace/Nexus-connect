@@ -12,6 +12,7 @@ import com.toxictrace.nexusconnect.data.model.*
 import com.toxictrace.nexusconnect.data.preferences.SettingsRepository
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
+import com.toxictrace.nexusconnect.data.selection.SelectedContactOrder
 import com.toxictrace.nexusconnect.ui.screens.AppInfo
 import com.toxictrace.nexusconnect.util.AppLogger
 import com.toxictrace.nexusconnect.widget.ContactWidgetProvider
@@ -174,32 +175,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * direction: -1 moves up, +1 moves down.
      */
     fun moveSelected(contactId: Long, direction: Int) {
+        val current = _selectedIds.value
         if (direction != -1 && direction != 1) {
             AppLogger.w("MainViewModel", "moveSelected ignored: invalid direction=$direction")
             return
         }
 
-        val current = _selectedIds.value.toMutableList()
         val fromIndex = current.indexOf(contactId)
         if (fromIndex == -1) {
             AppLogger.w("MainViewModel", "moveSelected ignored: contact id=$contactId is not selected")
             return
         }
 
-        val toIndex = fromIndex + direction
-        if (toIndex !in current.indices) {
+        val moved = SelectedContactOrder.move(current, contactId, direction)
+        if (moved == current) {
             AppLogger.i("MainViewModel", "moveSelected boundary: id=$contactId index=$fromIndex direction=$direction")
             return
         }
 
-        val neighbor = current[toIndex]
-        current[toIndex] = contactId
-        current[fromIndex] = neighbor
-        _selectedIds.value = current
+        val toIndex = fromIndex + direction
+        _selectedIds.value = moved
 
         AppLogger.i(
             "MainViewModel",
-            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${current.joinToString(",")}"
+            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${moved.joinToString(",")}"
         )
         persistSelectedSelection()
     }
