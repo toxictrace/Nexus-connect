@@ -149,8 +149,8 @@ fun ContactsScreen(viewModel: MainViewModel) {
 
                 itemsIndexed(selected, key = { _, c -> "sel_${c.id}" }) { idx, contact ->
                     val onToggle   = remember(contact.id) { { viewModel.toggleContactSelection(contact.id) } }
-                    val onMoveUp   = remember(idx) { { if (idx > 0) viewModel.reorderSelected(idx, idx - 1) } }
-                    val onMoveDown = remember(idx, selected.size) { { if (idx < selected.lastIndex) viewModel.reorderSelected(idx, idx + 1) } }
+                    val onMoveUp   = remember(contact.id) { { viewModel.moveSelected(contact.id, -1) } }
+                    val onMoveDown = remember(contact.id) { { viewModel.moveSelected(contact.id, 1) } }
                     SelectedContactItem(
                         contact    = contact,
                         position   = idx,
