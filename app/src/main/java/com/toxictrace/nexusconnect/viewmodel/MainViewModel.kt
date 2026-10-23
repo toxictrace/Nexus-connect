@@ -139,20 +139,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleContactSelection(contactId: Long) {
-        val current = _selectedIds.value.toMutableList()
+        val current = _selectedIds.value
         val maxTiles = settings.value.columns * settings.value.tileHeightDp
+        val updated = ContactSelectionOperations.toggle(current, contactId, maxTiles)
+        if (updated == null) {
+            AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
+            return
+        }
+
         if (contactId in current) {
-            current.remove(contactId)
             AppLogger.i("MainViewModel", "contact deselected: id=$contactId")
         } else {
-            if (current.size >= maxTiles) {
-                AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
-                return
-            }
-            current.add(contactId)
             AppLogger.i("MainViewModel", "contact selected: id=$contactId")
         }
-        _selectedIds.value = current
+        _selectedIds.value = updated
         persistSelectedSelection()
     }
 
@@ -162,32 +162,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * direction: -1 moves up, +1 moves down.
      */
     fun moveSelected(contactId: Long, direction: Int) {
-        if (direction != -1 && direction != 1) {
-            AppLogger.w("MainViewModel", "moveSelected ignored: invalid direction=$direction")
+        val current = _selectedIds.value
+        val updated = ContactSelectionOperations.move(current, contactId, direction)
+        if (updated == null) {
+            AppLogger.w(
+                "MainViewModel",
+                "moveSelected ignored: id=$contactId direction=$direction cannot be applied"
+            )
             return
         }
 
-        val current = _selectedIds.value.toMutableList()
         val fromIndex = current.indexOf(contactId)
-        if (fromIndex == -1) {
-            AppLogger.w("MainViewModel", "moveSelected ignored: contact id=$contactId is not selected")
-            return
-        }
-
         val toIndex = fromIndex + direction
-        if (toIndex !in current.indices) {
-            AppLogger.i("MainViewModel", "moveSelected boundary: id=$contactId index=$fromIndex direction=$direction")
-            return
-        }
-
-        val neighbor = current[toIndex]
-        current[toIndex] = contactId
-        current[fromIndex] = neighbor
-        _selectedIds.value = current
+        _selectedIds.value = updated
 
         AppLogger.i(
             "MainViewModel",
-            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${current.joinToString(",")}"
+            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${updated.joinToString(",")}"
         )
         persistSelectedSelection()
     }
