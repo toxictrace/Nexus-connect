@@ -88,6 +88,9 @@ object BackupManager {
     }
 
     private fun decrypt(data: ByteArray): String {
+        require(EncryptedBackupPayload.hasValidStructure(data)) {
+            "Invalid encrypted backup payload"
+        }
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.DECRYPT_MODE, deriveKey(), IvParameterSpec(data.copyOfRange(0, 16)))
         return String(cipher.doFinal(data.copyOfRange(16, data.size)), Charsets.UTF_8)
