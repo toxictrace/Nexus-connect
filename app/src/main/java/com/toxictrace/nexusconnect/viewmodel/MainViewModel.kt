@@ -49,22 +49,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val displayContacts: StateFlow<List<Contact>> = combine(
         _allContacts, _selectedIds, _searchQuery.debounce(120)
     ) { all, ids, query ->
-        val idSet = ids.toSet()
-        val selectedMap = all.filter { it.id in idSet }.associateBy { it.id }
-        val selectedOrdered = ids.mapNotNull { id ->
-            selectedMap[id]?.let { if (it.isSelected) it else it.copy(isSelected = true) }
-        }
-        val unselected = all.filter { it.id !in idSet }.let { list ->
-            if (query.isBlank()) list
-            else list.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                it.phoneNumber?.contains(query) == true
-            }
-        }
-        selectedOrdered + unselected
+        ContactDisplayList.build(all, ids, query)
     }
-    .distinctUntilChanged()
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         AppLogger.i("MainViewModel", "init")
