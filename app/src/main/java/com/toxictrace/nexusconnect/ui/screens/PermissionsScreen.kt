@@ -53,9 +53,10 @@ fun PermissionsScreen(onAllGranted: () -> Unit) {
         if (allGranted) onAllGranted()
     }
 
+    // If permissions were granted elsewhere before this screen appeared, continue.
+    // Do not launch the system dialog automatically: let the user read this screen first.
     LaunchedEffect(Unit) {
         if (allGranted) onAllGranted()
-        else launcher.launch(REQUIRED_PERMISSIONS.map { it.permission }.toTypedArray())
     }
 
     if (allGranted) return
