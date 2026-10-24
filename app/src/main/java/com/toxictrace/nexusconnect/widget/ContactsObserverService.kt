@@ -38,7 +38,6 @@ class ContactsObserverService : Service() {
                 )
                 PhotoProvider.invalidateCache()
                 ContactWidgetProvider.updateAllWidgets(applicationContext)
-                pendingUpdates.removeAll { it === this }
             }
             pendingUpdates.add(task)
             handler.postDelayed(task, delay)
