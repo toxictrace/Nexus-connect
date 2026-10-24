@@ -13,7 +13,8 @@ import com.toxictrace.nexusconnect.util.AppLogger
 
 /**
  * Watches contacts, contact data (including photo rows), and call log.
- * A short debounce coalesces provider notifications before rebuilding widgets.
+ * Photo providers may publish the row change before the aggregate contact photo is ready,
+ * so a short series of refreshes gives the provider time to finish updating its photo URI.
  */
 class ContactsObserverService : Service() {
 
@@ -21,20 +22,27 @@ class ContactsObserverService : Service() {
     private var contactDataObserver: ContentObserver? = null
     private var callLogObserver: ContentObserver? = null
     private val handler = Handler(Looper.getMainLooper())
-    private var pendingUpdate: Runnable? = null
-    private var pendingSource: String = "unknown"
+    private val pendingUpdates = mutableListOf<Runnable>()
 
     private fun scheduleWidgetUpdate(source: String) {
-        pendingSource = source
-        pendingUpdate?.let { handler.removeCallbacks(it) }
-        val r = Runnable {
-            AppLogger.i("ContactsObserverService", "widget update triggered by: $pendingSource")
-            PhotoProvider.invalidateCache()
-            ContactWidgetProvider.updateAllWidgets(applicationContext)
-            pendingUpdate = null
+        pendingUpdates.forEach(handler::removeCallbacks)
+        pendingUpdates.clear()
+
+        // Refresh once promptly, then retry after the Contacts provider has had
+        // more time to finish saving/rebuilding the aggregate photo.
+        listOf(1500L, 4000L, 8000L).forEach { delay ->
+            val task = Runnable {
+                AppLogger.i(
+                    "ContactsObserverService",
+                    "widget refresh from $source after ${delay}ms"
+                )
+                PhotoProvider.invalidateCache()
+                ContactWidgetProvider.updateAllWidgets(applicationContext)
+                pendingUpdates.removeAll { it === this }
+            }
+            pendingUpdates.add(task)
+            handler.postDelayed(task, delay)
         }
-        pendingUpdate = r
-        handler.postDelayed(r, 2000)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -49,8 +57,6 @@ class ContactsObserverService : Service() {
             )
         }
 
-        // Some Contacts providers notify the Data table for photo changes without
-        // delivering a useful notification on the aggregate Contacts URI.
         if (contactDataObserver == null) {
             contactDataObserver = object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean) {
@@ -77,14 +83,14 @@ class ContactsObserverService : Service() {
     }
 
     override fun onDestroy() {
-        pendingUpdate?.let { handler.removeCallbacks(it) }
+        pendingUpdates.forEach(handler::removeCallbacks)
+        pendingUpdates.clear()
         contactsObserver?.let { contentResolver.unregisterContentObserver(it) }
         contactDataObserver?.let { contentResolver.unregisterContentObserver(it) }
         callLogObserver?.let { contentResolver.unregisterContentObserver(it) }
         contactsObserver = null
         contactDataObserver = null
         callLogObserver = null
-        pendingUpdate = null
         super.onDestroy()
     }
 
