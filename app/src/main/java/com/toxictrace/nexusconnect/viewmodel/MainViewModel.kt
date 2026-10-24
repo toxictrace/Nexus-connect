@@ -16,6 +16,7 @@ import com.toxictrace.nexusconnect.ui.screens.AppInfo
 import com.toxictrace.nexusconnect.util.AppLogger
 import com.toxictrace.nexusconnect.widget.ContactWidgetProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -31,9 +32,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WidgetSettings())
 
     private val _allContacts  = MutableStateFlow<List<Contact>>(emptyList())
+    val allContacts: StateFlow<List<Contact>> = _allContacts.asStateFlow()
     private val _selectedIds  = MutableStateFlow<List<Long>>(emptyList())
     private val _searchQuery  = MutableStateFlow("")
     private val selectionSaveMutex = Mutex()
+    private val settingsUpdateMutex = Mutex()
+    private var contactsObserverJob: Job? = null
 
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -49,22 +53,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val displayContacts: StateFlow<List<Contact>> = combine(
         _allContacts, _selectedIds, _searchQuery.debounce(120)
     ) { all, ids, query ->
-        val idSet = ids.toSet()
-        val selectedMap = all.filter { it.id in idSet }.associateBy { it.id }
-        val selectedOrdered = ids.mapNotNull { id ->
-            selectedMap[id]?.let { if (it.isSelected) it else it.copy(isSelected = true) }
-        }
-        val unselected = all.filter { it.id !in idSet }.let { list ->
-            if (query.isBlank()) list
-            else list.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                it.phoneNumber?.contains(query) == true
-            }
-        }
-        selectedOrdered + unselected
+        ContactDisplayList.build(all, ids, query)
     }
-    .distinctUntilChanged()
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         AppLogger.i("MainViewModel", "init")
@@ -115,7 +107,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             AppLogger.w("MainViewModel", "loadContacts: READ_CONTACTS permission not granted")
             return
         }
-        viewModelScope.launch {
+        if (contactsObserverJob?.isActive == true) {
+            AppLogger.i("MainViewModel", "loadContacts: observer already active")
+            return
+        }
+
+        contactsObserverJob = viewModelScope.launch {
             AppLogger.i("MainViewModel", "loadContacts: starting observer")
             try {
                 contactsRepo.observeContacts()
@@ -134,14 +131,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val saved = settingsRepo.getSelectedContactIds()
-                val currentSettings = settings.value
+                // Read persisted settings directly: settings.value may still contain
+                // its initial defaults before the StateFlow has observed DataStore.
+                val currentSettings = settingsRepo.settings.first()
                 val maxTiles = currentSettings.columns * currentSettings.tileHeightDp
-                val trimmed = if (saved.size > maxTiles) {
+                val trimmed = SelectionLimit.trim(saved, maxTiles)
+                if (trimmed.size != saved.size) {
                     AppLogger.w("MainViewModel", "loadSavedSelection: trimming ${saved.size} ids to maxTiles=$maxTiles")
-                    val cut = saved.take(maxTiles)
-                    settingsRepo.saveSelectedContactIds(cut)
-                    cut
-                } else saved
+                    settingsRepo.saveSelectedContactIds(trimmed)
+                }
                 _selectedIds.value = trimmed
                 AppLogger.i("MainViewModel", "loadSavedSelection: ${trimmed.size} ids maxTiles=$maxTiles")
             } catch (e: Exception) {
@@ -151,20 +149,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleContactSelection(contactId: Long) {
-        val current = _selectedIds.value.toMutableList()
+        val current = _selectedIds.value
         val maxTiles = settings.value.columns * settings.value.tileHeightDp
+        val updated = ContactSelectionOperations.toggle(current, contactId, maxTiles)
+        if (updated == null) {
+            AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
+            return
+        }
+
         if (contactId in current) {
-            current.remove(contactId)
             AppLogger.i("MainViewModel", "contact deselected: id=$contactId")
         } else {
-            if (current.size >= maxTiles) {
-                AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
-                return
-            }
-            current.add(contactId)
             AppLogger.i("MainViewModel", "contact selected: id=$contactId")
         }
-        _selectedIds.value = current
+        _selectedIds.value = updated
         persistSelectedSelection()
     }
 
@@ -174,32 +172,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * direction: -1 moves up, +1 moves down.
      */
     fun moveSelected(contactId: Long, direction: Int) {
-        if (direction != -1 && direction != 1) {
-            AppLogger.w("MainViewModel", "moveSelected ignored: invalid direction=$direction")
+        val current = _selectedIds.value
+        val updated = ContactSelectionOperations.move(current, contactId, direction)
+        if (updated == null) {
+            AppLogger.w(
+                "MainViewModel",
+                "moveSelected ignored: id=$contactId direction=$direction cannot be applied"
+            )
             return
         }
 
-        val current = _selectedIds.value.toMutableList()
         val fromIndex = current.indexOf(contactId)
-        if (fromIndex == -1) {
-            AppLogger.w("MainViewModel", "moveSelected ignored: contact id=$contactId is not selected")
-            return
-        }
-
         val toIndex = fromIndex + direction
-        if (toIndex !in current.indices) {
-            AppLogger.i("MainViewModel", "moveSelected boundary: id=$contactId index=$fromIndex direction=$direction")
-            return
-        }
-
-        val neighbor = current[toIndex]
-        current[toIndex] = contactId
-        current[fromIndex] = neighbor
-        _selectedIds.value = current
+        _selectedIds.value = updated
 
         AppLogger.i(
             "MainViewModel",
-            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${current.joinToString(",")}"
+            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${updated.joinToString(",")}"
         )
         persistSelectedSelection()
     }
@@ -236,7 +225,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateSettings(update: (WidgetSettings) -> WidgetSettings) {
         viewModelScope.launch {
             try {
-                settingsRepo.updateSettings(update(settings.value))
+                settingsUpdateMutex.withLock {
+                    // Read the latest persisted values after acquiring the lock.
+                    // settings.value may not have observed the previous write yet.
+                    val latestSettings = settingsRepo.settings.first()
+                    settingsRepo.updateSettings(update(latestSettings))
+                }
                 ContactWidgetProvider.updateAllWidgets(getApplication())
                 AppLogger.i("MainViewModel", "settings updated")
             } catch (e: Exception) {
@@ -249,10 +243,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 AppLogger.i("MainViewModel", "saveBackup started")
-                val folderUri = android.net.Uri.parse(settings.value.backupFolderUri)
+                val currentSettings = settingsRepo.settings.first()
+                val folderUri = android.net.Uri.parse(currentSettings.backupFolderUri)
                 val selectedIds = settingsRepo.getSelectedContactIds()
                 val json = com.toxictrace.nexusconnect.data.backup.BackupManager
-                    .settingsToJson(settings.value, selectedIds)
+                    .settingsToJson(currentSettings, selectedIds)
                 val name = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .saveBackup(getApplication(), folderUri, json)
                 AppLogger.i("MainViewModel", "saveBackup success: $name")
@@ -270,13 +265,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 AppLogger.i("MainViewModel", "restoreBackup started: $fileUri")
                 val json = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .loadBackup(getApplication(), fileUri)
-                val (restoredSettings, restoredIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
+                val (restoredSettings, backupIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .jsonToSettings(json)
-                val folderUri = settings.value.backupFolderUri
-                settingsRepo.updateSettings(restoredSettings.copy(backupFolderUri = folderUri))
-                settingsRepo.saveSelectedContactIds(restoredIds)
-                _selectedIds.value = restoredIds
+                // Keep restored selection within the capacity defined by the restored layout,
+                // matching the limit applied when loading a saved selection at startup.
+                val maxTiles = restoredSettings.columns * restoredSettings.tileHeightDp
+                val restoredIds = SelectionLimit.trim(backupIds, maxTiles)
+                settingsUpdateMutex.withLock {
+                    // Read the latest persisted folder only after acquiring the same lock
+                    // used by settings updates, so a concurrent folder change is not lost.
+                    val currentSettings = settingsRepo.settings.first()
+                    settingsRepo.updateSettings(
+                        restoredSettings.copy(backupFolderUri = currentSettings.backupFolderUri)
+                    )
+                }
+                // Serialize restore writes with ordinary selection saves so a delayed
+                // selection write cannot overwrite the restored IDs.
+                selectionSaveMutex.withLock {
+                    settingsRepo.saveSelectedContactIds(restoredIds)
+                    _selectedIds.value = restoredIds
+                }
                 ContactWidgetProvider.updateAllWidgets(getApplication())
+                if (restoredIds.size != backupIds.size) {
+                    AppLogger.w(
+                        "MainViewModel",
+                        "restoreBackup: trimmed ${backupIds.size} selected ids to maxTiles=$maxTiles"
+                    )
+                }
                 AppLogger.i("MainViewModel", "restoreBackup success: ${restoredIds.size} contacts restored")
                 onResult()
             } catch (e: Exception) {
@@ -317,6 +332,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _photoCache = MutableStateFlow<Map<Long, android.graphics.Bitmap>>(emptyMap())
     val photoCache: StateFlow<Map<Long, android.graphics.Bitmap>> = _photoCache.asStateFlow()
+    private val _photoUris = MutableStateFlow<Map<Long, String>>(emptyMap())
 
     private var photoCacheJob: kotlinx.coroutines.Job? = null
 
@@ -324,24 +340,41 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         photoCacheJob?.cancel()
         photoCacheJob = viewModelScope.launch(Dispatchers.IO) {
             val ctx = getApplication<Application>()
-            val newCache = _photoCache.value.toMutableMap()
-            contacts.filter { it.photoUri != null && it.id !in newCache }.forEach { contact ->
+            val currentCache = _photoCache.value
+            val plan = PhotoCachePlan.build(contacts, currentCache.keys, _photoUris.value)
+            val newCache = currentCache
+                .filterKeys { it in plan.retainedIds && it !in plan.idsToReload }
+                .toMutableMap()
+            val newUris = _photoUris.value
+                .filter { (id, uri) -> id in plan.retainedIds && contacts.any { it.id == id && it.photoUri == uri } }
+                .toMutableMap()
+
+            plan.contactsToLoad.forEach { contact ->
                 if (!isActive) return@launch
                 try {
-                    val uri = android.net.Uri.parse(contact.photoUri)
-                    ctx.contentResolver.openInputStream(uri)?.use { stream ->
+                    val photoUri = contact.photoUri ?: return@forEach
+                    val uri = android.net.Uri.parse(photoUri)
+                    val bitmap = ctx.contentResolver.openInputStream(uri)?.use { stream ->
                         val opts = android.graphics.BitmapFactory.Options().apply {
                             inSampleSize = 2
                             inPreferredConfig = android.graphics.Bitmap.Config.RGB_565
                         }
                         android.graphics.BitmapFactory.decodeStream(stream, null, opts)
-                            ?.let { bmp -> newCache[contact.id] = bmp }
                     }
+                    if (bitmap != null) {
+                        newCache[contact.id] = bitmap
+                        newUris[contact.id] = photoUri
+                    }
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     AppLogger.w("MainViewModel", "preloadPhotos: failed for contact ${contact.id}: ${e.message}")
                 }
             }
-            _photoCache.value = newCache
+            if (isActive) {
+                _photoCache.value = newCache
+                _photoUris.value = newUris
+            }
         }
     }
 }
