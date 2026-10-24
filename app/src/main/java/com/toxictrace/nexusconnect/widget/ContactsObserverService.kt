@@ -12,26 +12,36 @@ import android.provider.ContactsContract
 import com.toxictrace.nexusconnect.util.AppLogger
 
 /**
- * Lightweight service that registers ContentObservers on contacts
- * and call log — updates widget when either changes.
- * Debounce 2s to prevent infinite update loops.
+ * Watches contacts, contact data (including photo rows), and call log.
+ * Photo providers may publish the row change before the aggregate contact photo is ready,
+ * so a short series of refreshes gives the provider time to finish updating its photo URI.
  */
 class ContactsObserverService : Service() {
 
     private var contactsObserver: ContentObserver? = null
+    private var contactDataObserver: ContentObserver? = null
     private var callLogObserver: ContentObserver? = null
     private val handler = Handler(Looper.getMainLooper())
-    private var pendingUpdate: Runnable? = null
+    private val pendingUpdates = mutableListOf<Runnable>()
 
     private fun scheduleWidgetUpdate(source: String) {
-        pendingUpdate?.let { handler.removeCallbacks(it) }
-        val r = Runnable {
-            AppLogger.i("ContactsObserverService", "widget update triggered by: $source")
-            PhotoProvider.invalidateCache()
-            ContactWidgetProvider.updateAllWidgets(applicationContext)
+        pendingUpdates.forEach(handler::removeCallbacks)
+        pendingUpdates.clear()
+
+        // Refresh once promptly, then retry after the Contacts provider has had
+        // more time to finish saving/rebuilding the aggregate photo.
+        listOf(1500L, 4000L, 8000L).forEach { delay ->
+            val task = Runnable {
+                AppLogger.i(
+                    "ContactsObserverService",
+                    "widget refresh from $source after ${delay}ms"
+                )
+                PhotoProvider.invalidateCache()
+                ContactWidgetProvider.updateAllWidgets(applicationContext)
+            }
+            pendingUpdates.add(task)
+            handler.postDelayed(task, delay)
         }
-        pendingUpdate = r
-        handler.postDelayed(r, 2000)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -43,6 +53,17 @@ class ContactsObserverService : Service() {
             }
             contentResolver.registerContentObserver(
                 ContactsContract.Contacts.CONTENT_URI, true, contactsObserver!!
+            )
+        }
+
+        if (contactDataObserver == null) {
+            contactDataObserver = object : ContentObserver(handler) {
+                override fun onChange(selfChange: Boolean) {
+                    scheduleWidgetUpdate("contact-data")
+                }
+            }
+            contentResolver.registerContentObserver(
+                ContactsContract.Data.CONTENT_URI, true, contactDataObserver!!
             )
         }
 
@@ -61,10 +82,13 @@ class ContactsObserverService : Service() {
     }
 
     override fun onDestroy() {
-        pendingUpdate?.let { handler.removeCallbacks(it) }
+        pendingUpdates.forEach(handler::removeCallbacks)
+        pendingUpdates.clear()
         contactsObserver?.let { contentResolver.unregisterContentObserver(it) }
+        contactDataObserver?.let { contentResolver.unregisterContentObserver(it) }
         callLogObserver?.let { contentResolver.unregisterContentObserver(it) }
         contactsObserver = null
+        contactDataObserver = null
         callLogObserver = null
         super.onDestroy()
     }

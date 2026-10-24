@@ -6,13 +6,13 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
 import com.toxictrace.nexusconnect.data.model.Contact
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
 
 class ContactsRepository(private val context: Context) {
 
@@ -21,13 +21,11 @@ class ContactsRepository(private val context: Context) {
      * the system contacts database changes (ContentObserver).
      */
     fun observeContacts(): Flow<List<Contact>> = callbackFlow {
-        // Send initial list
-        trySend(loadContacts())
-
-        // Watch for changes in the contacts database
+        // Watch for changes before requesting the initial snapshot so changes that
+        // happen during the first query are not silently missed.
         val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
             override fun onChange(selfChange: Boolean) {
-                launch { trySend(loadContacts()) }
+                trySend(Unit)
             }
         }
 
@@ -36,11 +34,17 @@ class ContactsRepository(private val context: Context) {
             true,
             observer
         )
+        trySend(Unit)
 
         awaitClose {
             context.contentResolver.unregisterContentObserver(observer)
         }
-    }.flowOn(Dispatchers.IO)
+    }
+        // Coalesce bursts of provider notifications and query on this single flow
+        // collector instead of launching overlapping full database reads.
+        .conflate()
+        .map { loadContacts() }
+        .flowOn(Dispatchers.IO)
 
     fun loadContacts(): List<Contact> {
         val contacts = mutableListOf<Contact>()
