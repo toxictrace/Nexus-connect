@@ -329,7 +329,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 AppLogger.i("MainViewModel", "saveLog requested")
-                val folderUri = android.net.Uri.parse(settings.value.backupFolderUri)
+                // Read the persisted folder after acquiring the same lock used by settings
+                // updates. The StateFlow can briefly lag behind a completed DataStore write.
+                val folderUri = settingsUpdateMutex.withLock {
+                    android.net.Uri.parse(settingsRepo.settings.first().backupFolderUri)
+                }
                 val name = AppLogger.exportToFolder(getApplication(), folderUri)
                 AppLogger.i("MainViewModel", "saveLog success: $name")
                 onResult(name)
