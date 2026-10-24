@@ -92,6 +92,11 @@
             android:name=".widget.ContactsObserverService"
             android:exported="false" />
 
+        <service
+            android:name=".widget.ContactsChangeJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
+
         <!-- Wakes up widget update after any call ends, even if app is killed -->
         <receiver
             android:name=".widget.CallStateReceiver"
