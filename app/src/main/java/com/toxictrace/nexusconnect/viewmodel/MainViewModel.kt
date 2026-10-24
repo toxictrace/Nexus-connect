@@ -265,8 +265,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 AppLogger.i("MainViewModel", "restoreBackup started: $fileUri")
                 val json = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .loadBackup(getApplication(), fileUri)
-                val (restoredSettings, restoredIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
+                val (restoredSettings, backupIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .jsonToSettings(json)
+                // Keep restored selection within the capacity defined by the restored layout,
+                // matching the limit applied when loading a saved selection at startup.
+                val maxTiles = restoredSettings.columns * restoredSettings.tileHeightDp
+                val restoredIds = SelectionLimit.trim(backupIds, maxTiles)
                 settingsUpdateMutex.withLock {
                     // Read the latest persisted folder only after acquiring the same lock
                     // used by settings updates, so a concurrent folder change is not lost.
@@ -278,6 +282,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 settingsRepo.saveSelectedContactIds(restoredIds)
                 _selectedIds.value = restoredIds
                 ContactWidgetProvider.updateAllWidgets(getApplication())
+                if (restoredIds.size != backupIds.size) {
+                    AppLogger.w(
+                        "MainViewModel",
+                        "restoreBackup: trimmed ${backupIds.size} selected ids to maxTiles=$maxTiles"
+                    )
+                }
                 AppLogger.i("MainViewModel", "restoreBackup success: ${restoredIds.size} contacts restored")
                 onResult()
             } catch (e: Exception) {
