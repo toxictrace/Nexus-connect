@@ -243,10 +243,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 AppLogger.i("MainViewModel", "saveBackup started")
-                val folderUri = android.net.Uri.parse(settings.value.backupFolderUri)
+                val currentSettings = settingsRepo.settings.first()
+                val folderUri = android.net.Uri.parse(currentSettings.backupFolderUri)
                 val selectedIds = settingsRepo.getSelectedContactIds()
                 val json = com.toxictrace.nexusconnect.data.backup.BackupManager
-                    .settingsToJson(settings.value, selectedIds)
+                    .settingsToJson(currentSettings, selectedIds)
                 val name = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .saveBackup(getApplication(), folderUri, json)
                 AppLogger.i("MainViewModel", "saveBackup success: $name")
@@ -266,7 +267,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     .loadBackup(getApplication(), fileUri)
                 val (restoredSettings, restoredIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .jsonToSettings(json)
-                val folderUri = settings.value.backupFolderUri
+                val currentSettings = settingsRepo.settings.first()
+                val folderUri = currentSettings.backupFolderUri
                 settingsUpdateMutex.withLock {
                     settingsRepo.updateSettings(restoredSettings.copy(backupFolderUri = folderUri))
                 }
