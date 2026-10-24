@@ -130,18 +130,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadSavedSelection() {
         viewModelScope.launch {
             try {
-                val saved = settingsRepo.getSelectedContactIds()
-                // Read persisted settings directly: settings.value may still contain
-                // its initial defaults before the StateFlow has observed DataStore.
-                val currentSettings = settingsRepo.settings.first()
-                val maxTiles = currentSettings.columns * currentSettings.tileHeightDp
-                val trimmed = SelectionLimit.trim(saved, maxTiles)
-                if (trimmed.size != saved.size) {
-                    AppLogger.w("MainViewModel", "loadSavedSelection: trimming ${saved.size} ids to maxTiles=$maxTiles")
-                    settingsRepo.saveSelectedContactIds(trimmed)
+                // Serialize startup loading with restore and backup operations. Otherwise,
+                // a delayed startup read could publish IDs from before a restore completed.
+                settingsUpdateMutex.withLock {
+                    selectionSaveMutex.withLock {
+                        // Read persisted settings directly: settings.value may still contain
+                        // its initial defaults before the StateFlow has observed DataStore.
+                        val currentSettings = settingsRepo.settings.first()
+                        val saved = settingsRepo.getSelectedContactIds()
+                        val maxTiles = currentSettings.columns * currentSettings.tileHeightDp
+                        val trimmed = SelectionLimit.trim(saved, maxTiles)
+                        if (trimmed.size != saved.size) {
+                            AppLogger.w("MainViewModel", "loadSavedSelection: trimming ${saved.size} ids to maxTiles=$maxTiles")
+                            settingsRepo.saveSelectedContactIds(trimmed)
+                        }
+                        _selectedIds.value = trimmed
+                        AppLogger.i("MainViewModel", "loadSavedSelection: ${trimmed.size} ids maxTiles=$maxTiles")
+                    }
                 }
-                _selectedIds.value = trimmed
-                AppLogger.i("MainViewModel", "loadSavedSelection: ${trimmed.size} ids maxTiles=$maxTiles")
             } catch (e: Exception) {
                 AppLogger.e("MainViewModel", "loadSavedSelection failed", e)
             }
