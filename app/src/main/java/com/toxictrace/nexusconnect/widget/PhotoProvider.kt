@@ -86,10 +86,10 @@ class PhotoProvider : ContentProvider() {
                             }
                         }
                         val sha256 = digest.digest().joinToString("") { "%02x".format(it) }
-                        AppLogger.i(TAG, "pipe transfer complete contactId=\${contactId} photoUri=\${photoUri} bytes=\${bytesTransferred} sha256=\${sha256}")
+                        AppLogger.i(TAG, "pipe transfer complete contactId=${contactId} photoUri=${photoUri} bytes=${bytesTransferred} sha256=${sha256}")
                     } catch (copyError: Exception) {
                         val partialSha256 = digest.digest().joinToString("") { "%02x".format(it) }
-                        AppLogger.e(TAG, "pipe transfer failed contactId=\${contactId} photoUri=\${photoUri} bytesTransferred=\${bytesTransferred} partialSha256=\${partialSha256} error=\${copyError.javaClass.simpleName}:\${copyError.message}", copyError)
+                        AppLogger.e(TAG, "pipe transfer failed contactId=${contactId} photoUri=${photoUri} bytesTransferred=${bytesTransferred} partialSha256=${partialSha256} error=${copyError.javaClass.simpleName}:${copyError.message}", copyError)
                     }
                 }.start()
                 AppLogger.i(TAG, "openFile: pipe returned contactId=$contactId photoUri=$photoUri")
