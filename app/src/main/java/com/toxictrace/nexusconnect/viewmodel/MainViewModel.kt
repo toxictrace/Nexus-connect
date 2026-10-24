@@ -366,8 +366,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val newCache = currentCache
                 .filterKeys { it in plan.retainedIds && it !in plan.idsToReload }
                 .toMutableMap()
+            // Index current URIs once instead of scanning the full contact list for
+            // every cached photo URI. This keeps cache reconciliation linear in list size.
+            val currentPhotoUris = contacts
+                .mapNotNull { contact ->
+                    contact.photoUri
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { uri -> contact.id to uri }
+                }
+                .toMap()
             val newUris = _photoUris.value
-                .filter { (id, uri) -> id in plan.retainedIds && contacts.any { it.id == id && it.photoUri == uri } }
+                .filter { (id, uri) -> id in plan.retainedIds && currentPhotoUris[id] == uri }
                 .toMutableMap()
 
             plan.contactsToLoad.forEach { contact ->
