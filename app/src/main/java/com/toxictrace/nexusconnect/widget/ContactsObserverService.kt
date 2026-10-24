@@ -12,23 +12,26 @@ import android.provider.ContactsContract
 import com.toxictrace.nexusconnect.util.AppLogger
 
 /**
- * Lightweight service that registers ContentObservers on contacts
- * and call log — updates widget when either changes.
- * Debounce 2s to prevent infinite update loops.
+ * Watches contacts, contact data (including photo rows), and call log.
+ * A short debounce coalesces provider notifications before rebuilding widgets.
  */
 class ContactsObserverService : Service() {
 
     private var contactsObserver: ContentObserver? = null
+    private var contactDataObserver: ContentObserver? = null
     private var callLogObserver: ContentObserver? = null
     private val handler = Handler(Looper.getMainLooper())
     private var pendingUpdate: Runnable? = null
+    private var pendingSource: String = "unknown"
 
     private fun scheduleWidgetUpdate(source: String) {
+        pendingSource = source
         pendingUpdate?.let { handler.removeCallbacks(it) }
         val r = Runnable {
-            AppLogger.i("ContactsObserverService", "widget update triggered by: $source")
+            AppLogger.i("ContactsObserverService", "widget update triggered by: $pendingSource")
             PhotoProvider.invalidateCache()
             ContactWidgetProvider.updateAllWidgets(applicationContext)
+            pendingUpdate = null
         }
         pendingUpdate = r
         handler.postDelayed(r, 2000)
@@ -43,6 +46,19 @@ class ContactsObserverService : Service() {
             }
             contentResolver.registerContentObserver(
                 ContactsContract.Contacts.CONTENT_URI, true, contactsObserver!!
+            )
+        }
+
+        // Some Contacts providers notify the Data table for photo changes without
+        // delivering a useful notification on the aggregate Contacts URI.
+        if (contactDataObserver == null) {
+            contactDataObserver = object : ContentObserver(handler) {
+                override fun onChange(selfChange: Boolean) {
+                    scheduleWidgetUpdate("contact-data")
+                }
+            }
+            contentResolver.registerContentObserver(
+                ContactsContract.Data.CONTENT_URI, true, contactDataObserver!!
             )
         }
 
@@ -63,9 +79,12 @@ class ContactsObserverService : Service() {
     override fun onDestroy() {
         pendingUpdate?.let { handler.removeCallbacks(it) }
         contactsObserver?.let { contentResolver.unregisterContentObserver(it) }
+        contactDataObserver?.let { contentResolver.unregisterContentObserver(it) }
         callLogObserver?.let { contentResolver.unregisterContentObserver(it) }
         contactsObserver = null
+        contactDataObserver = null
         callLogObserver = null
+        pendingUpdate = null
         super.onDestroy()
     }
 
