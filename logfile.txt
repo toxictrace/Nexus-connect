@@ -1,705 +1,413 @@
-30.07.2026 21:34:34 [I] AppLogger: Logger initialized. File: /data/user/0/com.toxictrace.nexusconnect/files/logs/nexus_current.log
-30.07.2026 21:34:34 [I] MainActivity: App started. versionName=0.19.41
-30.07.2026 21:34:34 [I] MainActivity: onResume
-30.07.2026 21:34:34 [I] MainViewModel: init
-30.07.2026 21:34:34 [W] MainViewModel: loadContacts: READ_CONTACTS permission not granted
-30.07.2026 21:34:34 [I] MainViewModel: loadInstalledApps started
-30.07.2026 21:34:34 [I] MainViewModel: loadSavedSelection: 0 ids maxTiles=12
-30.07.2026 21:34:34 [I] MainActivity: onPause
-30.07.2026 21:34:35 [I] MainViewModel: loadInstalledApps done: 161 apps
-30.07.2026 21:34:37 [I] MainActivity: onResume
-30.07.2026 21:34:39 [I] MainActivity: onPause
-30.07.2026 21:34:42 [I] MainActivity: onResume
-30.07.2026 21:34:47 [I] MainActivity: onPause
-30.07.2026 21:34:52 [I] MainActivity: onResume
-30.07.2026 21:34:53 [I] NexusWidget: buildAndPush: cols=4 rows=3 maxTiles=12
-30.07.2026 21:34:53 [I] MainViewModel: settings updated
-30.07.2026 21:35:00 [I] MainViewModel: restoreBackup started: content://com.android.externalstorage.documents/tree/primary%3ADownload%2FN_Connect/document/primary%3ADownload%2FN_Connect%2F2026-07-30_21-34-03.nexbkup
-30.07.2026 21:35:00 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-30.07.2026 21:35:00 [I] MainViewModel: restoreBackup success: 5 contacts restored
-30.07.2026 21:35:10 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-30.07.2026 21:35:10 [I] MainViewModel: settings updated
-30.07.2026 21:35:20 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-30.07.2026 21:35:20 [I] MainViewModel: settings updated
-30.07.2026 21:35:32 [I] MainActivity: onPause
-30.07.2026 21:35:39 [I] AppLogger: Logger initialized. File: /data/user/0/com.toxictrace.nexusconnect/files/logs/nexus_current.log
-30.07.2026 21:35:39 [I] MainActivity: App started. versionName=0.19.41
-30.07.2026 21:35:39 [I] MainActivity: onResume
-30.07.2026 21:35:39 [I] MainViewModel: init
-30.07.2026 21:35:39 [I] MainViewModel: loadContacts: starting observer
-30.07.2026 21:35:39 [I] MainViewModel: loadInstalledApps started
-30.07.2026 21:35:39 [I] MainViewModel: loadSavedSelection: 5 ids maxTiles=12
-30.07.2026 21:35:39 [I] MainViewModel: contacts updated: 133 contacts
-30.07.2026 21:35:40 [I] MainViewModel: loadInstalledApps done: 161 apps
-30.07.2026 21:35:43 [I] MainActivity: onPause
-30.07.2026 21:35:52 [I] MainActivity: onResume
-30.07.2026 21:35:56 [I] MainViewModel: applyAndUpdateWidget
-30.07.2026 21:35:56 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-30.07.2026 21:36:05 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-30.07.2026 21:36:05 [I] MainViewModel: settings updated
-30.07.2026 21:36:07 [I] MainActivity: onPause
-30.07.2026 21:36:12 [I] MainActivity: onResume
-30.07.2026 21:36:20 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-30.07.2026 21:36:21 [I] MainViewModel: settings updated
-30.07.2026 21:36:21 [I] MainActivity: onPause
-30.07.2026 21:36:48 [I] NexusWidget: open call log
-30.07.2026 21:36:48 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
-30.07.2026 21:39:51 [I] MainActivity: onResume
-30.07.2026 21:39:59 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-30.07.2026 21:39:59 [I] MainViewModel: settings updated
-30.07.2026 21:40:01 [I] MainActivity: onPause
-30.07.2026 21:40:19 [I] MainActivity: onResume
-30.07.2026 21:40:22 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-30.07.2026 21:40:22 [I] MainViewModel: settings updated
-30.07.2026 21:40:23 [I] MainActivity: onPause
-06.09.2026 12:43:49 [I] AppLogger: Logger initialized. File: /data/user/0/com.toxictrace.nexusconnect/files/logs/nexus_current.log
-06.09.2026 12:43:49 [I] MainActivity: App started. versionName=0.19.41
-06.09.2026 12:43:49 [I] MainActivity: onResume
-06.09.2026 12:43:49 [I] MainViewModel: init
-06.09.2026 12:43:49 [I] MainViewModel: loadContacts: starting observer
-06.09.2026 12:43:49 [I] MainViewModel: loadInstalledApps started
-06.09.2026 12:43:49 [I] MainViewModel: loadSavedSelection: 5 ids maxTiles=12
-06.09.2026 12:43:49 [I] MainViewModel: contacts updated: 133 contacts
-06.09.2026 12:43:50 [I] MainViewModel: loadInstalledApps done: 171 apps
-06.09.2026 12:44:10 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-06.09.2026 12:44:10 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-06.09.2026 12:44:10 [I] MainViewModel: settings updated
-06.09.2026 12:44:11 [I] MainActivity: onPause
-26.09.2026 20:44:03 [I] AppLogger: Logger initialized. File: /data/user/0/com.toxictrace.nexusconnect/files/logs/nexus_current.log
-26.09.2026 20:44:03 [I] MainActivity: App started. versionName=0.19.41
-26.09.2026 20:44:03 [I] MainActivity: onResume
-26.09.2026 20:44:03 [I] MainViewModel: init
-26.09.2026 20:44:03 [I] MainViewModel: loadContacts: starting observer
-26.09.2026 20:44:03 [I] MainViewModel: loadInstalledApps started
-26.09.2026 20:44:04 [I] MainViewModel: contacts updated: 133 contacts
-26.09.2026 20:44:04 [I] MainViewModel: loadSavedSelection: 5 ids maxTiles=12
-26.09.2026 20:44:05 [I] MainViewModel: applyAndUpdateWidget
-26.09.2026 20:44:05 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:05 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:05 [I] MainViewModel: loadInstalledApps done: 173 apps
-26.09.2026 20:44:05 [I] ContactsObserverService: widget update triggered by: contacts
-26.09.2026 20:44:05 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:05 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:07 [I] MainActivity: onPause
-26.09.2026 20:44:08 [I] ContactsObserverService: widget update triggered by: contacts
-26.09.2026 20:44:08 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:08 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:12 [I] ContactsObserverService: widget update triggered by: contacts
-26.09.2026 20:44:12 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:12 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:18 [I] ContactsObserverService: widget update triggered by: contacts
-26.09.2026 20:44:18 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:18 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:31 [I] NexusWidget: open call log
-26.09.2026 20:44:31 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
-26.09.2026 20:44:44 [I] ContactsObserverService: widget update triggered by: contacts
-26.09.2026 20:44:44 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:44:44 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:48:07 [I] ContactsObserverService: widget update triggered by: contacts
-26.09.2026 20:48:07 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:48:08 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:57:58 [I] CallStateReceiver: phone state: RINGING
-26.09.2026 20:57:58 [I] CallStateReceiver: phone state: RINGING
-26.09.2026 20:58:01 [I] CallStateReceiver: phone state: OFFHOOK
-26.09.2026 20:58:01 [I] CallStateReceiver: phone state: OFFHOOK
-26.09.2026 20:58:15 [I] CallStateReceiver: phone state: IDLE
-26.09.2026 20:58:15 [I] CallStateReceiver: call ended, scheduling widget update in 2s
-26.09.2026 20:58:15 [I] CallStateReceiver: phone state: IDLE
-26.09.2026 20:58:15 [I] CallStateReceiver: call ended, scheduling widget update in 2s
-26.09.2026 20:58:17 [I] CallStateReceiver: updating widget after call
-26.09.2026 20:58:17 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:58:17 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:58:18 [I] CallStateReceiver: updating widget after call
-26.09.2026 20:58:18 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:58:18 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:58:27 [I] ContactsObserverService: widget update triggered by: calllog
-26.09.2026 20:58:27 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 20:58:27 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 21:28:01 [I] NexusWidget: open call log
-26.09.2026 21:28:01 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
-26.09.2026 21:31:34 [I] NexusWidget: open call log
-26.09.2026 21:31:34 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
-26.09.2026 21:31:34 [I] MainViewModel: contacts updated: 133 contacts
-26.09.2026 21:31:36 [I] ContactsObserverService: widget update triggered by: contacts
-26.09.2026 21:31:36 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 21:31:36 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 21:32:05 [I] MainViewModel: contacts updated: 133 contacts
-26.09.2026 21:32:07 [I] ContactsObserverService: widget update triggered by: contacts
-26.09.2026 21:32:07 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-26.09.2026 21:32:07 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 15:28:01 [I] AppLogger: Logger initialized. File: /data/user/0/com.toxictrace.nexusconnect/files/logs/nexus_current.log
-22.10.2026 15:28:01 [I] MainActivity: App started. versionName=0.19.41
-22.10.2026 15:28:01 [I] MainActivity: onResume
-22.10.2026 15:28:01 [I] MainViewModel: init
-22.10.2026 15:28:01 [I] MainViewModel: loadContacts: starting observer
-22.10.2026 15:28:01 [I] MainViewModel: loadInstalledApps started
-22.10.2026 15:28:01 [I] MainViewModel: loadSavedSelection: 5 ids maxTiles=12
-22.10.2026 15:28:01 [I] MainViewModel: contacts updated: 134 contacts
-22.10.2026 15:28:03 [I] MainActivity: onPause
-22.10.2026 15:28:03 [I] MainViewModel: loadInstalledApps done: 173 apps
-22.10.2026 16:44:45 [I] CallStateReceiver: phone state: RINGING
-22.10.2026 16:44:45 [I] CallStateReceiver: phone state: RINGING
-22.10.2026 16:44:51 [I] CallStateReceiver: phone state: OFFHOOK
-22.10.2026 16:44:51 [I] CallStateReceiver: phone state: OFFHOOK
-22.10.2026 16:47:00 [I] CallStateReceiver: phone state: IDLE
-22.10.2026 16:47:00 [I] CallStateReceiver: call ended, scheduling widget update in 2s
-22.10.2026 16:47:00 [I] CallStateReceiver: phone state: IDLE
-22.10.2026 16:47:00 [I] CallStateReceiver: call ended, scheduling widget update in 2s
-22.10.2026 16:47:02 [I] CallStateReceiver: updating widget after call
-22.10.2026 16:47:02 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 16:47:02 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 16:47:02 [I] CallStateReceiver: updating widget after call
-22.10.2026 16:47:02 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 16:47:02 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 16:47:12 [I] ContactsObserverService: widget update triggered by: calllog
-22.10.2026 16:47:12 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 16:47:12 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 18:16:31 [I] CallStateReceiver: phone state: RINGING
-22.10.2026 18:16:31 [I] CallStateReceiver: phone state: RINGING
-22.10.2026 18:16:34 [I] CallStateReceiver: phone state: OFFHOOK
-22.10.2026 18:16:34 [I] CallStateReceiver: phone state: OFFHOOK
-22.10.2026 18:23:01 [I] CallStateReceiver: phone state: IDLE
-22.10.2026 18:23:01 [I] CallStateReceiver: call ended, scheduling widget update in 2s
-22.10.2026 18:23:01 [I] CallStateReceiver: phone state: IDLE
-22.10.2026 18:23:01 [I] CallStateReceiver: call ended, scheduling widget update in 2s
-22.10.2026 18:23:03 [I] CallStateReceiver: updating widget after call
-22.10.2026 18:23:03 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 18:23:04 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 18:23:04 [I] CallStateReceiver: updating widget after call
-22.10.2026 18:23:04 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 18:23:04 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 18:23:14 [I] ContactsObserverService: widget update triggered by: calllog
-22.10.2026 18:23:14 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-22.10.2026 18:23:14 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:34:31 [I] AppLogger: Logger initialized. File: /data/user/0/com.toxictrace.nexusconnect/files/logs/nexus_current.log
-24.10.2026 16:34:31 [I] MainActivity: App started. versionName=0.19.43-test30
-24.10.2026 16:34:31 [I] MainActivity: onResume
-24.10.2026 16:34:31 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:34:31 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:34:31 [I] MainViewModel: init
-24.10.2026 16:34:31 [W] MainViewModel: loadContacts: READ_CONTACTS permission not granted
-24.10.2026 16:34:31 [I] MainViewModel: loadInstalledApps started
-24.10.2026 16:34:31 [I] MainViewModel: loadSavedSelection: 5 ids maxTiles=15
-24.10.2026 16:34:33 [I] MainActivity: onPause
-24.10.2026 16:34:33 [I] MainViewModel: loadInstalledApps done: 173 apps
-24.10.2026 16:34:35 [I] MainViewModel: loadContacts: starting observer
-24.10.2026 16:34:35 [I] MainActivity: onResume
-24.10.2026 16:34:35 [I] MainViewModel: contacts updated: 134 contacts
-24.10.2026 16:34:49 [I] MainActivity: onPause
-24.10.2026 16:34:59 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/33 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848871183
-24.10.2026 16:34:59 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848871183
-24.10.2026 16:34:59 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848871183 mode=r contactId=2655
-24.10.2026 16:34:59 [I] PhotoProvider: getPhotoUri: contactId=2655 PHOTO_URI=content://com.android.contacts/display_photo/3
-24.10.2026 16:34:59 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2655 photoUri=content://com.android.contacts/display_photo/3 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:34:59 [I] PhotoProvider: openFile: pipe returned contactId=2655 photoUri=content://com.android.contacts/display_photo/3
-24.10.2026 16:34:59 [I] PhotoProvider: pipe transfer complete contactId=2655 photoUri=content://com.android.contacts/display_photo/3 bytes=31691 sha256=6fb1a02f1e6e43848de3cd94aa503328e92ecb28c61b546f526bc0feb76430c3
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848871183 mode=r contactId=2575
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2575 PHOTO_URI=content://com.android.contacts/display_photo/5
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2575 photoUri=content://com.android.contacts/display_photo/5 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2575 photoUri=content://com.android.contacts/display_photo/5
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2575 photoUri=content://com.android.contacts/display_photo/5 bytes=43499 sha256=9ead9b3ba19d354c9e67d4626c58f68303add2a39189a8c61368441ca9972299
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848871183 mode=r contactId=2579
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2579 PHOTO_URI=content://com.android.contacts/display_photo/33
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2579 photoUri=content://com.android.contacts/display_photo/33 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2579 photoUri=content://com.android.contacts/display_photo/33
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2579 photoUri=content://com.android.contacts/display_photo/33 bytes=52639 sha256=3277bfaea8fbbe0b2e550e3fa0e651b173126b8748982a3c2b43d857f626e246
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848871183 mode=r contactId=2690
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2690 PHOTO_URI=content://com.android.contacts/display_photo/2
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2690 photoUri=content://com.android.contacts/display_photo/2 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2690 photoUri=content://com.android.contacts/display_photo/2
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2690 photoUri=content://com.android.contacts/display_photo/2 bytes=51837 sha256=8bd323c5a03ec12bc550046f52bdc6d886e9796da100934bf7090f0c50d8810b
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848871183 mode=r contactId=2545
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2545 PHOTO_URI=content://com.android.contacts/display_photo/16
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2545 photoUri=content://com.android.contacts/display_photo/16 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2545 photoUri=content://com.android.contacts/display_photo/16
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2545 photoUri=content://com.android.contacts/display_photo/16 bytes=54772 sha256=8ddae7f436217a94faff711e6a84ddd3be13fde44c6f522a5bd2de0ecd7dfbd3
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848871183 mode=r contactId=2588
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2588 PHOTO_URI=content://com.android.contacts/display_photo/8
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2588 photoUri=content://com.android.contacts/display_photo/8 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2588 photoUri=content://com.android.contacts/display_photo/8
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2588 photoUri=content://com.android.contacts/display_photo/8 bytes=97995 sha256=8f805bb19464c39842495662d5603633627d417abe4421f5c09237a77a63f844
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848871183 mode=r contactId=2667
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2667 PHOTO_URI=content://com.android.contacts/display_photo/6
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2667 photoUri=content://com.android.contacts/display_photo/6 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2667 photoUri=content://com.android.contacts/display_photo/6
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2667 photoUri=content://com.android.contacts/display_photo/6 bytes=75717 sha256=c72d26f5ee4c5867f91eebdd4aed3475c6e959633a2e3cda27b09f0279aa97ba
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848871183 mode=r contactId=2699
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2699 PHOTO_URI=content://com.android.contacts/contacts/2699/photo
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: openFileDescriptor contactId=2699 photoUri=content://com.android.contacts/contacts/2699/photo success=true
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848871183 mode=r contactId=2621
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2621 PHOTO_URI=content://com.android.contacts/display_photo/9
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2621 photoUri=content://com.android.contacts/display_photo/9 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2621 photoUri=content://com.android.contacts/display_photo/9
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2621 photoUri=content://com.android.contacts/display_photo/9 bytes=81485 sha256=c475e009a51e951abe8804438050dad32746c1c1d41326249076babc96cba5b2
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848871183 mode=r contactId=2591
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2591 PHOTO_URI=content://com.android.contacts/display_photo/10
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2591 photoUri=content://com.android.contacts/display_photo/10 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2591 photoUri=content://com.android.contacts/display_photo/10
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2591 photoUri=content://com.android.contacts/display_photo/10 bytes=50666 sha256=bd5c195a85bec0747d2ff8323638ad88cd47e1d4fa871e494307ddba7bfdc176
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792848871183 mode=r contactId=145
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=145 PHOTO_URI=content://com.android.contacts/display_photo/12
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=145 photoUri=content://com.android.contacts/display_photo/12 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=145 photoUri=content://com.android.contacts/display_photo/12
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=145 photoUri=content://com.android.contacts/display_photo/12 bytes=74712 sha256=9ccff00d62a8cc7a1f5d19c3013c85f84f7c925dc85553206a2110331ab60824
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848871183 mode=r contactId=2608
-24.10.2026 16:35:00 [I] PhotoProvider: getPhotoUri: contactId=2608 PHOTO_URI=content://com.android.contacts/display_photo/11
-24.10.2026 16:35:00 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2608 photoUri=content://com.android.contacts/display_photo/11 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:00 [I] PhotoProvider: openFile: pipe returned contactId=2608 photoUri=content://com.android.contacts/display_photo/11
-24.10.2026 16:35:00 [I] PhotoProvider: pipe transfer complete contactId=2608 photoUri=content://com.android.contacts/display_photo/11 bytes=72747 sha256=b542123f1429fdffac7cf7c329bdab53019954d3134ed01d7f5d2fff981eebfd
-24.10.2026 16:35:14 [I] NexusWidget: open call log
-24.10.2026 16:35:14 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
-24.10.2026 16:35:47 [I] NexusWidget: open call log
-24.10.2026 16:35:47 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
-24.10.2026 16:35:47 [I] MainViewModel: contacts updated: 134 contacts
-24.10.2026 16:35:50 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848871183
-24.10.2026 16:35:50 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848871183 mode=r contactId=2579
-24.10.2026 16:35:50 [I] PhotoProvider: getPhotoUri: contactId=2579 PHOTO_URI=content://com.android.contacts/display_photo/34
-24.10.2026 16:35:50 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2579 photoUri=content://com.android.contacts/display_photo/34 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:35:50 [I] PhotoProvider: openFile: pipe returned contactId=2579 photoUri=content://com.android.contacts/display_photo/34
-24.10.2026 16:35:50 [I] PhotoProvider: pipe transfer complete contactId=2579 photoUri=content://com.android.contacts/display_photo/34 bytes=44875 sha256=2eef1a58897a7f7a0c1cfcb721e94b0ff383225e98923fc7a9a7e80c21656ce1
-24.10.2026 16:36:07 [I] MainActivity: onResume
-24.10.2026 16:36:10 [I] MainActivity: onPause
-24.10.2026 16:36:13 [I] MainActivity: onResume
-24.10.2026 16:36:14 [I] MainViewModel: applyAndUpdateWidget
-24.10.2026 16:36:14 [I] PhotoProvider: invalidateCache: cacheVersion=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/34 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/34 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/34 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792848974627
-24.10.2026 16:36:14 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848974627
-24.10.2026 16:36:14 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848974627
-24.10.2026 16:36:15 [I] MainActivity: onPause
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792848974627 mode=r contactId=2655
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2655 PHOTO_URI=content://com.android.contacts/display_photo/3
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2655 photoUri=content://com.android.contacts/display_photo/3 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2655 photoUri=content://com.android.contacts/display_photo/3
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2655 photoUri=content://com.android.contacts/display_photo/3 bytes=31691 sha256=6fb1a02f1e6e43848de3cd94aa503328e92ecb28c61b546f526bc0feb76430c3
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792848974627 mode=r contactId=2575
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2575 PHOTO_URI=content://com.android.contacts/display_photo/5
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2575 photoUri=content://com.android.contacts/display_photo/5 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2575 photoUri=content://com.android.contacts/display_photo/5
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2575 photoUri=content://com.android.contacts/display_photo/5 bytes=43499 sha256=9ead9b3ba19d354c9e67d4626c58f68303add2a39189a8c61368441ca9972299
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792848974627 mode=r contactId=2579
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2579 PHOTO_URI=content://com.android.contacts/display_photo/34
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2579 photoUri=content://com.android.contacts/display_photo/34 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2579 photoUri=content://com.android.contacts/display_photo/34
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2579 photoUri=content://com.android.contacts/display_photo/34 bytes=44875 sha256=2eef1a58897a7f7a0c1cfcb721e94b0ff383225e98923fc7a9a7e80c21656ce1
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792848974627 mode=r contactId=2690
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2690 PHOTO_URI=content://com.android.contacts/display_photo/2
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2690 photoUri=content://com.android.contacts/display_photo/2 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2690 photoUri=content://com.android.contacts/display_photo/2
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2690 photoUri=content://com.android.contacts/display_photo/2 bytes=51837 sha256=8bd323c5a03ec12bc550046f52bdc6d886e9796da100934bf7090f0c50d8810b
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792848974627 mode=r contactId=2545
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2545 PHOTO_URI=content://com.android.contacts/display_photo/16
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2545 photoUri=content://com.android.contacts/display_photo/16 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2545 photoUri=content://com.android.contacts/display_photo/16
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2545 photoUri=content://com.android.contacts/display_photo/16 bytes=54772 sha256=8ddae7f436217a94faff711e6a84ddd3be13fde44c6f522a5bd2de0ecd7dfbd3
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792848974627 mode=r contactId=2588
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2588 PHOTO_URI=content://com.android.contacts/display_photo/8
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2588 photoUri=content://com.android.contacts/display_photo/8 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2588 photoUri=content://com.android.contacts/display_photo/8
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2588 photoUri=content://com.android.contacts/display_photo/8 bytes=97995 sha256=8f805bb19464c39842495662d5603633627d417abe4421f5c09237a77a63f844
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792848974627 mode=r contactId=2667
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2667 PHOTO_URI=content://com.android.contacts/display_photo/6
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2667 photoUri=content://com.android.contacts/display_photo/6 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2667 photoUri=content://com.android.contacts/display_photo/6
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2667 photoUri=content://com.android.contacts/display_photo/6 bytes=75717 sha256=c72d26f5ee4c5867f91eebdd4aed3475c6e959633a2e3cda27b09f0279aa97ba
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792848974627 mode=r contactId=2699
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2699 PHOTO_URI=content://com.android.contacts/contacts/2699/photo
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: openFileDescriptor contactId=2699 photoUri=content://com.android.contacts/contacts/2699/photo success=true
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792848974627 mode=r contactId=2621
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2621 PHOTO_URI=content://com.android.contacts/display_photo/9
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2621 photoUri=content://com.android.contacts/display_photo/9 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2621 photoUri=content://com.android.contacts/display_photo/9
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2621 photoUri=content://com.android.contacts/display_photo/9 bytes=81485 sha256=c475e009a51e951abe8804438050dad32746c1c1d41326249076babc96cba5b2
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792848974627 mode=r contactId=2591
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2591 PHOTO_URI=content://com.android.contacts/display_photo/10
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2591 photoUri=content://com.android.contacts/display_photo/10 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2591 photoUri=content://com.android.contacts/display_photo/10
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2591 photoUri=content://com.android.contacts/display_photo/10 bytes=50666 sha256=bd5c195a85bec0747d2ff8323638ad88cd47e1d4fa871e494307ddba7bfdc176
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792848974627 mode=r contactId=145
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=145 PHOTO_URI=content://com.android.contacts/display_photo/12
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=145 photoUri=content://com.android.contacts/display_photo/12 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=145 photoUri=content://com.android.contacts/display_photo/12
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=145 photoUri=content://com.android.contacts/display_photo/12 bytes=74712 sha256=9ccff00d62a8cc7a1f5d19c3013c85f84f7c925dc85553206a2110331ab60824
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792848974627 mode=r contactId=2608
-24.10.2026 16:36:15 [I] PhotoProvider: getPhotoUri: contactId=2608 PHOTO_URI=content://com.android.contacts/display_photo/11
-24.10.2026 16:36:15 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2608 photoUri=content://com.android.contacts/display_photo/11 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:36:15 [I] PhotoProvider: openFile: pipe returned contactId=2608 photoUri=content://com.android.contacts/display_photo/11
-24.10.2026 16:36:15 [I] PhotoProvider: pipe transfer complete contactId=2608 photoUri=content://com.android.contacts/display_photo/11 bytes=72747 sha256=b542123f1429fdffac7cf7c329bdab53019954d3134ed01d7f5d2fff981eebfd
-24.10.2026 16:41:01 [I] NexusWidget: open call log
-24.10.2026 16:41:01 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
-24.10.2026 16:41:25 [I] NexusWidget: open call log
-24.10.2026 16:41:25 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
-24.10.2026 16:41:27 [I] MainViewModel: contacts updated: 134 contacts
-24.10.2026 16:41:46 [I] MainActivity: onResume
-24.10.2026 16:41:51 [I] MainViewModel: applyAndUpdateWidget
-24.10.2026 16:41:51 [I] PhotoProvider: invalidateCache: cacheVersion=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/35 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/35 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/35 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792849311134
-24.10.2026 16:41:51 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849311134
-24.10.2026 16:41:51 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849311134
-24.10.2026 16:41:52 [I] MainActivity: onPause
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849311134 mode=r contactId=2655
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2655 PHOTO_URI=content://com.android.contacts/display_photo/3
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2655 photoUri=content://com.android.contacts/display_photo/3 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2655 photoUri=content://com.android.contacts/display_photo/3
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2655 photoUri=content://com.android.contacts/display_photo/3 bytes=31691 sha256=6fb1a02f1e6e43848de3cd94aa503328e92ecb28c61b546f526bc0feb76430c3
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849311134 mode=r contactId=2575
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2575 PHOTO_URI=content://com.android.contacts/display_photo/5
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2575 photoUri=content://com.android.contacts/display_photo/5 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2575 photoUri=content://com.android.contacts/display_photo/5
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2575 photoUri=content://com.android.contacts/display_photo/5 bytes=43499 sha256=9ead9b3ba19d354c9e67d4626c58f68303add2a39189a8c61368441ca9972299
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849311134 mode=r contactId=2579
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2579 PHOTO_URI=content://com.android.contacts/display_photo/35
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2579 photoUri=content://com.android.contacts/display_photo/35 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2579 photoUri=content://com.android.contacts/display_photo/35
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2579 photoUri=content://com.android.contacts/display_photo/35 bytes=52639 sha256=3277bfaea8fbbe0b2e550e3fa0e651b173126b8748982a3c2b43d857f626e246
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849311134 mode=r contactId=2690
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2690 PHOTO_URI=content://com.android.contacts/display_photo/2
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2690 photoUri=content://com.android.contacts/display_photo/2 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2690 photoUri=content://com.android.contacts/display_photo/2
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2690 photoUri=content://com.android.contacts/display_photo/2 bytes=51837 sha256=8bd323c5a03ec12bc550046f52bdc6d886e9796da100934bf7090f0c50d8810b
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849311134 mode=r contactId=2545
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2545 PHOTO_URI=content://com.android.contacts/display_photo/16
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2545 photoUri=content://com.android.contacts/display_photo/16 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2545 photoUri=content://com.android.contacts/display_photo/16
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2545 photoUri=content://com.android.contacts/display_photo/16 bytes=54772 sha256=8ddae7f436217a94faff711e6a84ddd3be13fde44c6f522a5bd2de0ecd7dfbd3
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849311134 mode=r contactId=2588
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2588 PHOTO_URI=content://com.android.contacts/display_photo/8
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2588 photoUri=content://com.android.contacts/display_photo/8 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2588 photoUri=content://com.android.contacts/display_photo/8
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2588 photoUri=content://com.android.contacts/display_photo/8 bytes=97995 sha256=8f805bb19464c39842495662d5603633627d417abe4421f5c09237a77a63f844
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849311134 mode=r contactId=2667
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2667 PHOTO_URI=content://com.android.contacts/display_photo/6
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2667 photoUri=content://com.android.contacts/display_photo/6 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2667 photoUri=content://com.android.contacts/display_photo/6
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2667 photoUri=content://com.android.contacts/display_photo/6 bytes=75717 sha256=c72d26f5ee4c5867f91eebdd4aed3475c6e959633a2e3cda27b09f0279aa97ba
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849311134 mode=r contactId=2699
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2699 PHOTO_URI=content://com.android.contacts/contacts/2699/photo
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: openFileDescriptor contactId=2699 photoUri=content://com.android.contacts/contacts/2699/photo success=true
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849311134 mode=r contactId=2621
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2621 PHOTO_URI=content://com.android.contacts/display_photo/9
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2621 photoUri=content://com.android.contacts/display_photo/9 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2621 photoUri=content://com.android.contacts/display_photo/9
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2621 photoUri=content://com.android.contacts/display_photo/9 bytes=81485 sha256=c475e009a51e951abe8804438050dad32746c1c1d41326249076babc96cba5b2
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849311134 mode=r contactId=2591
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2591 PHOTO_URI=content://com.android.contacts/display_photo/10
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2591 photoUri=content://com.android.contacts/display_photo/10 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2591 photoUri=content://com.android.contacts/display_photo/10
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2591 photoUri=content://com.android.contacts/display_photo/10 bytes=50666 sha256=bd5c195a85bec0747d2ff8323638ad88cd47e1d4fa871e494307ddba7bfdc176
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792849311134 mode=r contactId=145
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=145 PHOTO_URI=content://com.android.contacts/display_photo/12
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=145 photoUri=content://com.android.contacts/display_photo/12 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=145 photoUri=content://com.android.contacts/display_photo/12
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=145 photoUri=content://com.android.contacts/display_photo/12 bytes=74712 sha256=9ccff00d62a8cc7a1f5d19c3013c85f84f7c925dc85553206a2110331ab60824
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849311134 mode=r contactId=2608
-24.10.2026 16:41:52 [I] PhotoProvider: getPhotoUri: contactId=2608 PHOTO_URI=content://com.android.contacts/display_photo/11
-24.10.2026 16:41:52 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2608 photoUri=content://com.android.contacts/display_photo/11 error=FileNotFoundException:Not a whole file; trying pipe
-24.10.2026 16:41:52 [I] PhotoProvider: openFile: pipe returned contactId=2608 photoUri=content://com.android.contacts/display_photo/11
-24.10.2026 16:41:52 [I] PhotoProvider: pipe transfer complete contactId=2608 photoUri=content://com.android.contacts/display_photo/11 bytes=72747 sha256=b542123f1429fdffac7cf7c329bdab53019954d3134ed01d7f5d2fff981eebfd
-24.10.2026 16:41:54 [I] MainActivity: onResume
-24.10.2026 16:41:57 [I] MainViewModel: saveLog requested
-24.10.2026 16:41:57 [E] MainViewModel: saveLog failed
-24.10.2026 16:41:57 [E] MainViewModel: java.lang.IllegalStateException: Cannot create file in backup folder
-	at com.toxictrace.nexusconnect.util.AppLogger.exportToFolder(AppLogger.kt:64)
-	at com.toxictrace.nexusconnect.viewmodel.MainViewModel$saveLog$1.invokeSuspend(MainViewModel.kt:342)
-	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
-	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith(DispatchedContinuation.kt:367)
-	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith$default(DispatchedContinuation.kt:278)
-	at kotlinx.coroutines.internal.ScopeCoroutine.afterCompletion(Scopes.kt:27)
-	at kotlinx.coroutines.JobSupport.continueCompleting(JobSupport.kt:940)
-	at kotlinx.coroutines.JobSupport.access$continueCompleting(JobSupport.kt:25)
-	at kotlinx.coroutines.JobSupport$ChildCompletion.invoke(JobSupport.kt:1159)
-	at kotlinx.coroutines.JobSupport.notifyCompletion(JobSupport.kt:1497)
-	at kotlinx.coroutines.JobSupport.completeStateFinalization(JobSupport.kt:325)
-	at kotlinx.coroutines.JobSupport.finalizeFinishingState(JobSupport.kt:242)
-	at kotlinx.coroutines.JobSupport.tryMakeCompletingSlowPath(JobSupport.kt:910)
-	at kotlinx.coroutines.JobSupport.tryMakeCompleting(JobSupport.kt:867)
-	at kotlinx.coroutines.JobSupport.makeCompletingOnce$kotlinx_coroutines_core(JobSupport.kt:832)
-	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:100)
-	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
-	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:108)
-	at android.os.Handler.handleCallback(Handler.java:1070)
-	at android.os.Handler.dispatchMessage(Handler.java:125)
-	at android.os.Looper.dispatchMessage(Looper.java:333)
-	at android.os.Looper.loopOnce(Looper.java:263)
-	at android.os.Looper.loop(Looper.java:367)
-	at android.app.ActivityThread.main(ActivityThread.java:9322)
-	at java.lang.reflect.Method.invoke(Native Method)
-	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:569)
-	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
-
-24.10.2026 16:42:06 [I] MainActivity: onPause
-24.10.2026 16:42:11 [I] MainActivity: onResume
-24.10.2026 16:42:11 [I] PhotoProvider: invalidateCache: cacheVersion=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/35 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/35 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/35 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=7 contactId=-1 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=8 contactId=-2 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=9 contactId=4218 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2699 uri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=10 contactId=2699 hasPhoto=true modelPhotoUri=content://com.android.contacts/contacts/2699/photo assignedUri=content://com.toxictrace.nexusconnect.photos/2699?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=11 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=12 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=13 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792849331701
-24.10.2026 16:42:11 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849331701
-24.10.2026 16:42:11 [I] NexusWidget: setupTile: tile=14 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792849331701
-24.10.2026 16:42:11 [I] MainViewModel: settings updated
-24.10.2026 16:42:14 [I] MainViewModel: saveLog requested
+24.10.2026 17:58:33 [I] AppLogger: Logger initialized. File: /data/user/0/com.toxictrace.nexusconnect/files/logs/nexus_current.log
+24.10.2026 17:58:33 [I] MainActivity: App started. versionName=0.19.43-test30
+24.10.2026 17:58:33 [I] MainActivity: onResume
+24.10.2026 17:58:34 [I] MainViewModel: init
+24.10.2026 17:58:34 [W] MainViewModel: loadContacts: READ_CONTACTS permission not granted
+24.10.2026 17:58:34 [I] MainViewModel: loadInstalledApps started
+24.10.2026 17:58:34 [I] MainViewModel: loadSavedSelection: 0 ids maxTiles=12
+24.10.2026 17:58:35 [I] MainViewModel: loadInstalledApps done: 173 apps
+24.10.2026 17:58:37 [I] MainActivity: onPause
+24.10.2026 17:58:39 [I] MainViewModel: loadContacts: starting observer
+24.10.2026 17:58:39 [I] MainActivity: onResume
+24.10.2026 17:58:40 [I] MainViewModel: contacts updated: 134 contacts
+24.10.2026 17:58:48 [I] MainActivity: onPause
+24.10.2026 17:58:55 [I] MainActivity: onResume
+24.10.2026 17:58:55 [I] PhotoProvider: invalidateCache: cacheVersion=1792853935199
+24.10.2026 17:58:55 [I] MainViewModel: settings updated
+24.10.2026 17:58:58 [I] MainViewModel: restoreBackup started: content://com.android.externalstorage.documents/tree/primary%3ADownload%2FNexusBU/document/primary%3ADownload%2FNexusBU%2F2026-10-24_11-47-47.nexbkup
+24.10.2026 17:58:58 [I] PhotoProvider: invalidateCache: cacheVersion=1792853938718
+24.10.2026 17:58:58 [I] MainViewModel: restoreBackup success: 5 contacts restored
+24.10.2026 17:59:08 [I] MainActivity: onPause
+24.10.2026 17:59:17 [I] ContactsChangeJob: schedule: result=1 jobId=41027
+24.10.2026 17:59:17 [I] ContactsObserverService: onStartCommand: startId=1
+24.10.2026 17:59:17 [I] ContactsObserverService: registered calllog observer uri=content://call_log/calls descendants=true
+24.10.2026 17:59:17 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/35 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=7 contactId=2700 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=8 contactId=2676 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=9 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=10 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2633 uri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=11 contactId=2633 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/13 assignedUri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=12 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792853938718
+24.10.2026 17:59:18 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=13 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853938718
+24.10.2026 17:59:18 [I] NexusWidget: setupTile: tile=14 contactId=2677 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853938718 mode=r contactId=2655
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2655 PHOTO_URI=content://com.android.contacts/display_photo/3
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2655 photoUri=content://com.android.contacts/display_photo/3 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2655 photoUri=content://com.android.contacts/display_photo/3
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2655 photoUri=content://com.android.contacts/display_photo/3 bytes=31691 sha256=6fb1a02f1e6e43848de3cd94aa503328e92ecb28c61b546f526bc0feb76430c3
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853938718 mode=r contactId=2575
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2575 PHOTO_URI=content://com.android.contacts/display_photo/5
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2575 photoUri=content://com.android.contacts/display_photo/5 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2575 photoUri=content://com.android.contacts/display_photo/5
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2575 photoUri=content://com.android.contacts/display_photo/5 bytes=43499 sha256=9ead9b3ba19d354c9e67d4626c58f68303add2a39189a8c61368441ca9972299
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853938718 mode=r contactId=2579
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2579 PHOTO_URI=content://com.android.contacts/display_photo/35
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2579 photoUri=content://com.android.contacts/display_photo/35 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2579 photoUri=content://com.android.contacts/display_photo/35
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2579 photoUri=content://com.android.contacts/display_photo/35 bytes=52639 sha256=3277bfaea8fbbe0b2e550e3fa0e651b173126b8748982a3c2b43d857f626e246
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853938718 mode=r contactId=2690
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2690 PHOTO_URI=content://com.android.contacts/display_photo/2
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2690 photoUri=content://com.android.contacts/display_photo/2 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2690 photoUri=content://com.android.contacts/display_photo/2
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853938718 mode=r contactId=2545
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2690 photoUri=content://com.android.contacts/display_photo/2 bytes=51837 sha256=8bd323c5a03ec12bc550046f52bdc6d886e9796da100934bf7090f0c50d8810b
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2545 PHOTO_URI=content://com.android.contacts/display_photo/16
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2545 photoUri=content://com.android.contacts/display_photo/16 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2545 photoUri=content://com.android.contacts/display_photo/16
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2545 photoUri=content://com.android.contacts/display_photo/16 bytes=54772 sha256=8ddae7f436217a94faff711e6a84ddd3be13fde44c6f522a5bd2de0ecd7dfbd3
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853938718 mode=r contactId=2588
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2588 PHOTO_URI=content://com.android.contacts/display_photo/8
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2588 photoUri=content://com.android.contacts/display_photo/8 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2588 photoUri=content://com.android.contacts/display_photo/8
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2588 photoUri=content://com.android.contacts/display_photo/8 bytes=97995 sha256=8f805bb19464c39842495662d5603633627d417abe4421f5c09237a77a63f844
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853938718 mode=r contactId=2667
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2667 PHOTO_URI=content://com.android.contacts/display_photo/6
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2667 photoUri=content://com.android.contacts/display_photo/6 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2667 photoUri=content://com.android.contacts/display_photo/6
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2667 photoUri=content://com.android.contacts/display_photo/6 bytes=75717 sha256=c72d26f5ee4c5867f91eebdd4aed3475c6e959633a2e3cda27b09f0279aa97ba
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853938718 mode=r contactId=2621
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2621 PHOTO_URI=content://com.android.contacts/display_photo/9
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2621 photoUri=content://com.android.contacts/display_photo/9 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2621 photoUri=content://com.android.contacts/display_photo/9
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853938718 mode=r contactId=2591
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2621 photoUri=content://com.android.contacts/display_photo/9 bytes=81485 sha256=c475e009a51e951abe8804438050dad32746c1c1d41326249076babc96cba5b2
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2591 PHOTO_URI=content://com.android.contacts/display_photo/10
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2591 photoUri=content://com.android.contacts/display_photo/10 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2591 photoUri=content://com.android.contacts/display_photo/10
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2591 photoUri=content://com.android.contacts/display_photo/10 bytes=50666 sha256=bd5c195a85bec0747d2ff8323638ad88cd47e1d4fa871e494307ddba7bfdc176
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853938718 mode=r contactId=2633
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2633 PHOTO_URI=content://com.android.contacts/display_photo/13
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2633 photoUri=content://com.android.contacts/display_photo/13 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2633 photoUri=content://com.android.contacts/display_photo/13
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792853938718 mode=r contactId=145
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2633 photoUri=content://com.android.contacts/display_photo/13 bytes=54240 sha256=663031a329e29460af4fdad1c9acf54e3af737e3fef032ca6d63a9d2db66a1f5
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=145 PHOTO_URI=content://com.android.contacts/display_photo/12
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=145 photoUri=content://com.android.contacts/display_photo/12 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=145 photoUri=content://com.android.contacts/display_photo/12
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=145 photoUri=content://com.android.contacts/display_photo/12 bytes=74712 sha256=9ccff00d62a8cc7a1f5d19c3013c85f84f7c925dc85553206a2110331ab60824
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853938718 mode=r contactId=2608
+24.10.2026 17:59:18 [I] PhotoProvider: getPhotoUri: contactId=2608 PHOTO_URI=content://com.android.contacts/display_photo/11
+24.10.2026 17:59:18 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2608 photoUri=content://com.android.contacts/display_photo/11 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:18 [I] PhotoProvider: openFile: pipe returned contactId=2608 photoUri=content://com.android.contacts/display_photo/11
+24.10.2026 17:59:18 [I] PhotoProvider: pipe transfer complete contactId=2608 photoUri=content://com.android.contacts/display_photo/11 bytes=72747 sha256=b542123f1429fdffac7cf7c329bdab53019954d3134ed01d7f5d2fff981eebfd
+24.10.2026 17:59:37 [I] NexusWidget: open call log
+24.10.2026 17:59:37 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
+24.10.2026 17:59:48 [I] ContactsObserverService: calllog onChange(selfChange=false, uri=content://call_log/calls)
+24.10.2026 17:59:48 [I] ContactsObserverService: scheduleWidgetUpdate: source=calllog uri=content://call_log/calls replacingPending=false debounceMs=2000
+24.10.2026 17:59:50 [I] ContactsObserverService: calllog onChange(selfChange=false, uri=content://call_log/calls)
+24.10.2026 17:59:50 [I] ContactsObserverService: scheduleWidgetUpdate: source=calllog uri=content://call_log/calls replacingPending=true debounceMs=2000
+24.10.2026 17:59:52 [I] ContactsObserverService: widget update triggered by: calllog uri=content://call_log/calls
+24.10.2026 17:59:52 [I] PhotoProvider: invalidateCache: cacheVersion=1792853992109
+24.10.2026 17:59:52 [I] PhotoProvider: invalidateCache: cacheVersion=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/35 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=7 contactId=2700 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=8 contactId=2676 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=9 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=10 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2633 uri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=11 contactId=2633 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/13 assignedUri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=12 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792853992110
+24.10.2026 17:59:52 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=13 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853992110
+24.10.2026 17:59:52 [I] NexusWidget: setupTile: tile=14 contactId=2677 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853992110 mode=r contactId=2655
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2655 PHOTO_URI=content://com.android.contacts/display_photo/3
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2655 photoUri=content://com.android.contacts/display_photo/3 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2655 photoUri=content://com.android.contacts/display_photo/3
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2655 photoUri=content://com.android.contacts/display_photo/3 bytes=31691 sha256=6fb1a02f1e6e43848de3cd94aa503328e92ecb28c61b546f526bc0feb76430c3
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853992110 mode=r contactId=2575
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2575 PHOTO_URI=content://com.android.contacts/display_photo/5
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2575 photoUri=content://com.android.contacts/display_photo/5 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2575 photoUri=content://com.android.contacts/display_photo/5
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2575 photoUri=content://com.android.contacts/display_photo/5 bytes=43499 sha256=9ead9b3ba19d354c9e67d4626c58f68303add2a39189a8c61368441ca9972299
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853992110 mode=r contactId=2579
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2579 PHOTO_URI=content://com.android.contacts/display_photo/36
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2579 photoUri=content://com.android.contacts/display_photo/36 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2579 photoUri=content://com.android.contacts/display_photo/36
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2579 photoUri=content://com.android.contacts/display_photo/36 bytes=52360 sha256=5b556f7a9e9167497ef91527891f8c05d7d49c80a6bd7b091f9a2d3d20a4fb63
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853992110 mode=r contactId=2690
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2690 PHOTO_URI=content://com.android.contacts/display_photo/2
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2690 photoUri=content://com.android.contacts/display_photo/2 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2690 photoUri=content://com.android.contacts/display_photo/2
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2690 photoUri=content://com.android.contacts/display_photo/2 bytes=51837 sha256=8bd323c5a03ec12bc550046f52bdc6d886e9796da100934bf7090f0c50d8810b
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853992110 mode=r contactId=2545
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2545 PHOTO_URI=content://com.android.contacts/display_photo/16
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2545 photoUri=content://com.android.contacts/display_photo/16 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2545 photoUri=content://com.android.contacts/display_photo/16
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2545 photoUri=content://com.android.contacts/display_photo/16 bytes=54772 sha256=8ddae7f436217a94faff711e6a84ddd3be13fde44c6f522a5bd2de0ecd7dfbd3
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853992110 mode=r contactId=2588
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2588 PHOTO_URI=content://com.android.contacts/display_photo/8
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2588 photoUri=content://com.android.contacts/display_photo/8 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2588 photoUri=content://com.android.contacts/display_photo/8
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2588 photoUri=content://com.android.contacts/display_photo/8 bytes=97995 sha256=8f805bb19464c39842495662d5603633627d417abe4421f5c09237a77a63f844
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853992110 mode=r contactId=2667
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2667 PHOTO_URI=content://com.android.contacts/display_photo/6
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2667 photoUri=content://com.android.contacts/display_photo/6 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2667 photoUri=content://com.android.contacts/display_photo/6
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2667 photoUri=content://com.android.contacts/display_photo/6 bytes=75717 sha256=c72d26f5ee4c5867f91eebdd4aed3475c6e959633a2e3cda27b09f0279aa97ba
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853992110 mode=r contactId=2621
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2621 PHOTO_URI=content://com.android.contacts/display_photo/9
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2621 photoUri=content://com.android.contacts/display_photo/9 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2621 photoUri=content://com.android.contacts/display_photo/9
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2621 photoUri=content://com.android.contacts/display_photo/9 bytes=81485 sha256=c475e009a51e951abe8804438050dad32746c1c1d41326249076babc96cba5b2
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853992110 mode=r contactId=2591
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2591 PHOTO_URI=content://com.android.contacts/display_photo/10
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2591 photoUri=content://com.android.contacts/display_photo/10 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2591 photoUri=content://com.android.contacts/display_photo/10
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2591 photoUri=content://com.android.contacts/display_photo/10 bytes=50666 sha256=bd5c195a85bec0747d2ff8323638ad88cd47e1d4fa871e494307ddba7bfdc176
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853992110 mode=r contactId=2633
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2633 PHOTO_URI=content://com.android.contacts/display_photo/13
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2633 photoUri=content://com.android.contacts/display_photo/13 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2633 photoUri=content://com.android.contacts/display_photo/13
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2633 photoUri=content://com.android.contacts/display_photo/13 bytes=54240 sha256=663031a329e29460af4fdad1c9acf54e3af737e3fef032ca6d63a9d2db66a1f5
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792853992110 mode=r contactId=145
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=145 PHOTO_URI=content://com.android.contacts/display_photo/12
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=145 photoUri=content://com.android.contacts/display_photo/12 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=145 photoUri=content://com.android.contacts/display_photo/12
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=145 photoUri=content://com.android.contacts/display_photo/12 bytes=74712 sha256=9ccff00d62a8cc7a1f5d19c3013c85f84f7c925dc85553206a2110331ab60824
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853992110 mode=r contactId=2608
+24.10.2026 17:59:55 [I] PhotoProvider: getPhotoUri: contactId=2608 PHOTO_URI=content://com.android.contacts/display_photo/11
+24.10.2026 17:59:55 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2608 photoUri=content://com.android.contacts/display_photo/11 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:55 [I] PhotoProvider: openFile: pipe returned contactId=2608 photoUri=content://com.android.contacts/display_photo/11
+24.10.2026 17:59:55 [I] PhotoProvider: pipe transfer complete contactId=2608 photoUri=content://com.android.contacts/display_photo/11 bytes=72747 sha256=b542123f1429fdffac7cf7c329bdab53019954d3134ed01d7f5d2fff981eebfd
+24.10.2026 17:59:56 [I] ContactsChangeJob: onStartJob: changedUris=content://com.android.contacts
+24.10.2026 17:59:56 [I] PhotoProvider: invalidateCache: cacheVersion=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: invalidateCache: cacheVersion=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/36 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/16 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=7 contactId=2700 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=8 contactId=2676 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=9 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=10 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2633 uri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=11 contactId=2633 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/13 assignedUri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=12 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792853996170
+24.10.2026 17:59:56 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=13 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853996170
+24.10.2026 17:59:56 [I] NexusWidget: setupTile: tile=14 contactId=2677 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 17:59:56 [I] ContactsChangeJob: onStartJob: widget refresh completed
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792853996170 mode=r contactId=2655
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2655 PHOTO_URI=content://com.android.contacts/display_photo/3
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2655 photoUri=content://com.android.contacts/display_photo/3 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2655 photoUri=content://com.android.contacts/display_photo/3
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2655 photoUri=content://com.android.contacts/display_photo/3 bytes=31691 sha256=6fb1a02f1e6e43848de3cd94aa503328e92ecb28c61b546f526bc0feb76430c3
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792853996170 mode=r contactId=2575
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2575 PHOTO_URI=content://com.android.contacts/display_photo/5
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2575 photoUri=content://com.android.contacts/display_photo/5 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2575 photoUri=content://com.android.contacts/display_photo/5
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2575 photoUri=content://com.android.contacts/display_photo/5 bytes=43499 sha256=9ead9b3ba19d354c9e67d4626c58f68303add2a39189a8c61368441ca9972299
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792853996170 mode=r contactId=2579
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2579 PHOTO_URI=content://com.android.contacts/display_photo/36
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2579 photoUri=content://com.android.contacts/display_photo/36 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2579 photoUri=content://com.android.contacts/display_photo/36
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2579 photoUri=content://com.android.contacts/display_photo/36 bytes=52360 sha256=5b556f7a9e9167497ef91527891f8c05d7d49c80a6bd7b091f9a2d3d20a4fb63
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792853996170 mode=r contactId=2690
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2690 PHOTO_URI=content://com.android.contacts/display_photo/2
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2690 photoUri=content://com.android.contacts/display_photo/2 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2690 photoUri=content://com.android.contacts/display_photo/2
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2690 photoUri=content://com.android.contacts/display_photo/2 bytes=51837 sha256=8bd323c5a03ec12bc550046f52bdc6d886e9796da100934bf7090f0c50d8810b
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792853996170 mode=r contactId=2545
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2545 PHOTO_URI=content://com.android.contacts/display_photo/16
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2545 photoUri=content://com.android.contacts/display_photo/16 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2545 photoUri=content://com.android.contacts/display_photo/16
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2545 photoUri=content://com.android.contacts/display_photo/16 bytes=54772 sha256=8ddae7f436217a94faff711e6a84ddd3be13fde44c6f522a5bd2de0ecd7dfbd3
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792853996170 mode=r contactId=2588
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2588 PHOTO_URI=content://com.android.contacts/display_photo/8
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2588 photoUri=content://com.android.contacts/display_photo/8 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2588 photoUri=content://com.android.contacts/display_photo/8
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2588 photoUri=content://com.android.contacts/display_photo/8 bytes=97995 sha256=8f805bb19464c39842495662d5603633627d417abe4421f5c09237a77a63f844
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792853996170 mode=r contactId=2667
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2667 PHOTO_URI=content://com.android.contacts/display_photo/6
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2667 photoUri=content://com.android.contacts/display_photo/6 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2667 photoUri=content://com.android.contacts/display_photo/6
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2667 photoUri=content://com.android.contacts/display_photo/6 bytes=75717 sha256=c72d26f5ee4c5867f91eebdd4aed3475c6e959633a2e3cda27b09f0279aa97ba
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792853996170 mode=r contactId=2621
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2621 PHOTO_URI=content://com.android.contacts/display_photo/9
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2621 photoUri=content://com.android.contacts/display_photo/9 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2621 photoUri=content://com.android.contacts/display_photo/9
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2621 photoUri=content://com.android.contacts/display_photo/9 bytes=81485 sha256=c475e009a51e951abe8804438050dad32746c1c1d41326249076babc96cba5b2
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792853996170 mode=r contactId=2591
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2591 PHOTO_URI=content://com.android.contacts/display_photo/10
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2591 photoUri=content://com.android.contacts/display_photo/10 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2591 photoUri=content://com.android.contacts/display_photo/10
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2591 photoUri=content://com.android.contacts/display_photo/10 bytes=50666 sha256=bd5c195a85bec0747d2ff8323638ad88cd47e1d4fa871e494307ddba7bfdc176
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2633?v=1792853996170 mode=r contactId=2633
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2633 PHOTO_URI=content://com.android.contacts/display_photo/13
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2633 photoUri=content://com.android.contacts/display_photo/13 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2633 photoUri=content://com.android.contacts/display_photo/13
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2633 photoUri=content://com.android.contacts/display_photo/13 bytes=54240 sha256=663031a329e29460af4fdad1c9acf54e3af737e3fef032ca6d63a9d2db66a1f5
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792853996170 mode=r contactId=145
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=145 PHOTO_URI=content://com.android.contacts/display_photo/12
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=145 photoUri=content://com.android.contacts/display_photo/12 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=145 photoUri=content://com.android.contacts/display_photo/12
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=145 photoUri=content://com.android.contacts/display_photo/12 bytes=74712 sha256=9ccff00d62a8cc7a1f5d19c3013c85f84f7c925dc85553206a2110331ab60824
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792853996170 mode=r contactId=2608
+24.10.2026 17:59:56 [I] PhotoProvider: getPhotoUri: contactId=2608 PHOTO_URI=content://com.android.contacts/display_photo/11
+24.10.2026 17:59:56 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2608 photoUri=content://com.android.contacts/display_photo/11 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 17:59:56 [I] PhotoProvider: openFile: pipe returned contactId=2608 photoUri=content://com.android.contacts/display_photo/11
+24.10.2026 17:59:56 [I] PhotoProvider: pipe transfer complete contactId=2608 photoUri=content://com.android.contacts/display_photo/11 bytes=72747 sha256=b542123f1429fdffac7cf7c329bdab53019954d3134ed01d7f5d2fff981eebfd
+24.10.2026 18:00:04 [I] MainViewModel: contacts updated: 134 contacts
+24.10.2026 18:00:06 [I] MainActivity: onResume
+24.10.2026 18:00:13 [I] MainViewModel: saveLog requested
+24.10.2026 18:00:13 [I] MainViewModel: saveLog success: 24-10-2026-18-00.log
+24.10.2026 18:00:17 [I] MainActivity: onPause
+24.10.2026 18:00:30 [I] NexusWidget: open call log
+24.10.2026 18:00:30 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
+24.10.2026 18:01:21 [I] ContactsObserverService: onDestroy: call log observer unregistered
+24.10.2026 18:01:21 [I] NexusWidget: open call log
+24.10.2026 18:01:21 [I] NexusWidget: open call log: launching preferred package com.hb.dialer.free directly
+24.10.2026 18:01:21 [I] MainViewModel: contacts updated: 134 contacts
+24.10.2026 18:01:34 [I] MainActivity: onResume
+24.10.2026 18:01:38 [I] MainViewModel: applyAndUpdateWidget
+24.10.2026 18:01:38 [I] PhotoProvider: invalidateCache: cacheVersion=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: buildAndPush: cols=3 rows=5 maxTiles=15
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2655 uri=content://com.toxictrace.nexusconnect.photos/2655?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=0 contactId=2655 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/3 assignedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2575 uri=content://com.toxictrace.nexusconnect.photos/2575?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=1 contactId=2575 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/5 assignedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2579 uri=content://com.toxictrace.nexusconnect.photos/2579?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=2 contactId=2579 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/36 assignedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2690 uri=content://com.toxictrace.nexusconnect.photos/2690?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=3 contactId=2690 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/2 assignedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2545 uri=content://com.toxictrace.nexusconnect.photos/2545?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=4 contactId=2545 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/37 assignedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2588 uri=content://com.toxictrace.nexusconnect.photos/2588?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=5 contactId=2588 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/8 assignedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2667 uri=content://com.toxictrace.nexusconnect.photos/2667?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=6 contactId=2667 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/6 assignedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=7 contactId=2700 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=8 contactId=2676 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2621 uri=content://com.toxictrace.nexusconnect.photos/2621?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=9 contactId=2621 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/9 assignedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2591 uri=content://com.toxictrace.nexusconnect.photos/2591?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=10 contactId=2591 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/10 assignedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2633 uri=content://com.toxictrace.nexusconnect.photos/2633?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=11 contactId=2633 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/13 assignedUri=content://com.toxictrace.nexusconnect.photos/2633?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=145 uri=content://com.toxictrace.nexusconnect.photos/145?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=12 contactId=145 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/12 assignedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792854098782
+24.10.2026 18:01:38 [I] PhotoProvider: uriForContact: contactId=2608 uri=content://com.toxictrace.nexusconnect.photos/2608?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=13 contactId=2608 hasPhoto=true modelPhotoUri=content://com.android.contacts/display_photo/11 assignedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792854098782
+24.10.2026 18:01:38 [I] NexusWidget: setupTile: tile=14 contactId=2677 hasPhoto=false assignedAvatarUri=content://com.toxictrace.nexusconnect.avatar/default
+24.10.2026 18:01:39 [I] MainActivity: onPause
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2655?v=1792854098782 mode=r contactId=2655
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2655 PHOTO_URI=content://com.android.contacts/display_photo/3
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2655 photoUri=content://com.android.contacts/display_photo/3 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2655 photoUri=content://com.android.contacts/display_photo/3
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2655 photoUri=content://com.android.contacts/display_photo/3 bytes=31691 sha256=6fb1a02f1e6e43848de3cd94aa503328e92ecb28c61b546f526bc0feb76430c3
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2575?v=1792854098782 mode=r contactId=2575
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2575 PHOTO_URI=content://com.android.contacts/display_photo/5
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2575 photoUri=content://com.android.contacts/display_photo/5 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2575 photoUri=content://com.android.contacts/display_photo/5
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2575 photoUri=content://com.android.contacts/display_photo/5 bytes=43499 sha256=9ead9b3ba19d354c9e67d4626c58f68303add2a39189a8c61368441ca9972299
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2579?v=1792854098782 mode=r contactId=2579
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2579 PHOTO_URI=content://com.android.contacts/display_photo/36
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2579 photoUri=content://com.android.contacts/display_photo/36 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2579 photoUri=content://com.android.contacts/display_photo/36
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2579 photoUri=content://com.android.contacts/display_photo/36 bytes=52360 sha256=5b556f7a9e9167497ef91527891f8c05d7d49c80a6bd7b091f9a2d3d20a4fb63
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2690?v=1792854098782 mode=r contactId=2690
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2690 PHOTO_URI=content://com.android.contacts/display_photo/2
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2690 photoUri=content://com.android.contacts/display_photo/2 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2690 photoUri=content://com.android.contacts/display_photo/2
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2690 photoUri=content://com.android.contacts/display_photo/2 bytes=51837 sha256=8bd323c5a03ec12bc550046f52bdc6d886e9796da100934bf7090f0c50d8810b
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2545?v=1792854098782 mode=r contactId=2545
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2545 PHOTO_URI=content://com.android.contacts/display_photo/37
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2545 photoUri=content://com.android.contacts/display_photo/37 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2545 photoUri=content://com.android.contacts/display_photo/37
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2545 photoUri=content://com.android.contacts/display_photo/37 bytes=62422 sha256=c2c4f58f5042dbd29a82dfdd16c7332192d98229a25404a4664bcd6e969028ae
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2588?v=1792854098782 mode=r contactId=2588
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2588 PHOTO_URI=content://com.android.contacts/display_photo/8
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2588 photoUri=content://com.android.contacts/display_photo/8 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2588 photoUri=content://com.android.contacts/display_photo/8
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2588 photoUri=content://com.android.contacts/display_photo/8 bytes=97995 sha256=8f805bb19464c39842495662d5603633627d417abe4421f5c09237a77a63f844
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2667?v=1792854098782 mode=r contactId=2667
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2667 PHOTO_URI=content://com.android.contacts/display_photo/6
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2667 photoUri=content://com.android.contacts/display_photo/6 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2667 photoUri=content://com.android.contacts/display_photo/6
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2667 photoUri=content://com.android.contacts/display_photo/6 bytes=75717 sha256=c72d26f5ee4c5867f91eebdd4aed3475c6e959633a2e3cda27b09f0279aa97ba
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2621?v=1792854098782 mode=r contactId=2621
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2621 PHOTO_URI=content://com.android.contacts/display_photo/9
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2621 photoUri=content://com.android.contacts/display_photo/9 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2621 photoUri=content://com.android.contacts/display_photo/9
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2621 photoUri=content://com.android.contacts/display_photo/9 bytes=81485 sha256=c475e009a51e951abe8804438050dad32746c1c1d41326249076babc96cba5b2
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2591?v=1792854098782 mode=r contactId=2591
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2591 PHOTO_URI=content://com.android.contacts/display_photo/10
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2591 photoUri=content://com.android.contacts/display_photo/10 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2591 photoUri=content://com.android.contacts/display_photo/10
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2591 photoUri=content://com.android.contacts/display_photo/10 bytes=50666 sha256=bd5c195a85bec0747d2ff8323638ad88cd47e1d4fa871e494307ddba7bfdc176
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2633?v=1792854098782 mode=r contactId=2633
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2633 PHOTO_URI=content://com.android.contacts/display_photo/13
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2633 photoUri=content://com.android.contacts/display_photo/13 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2633 photoUri=content://com.android.contacts/display_photo/13
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2633 photoUri=content://com.android.contacts/display_photo/13 bytes=54240 sha256=663031a329e29460af4fdad1c9acf54e3af737e3fef032ca6d63a9d2db66a1f5
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/145?v=1792854098782 mode=r contactId=145
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=145 PHOTO_URI=content://com.android.contacts/display_photo/12
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=145 photoUri=content://com.android.contacts/display_photo/12 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=145 photoUri=content://com.android.contacts/display_photo/12
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=145 photoUri=content://com.android.contacts/display_photo/12 bytes=74712 sha256=9ccff00d62a8cc7a1f5d19c3013c85f84f7c925dc85553206a2110331ab60824
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: requestedUri=content://com.toxictrace.nexusconnect.photos/2608?v=1792854098782 mode=r contactId=2608
+24.10.2026 18:01:39 [I] PhotoProvider: getPhotoUri: contactId=2608 PHOTO_URI=content://com.android.contacts/display_photo/11
+24.10.2026 18:01:39 [W] PhotoProvider: openFile: openFileDescriptor failed contactId=2608 photoUri=content://com.android.contacts/display_photo/11 error=FileNotFoundException:Not a whole file; trying pipe
+24.10.2026 18:01:39 [I] PhotoProvider: openFile: pipe returned contactId=2608 photoUri=content://com.android.contacts/display_photo/11
+24.10.2026 18:01:39 [I] PhotoProvider: pipe transfer complete contactId=2608 photoUri=content://com.android.contacts/display_photo/11 bytes=72747 sha256=b542123f1429fdffac7cf7c329bdab53019954d3134ed01d7f5d2fff981eebfd
+24.10.2026 18:01:57 [I] AppLogger: Logger initialized. File: /data/user/0/com.toxictrace.nexusconnect/files/logs/nexus_current.log
+24.10.2026 18:01:57 [I] MainActivity: App started. versionName=0.19.43-test30
+24.10.2026 18:01:57 [I] MainActivity: onResume
+24.10.2026 18:01:57 [I] MainViewModel: init
+24.10.2026 18:01:57 [I] MainViewModel: loadContacts: starting observer
+24.10.2026 18:01:57 [I] MainViewModel: loadInstalledApps started
+24.10.2026 18:01:57 [I] MainViewModel: contacts updated: 134 contacts
+24.10.2026 18:01:57 [I] MainViewModel: loadSavedSelection: 5 ids maxTiles=15
+24.10.2026 18:01:58 [I] MainViewModel: loadInstalledApps done: 173 apps
+24.10.2026 18:02:06 [I] MainViewModel: saveLog requested
