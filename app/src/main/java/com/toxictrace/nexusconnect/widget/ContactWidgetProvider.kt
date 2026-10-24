@@ -184,9 +184,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
             // Photo
             if (contact.photoUri != null) {
-                views.setImageViewUri(photoId, PhotoProvider.uriForContact(contact.id))
+                val photoUri = PhotoProvider.uriForContact(contact.id)
+                AppLogger.i(TAG, "setupTile: tile=$idx contactId=${contact.id} hasPhoto=true modelPhotoUri=${contact.photoUri} assignedUri=$photoUri")
+                views.setImageViewUri(photoId, photoUri)
             } else {
                 val avatarUri = getAvatarUri(context)
+                AppLogger.i(TAG, "setupTile: tile=$idx contactId=${contact.id} hasPhoto=false assignedAvatarUri=$avatarUri")
                 views.setImageViewUri(photoId, avatarUri)
             }
 
@@ -400,17 +403,21 @@ class ContactWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
+        AppLogger.i(TAG, "onUpdate: ensuring contact-change job for ${ids.size} widgets")
+        ContactsChangeJobService.ensureScheduled(context, "ContactWidgetProvider.onUpdate")
         Log.d(TAG, "onUpdate ${ids.toList()}")
         ids.forEach { buildAndPush(context, mgr, it) }
     }
 
     override fun onEnabled(context: Context) {
         Log.d(TAG, "onEnabled")
+        ContactsChangeJobService.schedule(context)
         ContactsObserverService.start(context)
     }
 
     override fun onDisabled(context: Context) {
         Log.d(TAG, "onDisabled")
+        ContactsChangeJobService.cancel(context)
         ContactsObserverService.stop(context)
     }
 

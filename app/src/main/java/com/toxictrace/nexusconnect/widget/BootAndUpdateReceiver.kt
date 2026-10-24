@@ -11,6 +11,7 @@ class BootAndUpdateReceiver : BroadcastReceiver() {
             Intent.ACTION_MY_PACKAGE_REPLACED,
             Intent.ACTION_BOOT_COMPLETED -> {
                 Log.d("NexusWidget", "BootAndUpdateReceiver: ${intent.action}")
+                ContactsChangeJobService.schedule(context)
                 ContactsObserverService.start(context)
                 ContactWidgetProvider.updateAllWidgets(context)
             }

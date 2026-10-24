@@ -7,6 +7,8 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.ContactsContract
 import android.util.Log
+import java.security.MessageDigest
+import com.toxictrace.nexusconnect.util.AppLogger
 
 /**
  * Serves contact photos to the widget via setImageViewUri.
@@ -19,44 +21,92 @@ class PhotoProvider : ContentProvider() {
         private const val TAG = "PhotoProvider"
         const val AUTHORITY = "com.toxictrace.nexusconnect.photos"
 
-        // Incremented on every widget update — forces launcher to reload photos
         @Volatile private var cacheVersion: Long = System.currentTimeMillis()
 
         fun invalidateCache() {
             cacheVersion = System.currentTimeMillis()
+            AppLogger.i(TAG, "invalidateCache: cacheVersion=$cacheVersion")
         }
 
-        fun uriForContact(contactId: Long): Uri =
-            Uri.parse("content://$AUTHORITY/$contactId?v=$cacheVersion")
+        fun uriForContact(contactId: Long): Uri {
+            val uri = Uri.parse("content://$AUTHORITY/$contactId?v=$cacheVersion")
+            AppLogger.i(TAG, "uriForContact: contactId=$contactId uri=$uri")
+            return uri
+        }
     }
 
     override fun onCreate(): Boolean = true
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
-        // lastPathSegment may be "123?v=..." — parse only the numeric part
-        val contactId = uri.lastPathSegment?.substringBefore("?")?.toLongOrNull() ?: return null
-        val ctx = context ?: return null
-        val photoUri = getPhotoUri(contactId) ?: return null
+        val contactId = uri.lastPathSegment?.substringBefore("?")?.toLongOrNull()
+        AppLogger.i(TAG, "openFile: requestedUri=$uri mode=$mode contactId=$contactId")
+        if (contactId == null) {
+            AppLogger.w(TAG, "openFile: cannot parse contactId from uri=$uri")
+            return null
+        }
+        val ctx = context
+        if (ctx == null) {
+            AppLogger.e(TAG, "openFile: provider context is null for contactId=$contactId")
+            return null
+        }
+        val photoUri = getPhotoUri(contactId)
+        if (photoUri == null) {
+            AppLogger.w(TAG, "openFile: no photoUri resolved for contactId=$contactId")
+            return null
+        }
         return try {
-            ctx.contentResolver.openFileDescriptor(photoUri, "r")
+            val descriptor = ctx.contentResolver.openFileDescriptor(photoUri, "r")
+            AppLogger.i(TAG, "openFile: openFileDescriptor contactId=$contactId photoUri=$photoUri success=${descriptor != null}")
+            descriptor
         } catch (e: Exception) {
+            AppLogger.w(TAG, "openFile: openFileDescriptor failed contactId=$contactId photoUri=$photoUri error=${e.javaClass.simpleName}:${e.message}; trying pipe")
             try {
                 val pipe = ParcelFileDescriptor.createPipe()
-                val inputStream = ctx.contentResolver.openInputStream(photoUri) ?: return null
+                val inputStream = ctx.contentResolver.openInputStream(photoUri)
+                if (inputStream == null) {
+                    AppLogger.w(TAG, "openFile: openInputStream returned null contactId=$contactId photoUri=$photoUri")
+                    pipe[0].close()
+                    pipe[1].close()
+                    return null
+                }
                 Thread {
+                    var bytesTransferred = 0L
+                    val digest = MessageDigest.getInstance("SHA-256")
                     try {
                         ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]).use { out ->
-                            inputStream.use { it.copyTo(out) }
+                            inputStream.use { input ->
+                                val buffer = ByteArray(8192)
+                                while (true) {
+                                    val count = input.read(buffer)
+                                    if (count < 0) break
+                                    out.write(buffer, 0, count)
+                                    digest.update(buffer, 0, count)
+                                    bytesTransferred += count
+                                }
+                            }
                         }
-                    } catch (_: Exception) {}
+                        val sha256 = digest.digest().joinToString("") { "%02x".format(it) }
+                        AppLogger.i(TAG, "pipe transfer complete contactId=${contactId} photoUri=${photoUri} bytes=${bytesTransferred} sha256=${sha256}")
+                    } catch (copyError: Exception) {
+                        val partialSha256 = digest.digest().joinToString("") { "%02x".format(it) }
+                        AppLogger.e(TAG, "pipe transfer failed contactId=${contactId} photoUri=${photoUri} bytesTransferred=${bytesTransferred} partialSha256=${partialSha256} error=${copyError.javaClass.simpleName}:${copyError.message}", copyError)
+                    }
                 }.start()
+                AppLogger.i(TAG, "openFile: pipe returned contactId=$contactId photoUri=$photoUri")
                 pipe[0]
-            } catch (_: Exception) { null }
+            } catch (pipeError: Exception) {
+                AppLogger.e(TAG, "openFile: pipe fallback failed contactId=$contactId", pipeError)
+                null
+            }
         }
     }
 
     private fun getPhotoUri(contactId: Long): Uri? {
-        val ctx = context ?: return null
+        val ctx = context
+        if (ctx == null) {
+            AppLogger.w(TAG, "getPhotoUri: provider context is null contactId=$contactId")
+            return null
+        }
         return try {
             val cursor = ctx.contentResolver.query(
                 ContactsContract.Contacts.CONTENT_URI,
@@ -67,14 +117,27 @@ class PhotoProvider : ContentProvider() {
             cursor?.use {
                 if (it.moveToFirst()) {
                     val s = it.getString(0)
-                    if (!s.isNullOrBlank()) return Uri.parse(s)
+                    if (!s.isNullOrBlank()) {
+                        val resolved = Uri.parse(s)
+                        AppLogger.i(TAG, "getPhotoUri: contactId=$contactId PHOTO_URI=$resolved")
+                        return resolved
+                    }
+                    AppLogger.i(TAG, "getPhotoUri: contactId=$contactId PHOTO_URI is blank")
+                } else {
+                    AppLogger.w(TAG, "getPhotoUri: no Contacts row for contactId=$contactId")
                 }
-            }
-            Uri.withAppendedPath(
+            } ?: AppLogger.w(TAG, "getPhotoUri: query returned null cursor contactId=$contactId")
+
+            val fallback = Uri.withAppendedPath(
                 Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId.toString()),
                 ContactsContract.Contacts.Photo.CONTENT_DIRECTORY
             )
-        } catch (e: Exception) { null }
+            AppLogger.i(TAG, "getPhotoUri: using fallback contactId=$contactId uri=$fallback")
+            fallback
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "getPhotoUri: query failed contactId=$contactId", e)
+            null
+        }
     }
 
     override fun getType(uri: Uri): String = "image/jpeg"
