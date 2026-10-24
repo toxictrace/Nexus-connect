@@ -62,7 +62,12 @@ fun NexusApp() {
     if (!permissionsGranted) {
         val isDark2 = isSystemInDarkTheme()
         NexusConnectTheme(darkTheme = isDark2) {
-            PermissionsScreen(onAllGranted = { permissionsGranted = true })
+            PermissionsScreen(onAllGranted = {
+                permissionsGranted = true
+                // MainViewModel's initial load may have run before READ_CONTACTS was granted.
+                // Start the contacts observer now that the permission is available.
+                viewModel.loadContacts()
+            })
         }
         return
     }
