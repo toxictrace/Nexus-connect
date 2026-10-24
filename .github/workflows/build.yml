@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, master, fix/favorite-contact-reordering ]
+    branches: [ main, master, fix/favorite-contact-reordering, diagnostics/widget-photo-refresh ]
   pull_request:
     branches: [ main, master ]
 
