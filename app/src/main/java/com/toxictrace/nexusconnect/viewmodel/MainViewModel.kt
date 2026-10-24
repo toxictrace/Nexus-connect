@@ -192,45 +192,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * direction: -1 moves up, +1 moves down.
      */
     fun moveSelected(contactId: Long, direction: Int) {
-        val current = _selectedIds.value
-        val updated = ContactSelectionOperations.move(current, contactId, direction)
-        if (updated == null) {
-            AppLogger.w(
-                "MainViewModel",
-                "moveSelected ignored: id=$contactId direction=$direction cannot be applied"
-            )
-            return
-        }
-
-        val fromIndex = current.indexOf(contactId)
-        val toIndex = fromIndex + direction
-        _selectedIds.value = updated
-
-        AppLogger.i(
-            "MainViewModel",
-            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${updated.joinToString(",")}"
-        )
-        persistSelectedSelection()
-    }
-
-    /**
-     * Serialize writes and read the latest state only after obtaining the lock.
-     * This prevents a slower, older save from overwriting a newer contact order.
-     */
-    private fun persistSelectedSelection() {
         viewModelScope.launch {
-            selectionSaveMutex.withLock {
-                val latestIds = _selectedIds.value.toList()
-                try {
-                    settingsRepo.saveSelectedContactIds(latestIds)
-                    ContactWidgetProvider.updateAllWidgets(getApplication())
-                    AppLogger.i(
-                        "MainViewModel",
-                        "selection persisted: count=${latestIds.size} order=${latestIds.joinToString(",")}"
-                    )
-                } catch (e: Exception) {
-                    AppLogger.e("MainViewModel", "persistSelectedSelection failed", e)
+            try {
+                // Read and update the latest selection only after obtaining the same lock
+                // used by toggles, startup loading, and backup restore.
+                selectionSaveMutex.withLock {
+                    val current = _selectedIds.value
+                    val updated = ContactSelectionOperations.move(current, contactId, direction)
+                    if (updated == null) {
+                        AppLogger.w(
+                            "MainViewModel",
+                            "moveSelected ignored: id=$contactId direction=$direction cannot be applied"
+                        )
+                    } else {
+                        val fromIndex = current.indexOf(contactId)
+                        val toIndex = fromIndex + direction
+                        _selectedIds.value = updated
+                        settingsRepo.saveSelectedContactIds(updated)
+                        ContactWidgetProvider.updateAllWidgets(getApplication())
+                        AppLogger.i(
+                            "MainViewModel",
+                            "moveSelected: id=$contactId $fromIndex->$toIndex direction=$direction order=${updated.joinToString(",")}"
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "moveSelected failed", e)
             }
         }
     }
