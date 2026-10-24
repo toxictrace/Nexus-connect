@@ -52,6 +52,17 @@ class ContactsChangeJobService : JobService() {
         private const val TAG = "ContactsChangeJob"
         private const val JOB_ID = 41027
 
+        fun ensureScheduled(context: Context, source: String) {
+            val scheduler = context.getSystemService(JobScheduler::class.java)
+            val pending = scheduler.getPendingJob(JOB_ID)
+            if (pending != null) {
+                AppLogger.i(TAG, "ensureScheduled: already registered source=$source jobId=$JOB_ID")
+                return
+            }
+            AppLogger.i(TAG, "ensureScheduled: missing job; registering source=$source jobId=$JOB_ID")
+            schedule(context)
+        }
+
         fun schedule(context: Context) {
             val scheduler = context.getSystemService(JobScheduler::class.java)
             val component = ComponentName(context, ContactsChangeJobService::class.java)
@@ -72,7 +83,8 @@ class ContactsChangeJobService : JobService() {
                 .setTriggerContentMaxDelay(10_000L)
                 .build()
             val result = scheduler.schedule(job)
-            AppLogger.i(TAG, "schedule: result=$result jobId=$JOB_ID")
+            val pending = scheduler.getPendingJob(JOB_ID)
+            AppLogger.i(TAG, "schedule: result=$result jobId=$JOB_ID pending=${pending != null} triggers=${job.triggerContentUris?.size ?: 0}")
         }
 
         fun cancel(context: Context) {
