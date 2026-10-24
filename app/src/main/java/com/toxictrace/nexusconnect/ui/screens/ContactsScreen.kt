@@ -38,6 +38,7 @@ import com.toxictrace.nexusconnect.viewmodel.MainViewModel
 fun ContactsScreen(viewModel: MainViewModel) {
     val context       = LocalContext.current
     val contacts      by viewModel.displayContacts.collectAsState()
+    val allContacts   by viewModel.allContacts.collectAsState()
     val selectedCount by viewModel.selectedCount.collectAsState()
     val searchQuery   by viewModel.searchQuery.collectAsState()
     val photoCache    by viewModel.photoCache.collectAsState()
@@ -62,8 +63,8 @@ fun ContactsScreen(viewModel: MainViewModel) {
         ))
     }
 
-    LaunchedEffect(contacts) {
-        if (contacts.isNotEmpty()) viewModel.preloadPhotos(contacts)
+    LaunchedEffect(allContacts) {
+        viewModel.preloadPhotos(allContacts)
     }
 
     val selected   = contacts.filter { it.isSelected }
