@@ -184,9 +184,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
             // Photo
             if (contact.photoUri != null) {
-                views.setImageViewUri(photoId, PhotoProvider.uriForContact(contact.id))
+                val photoUri = PhotoProvider.uriForContact(contact.id)
+                AppLogger.i(TAG, "setupTile: tile=$idx contactId=${contact.id} hasPhoto=true modelPhotoUri=${contact.photoUri} assignedUri=$photoUri")
+                views.setImageViewUri(photoId, photoUri)
             } else {
                 val avatarUri = getAvatarUri(context)
+                AppLogger.i(TAG, "setupTile: tile=$idx contactId=${contact.id} hasPhoto=false assignedAvatarUri=$avatarUri")
                 views.setImageViewUri(photoId, avatarUri)
             }
 
