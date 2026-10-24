@@ -267,10 +267,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     .loadBackup(getApplication(), fileUri)
                 val (restoredSettings, restoredIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .jsonToSettings(json)
-                val currentSettings = settingsRepo.settings.first()
-                val folderUri = currentSettings.backupFolderUri
                 settingsUpdateMutex.withLock {
-                    settingsRepo.updateSettings(restoredSettings.copy(backupFolderUri = folderUri))
+                    // Read the latest persisted folder only after acquiring the same lock
+                    // used by settings updates, so a concurrent folder change is not lost.
+                    val currentSettings = settingsRepo.settings.first()
+                    settingsRepo.updateSettings(
+                        restoredSettings.copy(backupFolderUri = currentSettings.backupFolderUri)
+                    )
                 }
                 settingsRepo.saveSelectedContactIds(restoredIds)
                 _selectedIds.value = restoredIds
