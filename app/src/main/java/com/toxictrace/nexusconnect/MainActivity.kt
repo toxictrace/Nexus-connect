@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import com.toxictrace.nexusconnect.ui.NexusApp
+import com.toxictrace.nexusconnect.widget.ContactsChangeJobService
 import com.toxictrace.nexusconnect.util.AppLogger
 import com.toxictrace.nexusconnect.util.LocaleHelper
 
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         AppLogger.init(applicationContext)
         AppLogger.i("MainActivity", "App started. versionName=${BuildConfig.VERSION_NAME}")
+        ContactsChangeJobService.ensureScheduled(applicationContext, "MainActivity.onCreate")
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
