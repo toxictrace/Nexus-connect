@@ -313,10 +313,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun listBackups(): List<Pair<String, android.net.Uri>> {
-        val folderUriStr = settings.value.backupFolderUri
-        if (folderUriStr.isBlank()) return emptyList()
+    suspend fun listBackups(): List<Pair<String, android.net.Uri>> {
         return try {
+            // Read the persisted folder under the settings lock. The StateFlow may briefly
+            // lag behind a completed folder-selection write.
+            val folderUriStr = settingsUpdateMutex.withLock {
+                settingsRepo.settings.first().backupFolderUri
+            }
+            if (folderUriStr.isBlank()) return emptyList()
             com.toxictrace.nexusconnect.data.backup.BackupManager
                 .listBackups(getApplication(), android.net.Uri.parse(folderUriStr))
         } catch (e: Exception) {
