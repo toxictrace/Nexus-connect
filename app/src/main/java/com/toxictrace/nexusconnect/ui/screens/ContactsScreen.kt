@@ -362,7 +362,7 @@ fun ContactAvatar(
             }
             contact.photoUri != null -> {
                 val ctx = LocalContext.current
-                val req = remember(contact.id) {
+                val req = remember(contact.id, contact.photoUri) {
                     ImageRequest.Builder(ctx)
                         .data(contact.photoUri)
                         .memoryCacheKey("avatar_${contact.id}")
