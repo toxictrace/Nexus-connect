@@ -155,21 +155,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleContactSelection(contactId: Long) {
-        val current = _selectedIds.value
-        val maxTiles = settings.value.columns * settings.value.tileHeightDp
-        val updated = ContactSelectionOperations.toggle(current, contactId, maxTiles)
-        if (updated == null) {
-            AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
-            return
-        }
+        viewModelScope.launch {
+            try {
+                // Serialize selection changes with settings updates and restore. Read the
+                // persisted layout because settings.value may briefly lag behind DataStore.
+                settingsUpdateMutex.withLock {
+                    selectionSaveMutex.withLock {
+                        val currentSettings = settingsRepo.settings.first()
+                        val maxTiles = currentSettings.columns * currentSettings.tileHeightDp
+                        val current = _selectedIds.value
+                        val updated = ContactSelectionOperations.toggle(current, contactId, maxTiles)
+                        if (updated == null) {
+                            AppLogger.w("MainViewModel", "toggleContactSelection: max tiles reached ($maxTiles)")
+                            return@withLock
+                        }
 
-        if (contactId in current) {
-            AppLogger.i("MainViewModel", "contact deselected: id=$contactId")
-        } else {
-            AppLogger.i("MainViewModel", "contact selected: id=$contactId")
+                        if (contactId in current) {
+                            AppLogger.i("MainViewModel", "contact deselected: id=$contactId")
+                        } else {
+                            AppLogger.i("MainViewModel", "contact selected: id=$contactId")
+                        }
+                        _selectedIds.value = updated
+                        settingsRepo.saveSelectedContactIds(updated)
+                        ContactWidgetProvider.updateAllWidgets(getApplication())
+                    }
+                }
+            } catch (e: Exception) {
+                AppLogger.e("MainViewModel", "toggleContactSelection failed", e)
+            }
         }
-        _selectedIds.value = updated
-        persistSelectedSelection()
     }
 
     /**
