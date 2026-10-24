@@ -145,12 +145,12 @@ class SettingsRepository(private val context: Context) {
     suspend fun getSelectedContactIds(): List<Long> {
         val prefs = context.dataStore.data.first()
         val raw = prefs[Keys.SELECTED_CONTACT_IDS] ?: return emptyList()
-        return raw.split(",").mapNotNull { it.toLongOrNull() }
+        return SelectedContactIds.parse(raw)
     }
 
     suspend fun saveSelectedContactIds(ids: List<Long>) {
         context.dataStore.edit { prefs ->
-            prefs[Keys.SELECTED_CONTACT_IDS] = ids.joinToString(",")
+            prefs[Keys.SELECTED_CONTACT_IDS] = SelectedContactIds.serialize(ids)
         }
         WidgetPrefs.saveSelectedIds(context, ids)
     }
