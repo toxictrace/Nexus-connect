@@ -25,9 +25,10 @@ object BackupManager {
 
     fun settingsToJson(settings: WidgetSettings, selectedIds: List<Long>): String {
         return JSONObject().apply {
-            put("version",            1)
+            put("version",            2)
             put("columns",            settings.columns)
             put("tileHeightDp",       settings.tileHeightDp)
+            put("maxContacts",        settings.maxContacts)
             put("filterFavorites",    settings.filterFavorites)
             put("filterRecents",      settings.filterRecents)
             put("filterFrequent",     settings.filterFrequent)
@@ -44,6 +45,11 @@ object BackupManager {
             put("messengerViber",     settings.messengerViber)
             put("messengerTelegram",  settings.messengerTelegram)
             put("showCallTypeIcon",   settings.showCallTypeIcon)
+            put("callIconStyle",      settings.callIconStyle)
+            put("language",           settings.language)
+            put("recentsDays",        settings.recentsDays)
+            put("showCallLogButton",  settings.showCallLogButton)
+            put("callLogAppPackage",  settings.callLogAppPackage)
             put("selectedContactIds", selectedIds.joinToString(","))
         }.toString(2)
     }
@@ -53,6 +59,7 @@ object BackupManager {
         val settings = WidgetSettings(
             columns            = o.optInt("columns", 4),
             tileHeightDp       = o.optInt("tileHeightDp", 3),
+            maxContacts        = o.optInt("maxContacts", 12),
             filterFavorites    = o.optBoolean("filterFavorites", true),
             filterRecents      = o.optBoolean("filterRecents", true),
             filterFrequent     = o.optBoolean("filterFrequent", false),
@@ -68,7 +75,12 @@ object BackupManager {
             messengerWhatsApp  = o.optString("messengerWhatsApp", ""),
             messengerViber     = o.optString("messengerViber", ""),
             messengerTelegram  = o.optString("messengerTelegram", ""),
-            showCallTypeIcon   = o.optBoolean("showCallTypeIcon", true)
+            showCallTypeIcon   = o.optBoolean("showCallTypeIcon", true),
+            callIconStyle      = o.optString("callIconStyle", "MATERIAL"),
+            language           = o.optString("language", "system"),
+            recentsDays        = o.optInt("recentsDays", 3),
+            showCallLogButton  = o.optBoolean("showCallLogButton", false),
+            callLogAppPackage  = o.optString("callLogAppPackage", "")
         )
         val ids = o.optString("selectedContactIds", "")
             .split(",").mapNotNull { it.toLongOrNull() }
