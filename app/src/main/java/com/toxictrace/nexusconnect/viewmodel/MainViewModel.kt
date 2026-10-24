@@ -131,14 +131,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val saved = settingsRepo.getSelectedContactIds()
-                val currentSettings = settings.value
+                // Read persisted settings directly: settings.value may still contain
+                // its initial defaults before the StateFlow has observed DataStore.
+                val currentSettings = settingsRepo.settings.first()
                 val maxTiles = currentSettings.columns * currentSettings.tileHeightDp
-                val trimmed = if (saved.size > maxTiles) {
+                val trimmed = SelectionLimit.trim(saved, maxTiles)
+                if (trimmed.size != saved.size) {
                     AppLogger.w("MainViewModel", "loadSavedSelection: trimming ${saved.size} ids to maxTiles=$maxTiles")
-                    val cut = saved.take(maxTiles)
-                    settingsRepo.saveSelectedContactIds(cut)
-                    cut
-                } else saved
+                    settingsRepo.saveSelectedContactIds(trimmed)
+                }
                 _selectedIds.value = trimmed
                 AppLogger.i("MainViewModel", "loadSavedSelection: ${trimmed.size} ids maxTiles=$maxTiles")
             } catch (e: Exception) {
