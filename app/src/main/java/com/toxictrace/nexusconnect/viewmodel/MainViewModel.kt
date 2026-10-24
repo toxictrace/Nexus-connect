@@ -243,11 +243,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 AppLogger.i("MainViewModel", "saveBackup started")
-                val currentSettings = settingsRepo.settings.first()
+                // Snapshot settings and selected IDs under the same locks used by
+                // settings updates and selection writes. A backup must not capture
+                // the middle of a concurrent restore.
+                val (currentSettings, json) = settingsUpdateMutex.withLock {
+                    selectionSaveMutex.withLock {
+                        val persistedSettings = settingsRepo.settings.first()
+                        val selectedIds = settingsRepo.getSelectedContactIds()
+                        persistedSettings to com.toxictrace.nexusconnect.data.backup.BackupManager
+                            .settingsToJson(persistedSettings, selectedIds)
+                    }
+                }
                 val folderUri = android.net.Uri.parse(currentSettings.backupFolderUri)
-                val selectedIds = settingsRepo.getSelectedContactIds()
-                val json = com.toxictrace.nexusconnect.data.backup.BackupManager
-                    .settingsToJson(currentSettings, selectedIds)
                 val name = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .saveBackup(getApplication(), folderUri, json)
                 AppLogger.i("MainViewModel", "saveBackup success: $name")
@@ -271,19 +278,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 // matching the limit applied when loading a saved selection at startup.
                 val maxTiles = restoredSettings.columns * restoredSettings.tileHeightDp
                 val restoredIds = SelectionLimit.trim(backupIds, maxTiles)
+                // Use the same lock order as saveBackup: settings first, then selection.
+                // This makes the restored settings and IDs appear as one consistent snapshot
+                // to backup creation and prevents stale selection writes from winning.
                 settingsUpdateMutex.withLock {
-                    // Read the latest persisted folder only after acquiring the same lock
-                    // used by settings updates, so a concurrent folder change is not lost.
-                    val currentSettings = settingsRepo.settings.first()
-                    settingsRepo.updateSettings(
-                        restoredSettings.copy(backupFolderUri = currentSettings.backupFolderUri)
-                    )
-                }
-                // Serialize restore writes with ordinary selection saves so a delayed
-                // selection write cannot overwrite the restored IDs.
-                selectionSaveMutex.withLock {
-                    settingsRepo.saveSelectedContactIds(restoredIds)
-                    _selectedIds.value = restoredIds
+                    selectionSaveMutex.withLock {
+                        val currentSettings = settingsRepo.settings.first()
+                        settingsRepo.updateSettings(
+                            restoredSettings.copy(backupFolderUri = currentSettings.backupFolderUri)
+                        )
+                        settingsRepo.saveSelectedContactIds(restoredIds)
+                        _selectedIds.value = restoredIds
+                    }
                 }
                 ContactWidgetProvider.updateAllWidgets(getApplication())
                 if (restoredIds.size != backupIds.size) {
