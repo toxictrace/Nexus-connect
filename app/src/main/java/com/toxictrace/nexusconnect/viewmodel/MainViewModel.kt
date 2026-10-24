@@ -35,6 +35,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedIds  = MutableStateFlow<List<Long>>(emptyList())
     private val _searchQuery  = MutableStateFlow("")
     private val selectionSaveMutex = Mutex()
+    private val settingsUpdateMutex = Mutex()
     private var contactsObserverJob: Job? = null
 
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -222,7 +223,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateSettings(update: (WidgetSettings) -> WidgetSettings) {
         viewModelScope.launch {
             try {
-                settingsRepo.updateSettings(update(settings.value))
+                settingsUpdateMutex.withLock {
+                    // Read the latest persisted values after acquiring the lock.
+                    // settings.value may not have observed the previous write yet.
+                    val latestSettings = settingsRepo.settings.first()
+                    settingsRepo.updateSettings(update(latestSettings))
+                }
                 ContactWidgetProvider.updateAllWidgets(getApplication())
                 AppLogger.i("MainViewModel", "settings updated")
             } catch (e: Exception) {
@@ -259,7 +265,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val (restoredSettings, restoredIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .jsonToSettings(json)
                 val folderUri = settings.value.backupFolderUri
-                settingsRepo.updateSettings(restoredSettings.copy(backupFolderUri = folderUri))
+                settingsUpdateMutex.withLock {
+                    settingsRepo.updateSettings(restoredSettings.copy(backupFolderUri = folderUri))
+                }
                 settingsRepo.saveSelectedContactIds(restoredIds)
                 _selectedIds.value = restoredIds
                 ContactWidgetProvider.updateAllWidgets(getApplication())
