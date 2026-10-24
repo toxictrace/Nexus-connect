@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.ContactsContract
 import android.util.Log
+import java.security.MessageDigest
 import com.toxictrace.nexusconnect.util.AppLogger
 
 /**
@@ -69,12 +70,26 @@ class PhotoProvider : ContentProvider() {
                     return null
                 }
                 Thread {
+                    var bytesTransferred = 0L
+                    val digest = MessageDigest.getInstance("SHA-256")
                     try {
                         ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]).use { out ->
-                            inputStream.use { it.copyTo(out) }
+                            inputStream.use { input ->
+                                val buffer = ByteArray(8192)
+                                while (true) {
+                                    val count = input.read(buffer)
+                                    if (count < 0) break
+                                    out.write(buffer, 0, count)
+                                    digest.update(buffer, 0, count)
+                                    bytesTransferred += count
+                                }
+                            }
                         }
+                        val sha256 = digest.digest().joinToString("") { "%02x".format(it) }
+                        AppLogger.i(TAG, "pipe transfer complete contactId=\${contactId} photoUri=\${photoUri} bytes=\${bytesTransferred} sha256=\${sha256}")
                     } catch (copyError: Exception) {
-                        AppLogger.w(TAG, "openFile: pipe copy failed contactId=$contactId error=${copyError.javaClass.simpleName}:${copyError.message}")
+                        val partialSha256 = digest.digest().joinToString("") { "%02x".format(it) }
+                        AppLogger.e(TAG, "pipe transfer failed contactId=\${contactId} photoUri=\${photoUri} bytesTransferred=\${bytesTransferred} partialSha256=\${partialSha256} error=\${copyError.javaClass.simpleName}:\${copyError.message}", copyError)
                     }
                 }.start()
                 AppLogger.i(TAG, "openFile: pipe returned contactId=$contactId photoUri=$photoUri")
