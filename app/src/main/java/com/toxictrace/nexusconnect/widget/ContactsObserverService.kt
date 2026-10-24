@@ -9,17 +9,14 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.provider.CallLog
-import android.provider.ContactsContract
 import com.toxictrace.nexusconnect.util.AppLogger
 
 /**
- * Lightweight service that registers ContentObservers on contacts
- * and call log — updates widget when either changes.
- * Debounce 2s to prevent infinite update loops.
+ * Observes the call log while active. Contact changes are handled by
+ * ContactsChangeJobService so refreshes still work when this service stops.
  */
 class ContactsObserverService : Service() {
 
-    private var contactsObserver: ContentObserver? = null
     private var callLogObserver: ContentObserver? = null
     private val handler = Handler(Looper.getMainLooper())
     private var pendingUpdate: Runnable? = null
@@ -38,24 +35,7 @@ class ContactsObserverService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (contactsObserver == null) {
-            contactsObserver = object : ContentObserver(handler) {
-                override fun onChange(selfChange: Boolean) {
-                    AppLogger.i("ContactsObserverService", "contacts onChange(selfChange=$selfChange, uri=<not supplied>)")
-                    scheduleWidgetUpdate("contacts")
-                }
-
-                override fun onChange(selfChange: Boolean, uri: Uri?) {
-                    AppLogger.i("ContactsObserverService", "contacts onChange(selfChange=$selfChange, uri=$uri)")
-                    scheduleWidgetUpdate("contacts uri=$uri")
-                }
-            }
-            contentResolver.registerContentObserver(
-                ContactsContract.Contacts.CONTENT_URI, true, contactsObserver!!
-            )
-            AppLogger.i("ContactsObserverService", "registered contacts observer uri=${ContactsContract.Contacts.CONTENT_URI} descendants=true")
-        }
-
+        AppLogger.i("ContactsObserverService", "onStartCommand: startId=$startId")
         if (callLogObserver == null) {
             callLogObserver = object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean) {
@@ -73,17 +53,14 @@ class ContactsObserverService : Service() {
             )
             AppLogger.i("ContactsObserverService", "registered calllog observer uri=${CallLog.Calls.CONTENT_URI} descendants=true")
         }
-
         return START_STICKY
     }
 
     override fun onDestroy() {
         pendingUpdate?.let { handler.removeCallbacks(it) }
-        contactsObserver?.let { contentResolver.unregisterContentObserver(it) }
         callLogObserver?.let { contentResolver.unregisterContentObserver(it) }
-        contactsObserver = null
         callLogObserver = null
-        AppLogger.i("ContactsObserverService", "onDestroy: observers unregistered")
+        AppLogger.i("ContactsObserverService", "onDestroy: call log observer unregistered")
         super.onDestroy()
     }
 
