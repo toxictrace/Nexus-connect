@@ -409,11 +409,13 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
     override fun onEnabled(context: Context) {
         Log.d(TAG, "onEnabled")
+        ContactsChangeJobService.schedule(context)
         ContactsObserverService.start(context)
     }
 
     override fun onDisabled(context: Context) {
         Log.d(TAG, "onDisabled")
+        ContactsChangeJobService.cancel(context)
         ContactsObserverService.stop(context)
     }
 
