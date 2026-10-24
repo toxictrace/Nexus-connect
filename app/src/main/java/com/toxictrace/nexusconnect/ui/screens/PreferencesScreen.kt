@@ -41,6 +41,7 @@ import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
 import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.ui.theme.AccentColors
 import com.toxictrace.nexusconnect.viewmodel.MainViewModel
+import kotlinx.coroutines.launch
 
 data class AppInfo(val packageName: String, val label: String, val icon: ImageBitmap?)
 
@@ -649,6 +650,7 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
     var message by remember { mutableStateOf<String?>(null) }
     var showRestoreDialog by remember { mutableStateOf(false) }
     var backups by remember { mutableStateOf<List<Pair<String, android.net.Uri>>>(emptyList()) }
+    val coroutineScope = rememberCoroutineScope()
 
     val folderPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
@@ -724,8 +726,10 @@ private fun BackupSection(settings: WidgetSettings, viewModel: MainViewModel) {
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clickable(enabled = settings.backupFolderUri.isNotBlank()) {
-                        backups = viewModel.listBackups()
-                        showRestoreDialog = true
+                        coroutineScope.launch {
+                            backups = viewModel.listBackups()
+                            showRestoreDialog = true
+                        }
                     }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
