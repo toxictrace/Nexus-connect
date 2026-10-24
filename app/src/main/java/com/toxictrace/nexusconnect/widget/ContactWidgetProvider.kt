@@ -403,6 +403,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
+        AppLogger.i(TAG, "onUpdate: ensuring contact-change job for ${ids.size} widgets")
+        ContactsChangeJobService.ensureScheduled(context, "ContactWidgetProvider.onUpdate")
         Log.d(TAG, "onUpdate ${ids.toList()}")
         ids.forEach { buildAndPush(context, mgr, it) }
     }
