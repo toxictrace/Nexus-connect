@@ -279,8 +279,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         restoredSettings.copy(backupFolderUri = currentSettings.backupFolderUri)
                     )
                 }
-                settingsRepo.saveSelectedContactIds(restoredIds)
-                _selectedIds.value = restoredIds
+                // Serialize restore writes with ordinary selection saves so a delayed
+                // selection write cannot overwrite the restored IDs.
+                selectionSaveMutex.withLock {
+                    settingsRepo.saveSelectedContactIds(restoredIds)
+                    _selectedIds.value = restoredIds
+                }
                 ContactWidgetProvider.updateAllWidgets(getApplication())
                 if (restoredIds.size != backupIds.size) {
                     AppLogger.w(
