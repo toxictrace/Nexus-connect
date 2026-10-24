@@ -4,6 +4,7 @@ import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
 import android.app.job.JobService
+import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.provider.ContactsContract
@@ -26,6 +27,18 @@ class ContactsChangeJobService : JobService() {
             AppLogger.i(TAG, "onStartJob: widget refresh completed")
         } catch (e: Exception) {
             AppLogger.e(TAG, "onStartJob: widget refresh failed", e)
+        } finally {
+            // Content-triggered jobs are one-shot. Re-register after each run
+            // so later contact changes are observed as well.
+            val widgetIds = AppWidgetManager.getInstance(applicationContext)
+                .getAppWidgetIds(ComponentName(applicationContext, ContactWidgetProvider::class.java))
+            if (widgetIds.isNotEmpty()) {
+                AppLogger.i(TAG, "onStartJob: re-registering content observer job")
+                schedule(applicationContext)
+            } else {
+                AppLogger.i(TAG, "onStartJob: no widgets remain; canceling content observer job")
+                cancel(applicationContext)
+            }
         }
         return false
     }
