@@ -32,6 +32,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WidgetSettings())
 
     private val _allContacts  = MutableStateFlow<List<Contact>>(emptyList())
+    val allContacts: StateFlow<List<Contact>> = _allContacts.asStateFlow()
     private val _selectedIds  = MutableStateFlow<List<Long>>(emptyList())
     private val _searchQuery  = MutableStateFlow("")
     private val selectionSaveMutex = Mutex()
@@ -311,6 +312,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _photoCache = MutableStateFlow<Map<Long, android.graphics.Bitmap>>(emptyMap())
     val photoCache: StateFlow<Map<Long, android.graphics.Bitmap>> = _photoCache.asStateFlow()
+    private val _photoUris = MutableStateFlow<Map<Long, String>>(emptyMap())
 
     private var photoCacheJob: kotlinx.coroutines.Job? = null
 
@@ -318,24 +320,41 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         photoCacheJob?.cancel()
         photoCacheJob = viewModelScope.launch(Dispatchers.IO) {
             val ctx = getApplication<Application>()
-            val newCache = _photoCache.value.toMutableMap()
-            contacts.filter { it.photoUri != null && it.id !in newCache }.forEach { contact ->
+            val currentCache = _photoCache.value
+            val plan = PhotoCachePlan.build(contacts, currentCache.keys, _photoUris.value)
+            val newCache = currentCache
+                .filterKeys { it in plan.retainedIds && it !in plan.idsToReload }
+                .toMutableMap()
+            val newUris = _photoUris.value
+                .filter { (id, uri) -> id in plan.retainedIds && contacts.any { it.id == id && it.photoUri == uri } }
+                .toMutableMap()
+
+            plan.contactsToLoad.forEach { contact ->
                 if (!isActive) return@launch
                 try {
-                    val uri = android.net.Uri.parse(contact.photoUri)
-                    ctx.contentResolver.openInputStream(uri)?.use { stream ->
+                    val photoUri = contact.photoUri ?: return@forEach
+                    val uri = android.net.Uri.parse(photoUri)
+                    val bitmap = ctx.contentResolver.openInputStream(uri)?.use { stream ->
                         val opts = android.graphics.BitmapFactory.Options().apply {
                             inSampleSize = 2
                             inPreferredConfig = android.graphics.Bitmap.Config.RGB_565
                         }
                         android.graphics.BitmapFactory.decodeStream(stream, null, opts)
-                            ?.let { bmp -> newCache[contact.id] = bmp }
                     }
+                    if (bitmap != null) {
+                        newCache[contact.id] = bitmap
+                        newUris[contact.id] = photoUri
+                    }
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     AppLogger.w("MainViewModel", "preloadPhotos: failed for contact ${contact.id}: ${e.message}")
                 }
             }
-            _photoCache.value = newCache
+            if (isActive) {
+                _photoCache.value = newCache
+                _photoUris.value = newUris
+            }
         }
     }
 }
