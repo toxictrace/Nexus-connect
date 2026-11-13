@@ -66,11 +66,14 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
             val allContacts = loadAllContacts(context)
             val selectedIds = WidgetPrefs.getSelectedContactIds(context)
+            val selectedLookupKeys = WidgetPrefs.getSelectedContactLookupKeys(context)
+            AppLogger.i(TAG, "buildAndPush: contacts=${allContacts.size} selectedIds=${selectedIds.size} lookupKeys=${selectedLookupKeys.size}")
 
             val widgetContacts = buildWidgetContacts(
                 context = context,
                 allContacts = allContacts,
                 selectedIds = selectedIds,
+                selectedLookupKeys = selectedLookupKeys,
                 maxTiles = maxTiles
             )
 
@@ -346,6 +349,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             context: Context,
             allContacts: List<Contact>,
             selectedIds: List<Long>,
+            selectedLookupKeys: List<String>,
             maxTiles: Int
         ): List<Contact> {
             // ... (original implementation remains the same for now)
@@ -360,9 +364,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val result = mutableListOf<Contact>()
             val usedIds = mutableSetOf<Long>()
 
-            if (filterFavorites && selectedIds.isNotEmpty()) {
+            if (filterFavorites && selectedLookupKeys.isNotEmpty()) {
+                selectedLookupKeys.mapNotNull { key -> allContacts.firstOrNull { it.lookupKey == key } }
+                    .forEach { contact -> if (usedIds.add(contact.id)) result.add(contact) }
+            } else if (filterFavorites && selectedIds.isNotEmpty()) {
                 selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
-                    .forEach { c -> if (usedIds.add(c.id)) result.add(c) }
+                    .forEach { contact -> if (usedIds.add(contact.id)) result.add(contact) }
             }
 
             if (result.size >= maxTiles) return result.take(maxTiles)

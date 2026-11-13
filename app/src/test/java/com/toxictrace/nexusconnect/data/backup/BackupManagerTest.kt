@@ -10,7 +10,7 @@ import org.junit.Test
 class BackupManagerTest {
 
     @Test
-    fun settingsRoundTripPreservesAllPortableSettingsAndSelectedIds() {
+    fun settingsRoundTripPreservesAllPortableSettingsAndSelectedContacts() {
         val original = WidgetSettings(
             columns = 5,
             tileHeightDp = 6,
@@ -39,13 +39,14 @@ class BackupManagerTest {
             callLogAppPackage = "com.example.calllog"
         )
         val selectedIds = listOf(41L, 7L, 9001L)
+        val selectedLookupKeys = listOf("lookup:first", "lookup,second")
 
-        val json = BackupManager.settingsToJson(original, selectedIds)
-        val (restored, restoredIds) = BackupManager.jsonToSettings(json)
+        val json = BackupManager.settingsToJson(original, selectedIds, selectedLookupKeys)
+        val (restored, restoredIds, restoredLookupKeys) = BackupManager.jsonToSettings(json)
 
-        // The backup folder URI is intentionally device-specific and is restored by the caller.
         assertEquals(original.copy(backupFolderUri = ""), restored)
         assertEquals(selectedIds, restoredIds)
+        assertEquals(selectedLookupKeys, restoredLookupKeys)
     }
 
     @Test
@@ -59,7 +60,7 @@ class BackupManagerTest {
             }
         """.trimIndent()
 
-        val (restored, restoredIds) = BackupManager.jsonToSettings(legacyJson)
+        val (restored, restoredIds, restoredLookupKeys) = BackupManager.jsonToSettings(legacyJson)
 
         assertEquals(3, restored.columns)
         assertEquals(4, restored.tileHeightDp)
@@ -70,5 +71,6 @@ class BackupManagerTest {
         assertEquals(false, restored.showCallLogButton)
         assertEquals("", restored.callLogAppPackage)
         assertEquals(listOf(12L, 5L), restoredIds)
+        assertEquals(emptyList<String>(), restoredLookupKeys)
     }
 }

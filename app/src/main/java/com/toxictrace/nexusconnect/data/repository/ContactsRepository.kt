@@ -44,6 +44,21 @@ class ContactsRepository(private val context: Context) {
 
     fun loadContacts(): List<Contact> {
         val contacts = mutableListOf<Contact>()
+        val lookupKeysById = mutableMapOf<Long, String>()
+
+        context.contentResolver.query(
+            ContactsContract.Contacts.CONTENT_URI,
+            arrayOf(ContactsContract.Contacts._ID, ContactsContract.Contacts.LOOKUP_KEY),
+            null, null, null
+        )?.use { lookupCursor ->
+            val idIndex = lookupCursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID)
+            val keyIndex = lookupCursor.getColumnIndexOrThrow(ContactsContract.Contacts.LOOKUP_KEY)
+            while (lookupCursor.moveToNext()) {
+                val id = lookupCursor.getLong(idIndex)
+                val key = lookupCursor.getString(keyIndex)
+                if (!key.isNullOrBlank()) lookupKeysById[id] = key
+            }
+        }
 
         val cursor = context.contentResolver.query(
             ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
@@ -84,6 +99,7 @@ class ContactsRepository(private val context: Context) {
                     Contact(
                         id          = id,
                         name        = name,
+                        lookupKey   = lookupKeysById[id] ?: "",
                         phoneNumber = number,
                         photoUri    = photoStr ?: thumbStr,
                         isStarred   = starred

@@ -57,10 +57,14 @@ fun ContactsScreen(viewModel: MainViewModel) {
     }
 
     LaunchedEffect(hasContacts) {
-        if (!hasContacts) permLauncher.launch(arrayOf(
-            Manifest.permission.READ_CONTACTS,
-            Manifest.permission.READ_CALL_LOG
-        ))
+        if (hasContacts) {
+            viewModel.loadContacts()
+        } else {
+            permLauncher.launch(arrayOf(
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.READ_CALL_LOG
+            ))
+        }
     }
 
     LaunchedEffect(allContacts) {

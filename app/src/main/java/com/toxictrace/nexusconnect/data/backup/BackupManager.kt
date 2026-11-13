@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.toxictrace.nexusconnect.data.model.*
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
+import com.toxictrace.nexusconnect.data.preferences.SelectedContactLookupKeys
 import org.json.JSONObject
 import java.io.*
 import java.text.SimpleDateFormat
@@ -23,9 +24,13 @@ object BackupManager {
     private const val SALT     = "NexusConnectSalt"
     private const val ZIP_ENTRY = "settings.json"
 
-    fun settingsToJson(settings: WidgetSettings, selectedIds: List<Long>): String {
+    fun settingsToJson(
+        settings: WidgetSettings,
+        selectedIds: List<Long>,
+        selectedLookupKeys: List<String> = emptyList()
+    ): String {
         return JSONObject().apply {
-            put("version",            2)
+            put("version",            3)
             put("columns",            settings.columns)
             put("tileHeightDp",       settings.tileHeightDp)
             put("maxContacts",        settings.maxContacts)
@@ -51,10 +56,11 @@ object BackupManager {
             put("showCallLogButton",  settings.showCallLogButton)
             put("callLogAppPackage",  settings.callLogAppPackage)
             put("selectedContactIds", selectedIds.joinToString(","))
+            put("selectedContactLookupKeys", SelectedContactLookupKeys.serialize(selectedLookupKeys))
         }.toString(2)
     }
 
-    fun jsonToSettings(json: String): Pair<WidgetSettings, List<Long>> {
+    fun jsonToSettings(json: String): Triple<WidgetSettings, List<Long>, List<String>> {
         val o = JSONObject(json)
         val settings = WidgetSettings(
             columns            = o.optInt("columns", 4),
@@ -84,7 +90,8 @@ object BackupManager {
         )
         val ids = o.optString("selectedContactIds", "")
             .split(",").mapNotNull { it.toLongOrNull() }
-        return Pair(settings, ids)
+        val lookupKeys = SelectedContactLookupKeys.parse(o.optString("selectedContactLookupKeys", ""))
+        return Triple(settings, ids, lookupKeys)
     }
 
     private fun deriveKey(): SecretKeySpec {

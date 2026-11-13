@@ -70,6 +70,7 @@ class SettingsRepository(private val context: Context) {
         val SHOW_CALL_LOG_BUTTON = booleanPreferencesKey("show_call_log_button")
         val CALL_LOG_APP_PACKAGE = stringPreferencesKey("call_log_app_package")
         val SELECTED_CONTACT_IDS = stringPreferencesKey("selected_contact_ids")
+        val SELECTED_CONTACT_LOOKUP_KEYS = stringPreferencesKey("selected_contact_lookup_keys")
     }
 
     val settings: Flow<WidgetSettings> = context.dataStore.data
@@ -139,7 +140,8 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.CALL_LOG_APP_PACKAGE] = update.callLogAppPackage
         }
         val selectedIds = getSelectedContactIds()
-        WidgetPrefs.sync(context, update, selectedIds)
+        val selectedLookupKeys = getSelectedContactLookupKeys()
+        WidgetPrefs.sync(context, update, selectedIds, selectedLookupKeys)
     }
 
     suspend fun getSelectedContactIds(): List<Long> {
@@ -153,5 +155,25 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.SELECTED_CONTACT_IDS] = SelectedContactIds.serialize(ids)
         }
         WidgetPrefs.saveSelectedIds(context, ids)
+    }
+
+    suspend fun getSelectedContactLookupKeys(): List<String> {
+        val prefs = context.dataStore.data.first()
+        return SelectedContactLookupKeys.parse(prefs[Keys.SELECTED_CONTACT_LOOKUP_KEYS] ?: "")
+    }
+
+    suspend fun saveSelectedContactLookupKeys(keys: List<String>) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.SELECTED_CONTACT_LOOKUP_KEYS] = SelectedContactLookupKeys.serialize(keys)
+        }
+        WidgetPrefs.saveSelectedLookupKeys(context, keys)
+    }
+
+    suspend fun saveSelectedContactSelection(ids: List<Long>, lookupKeys: List<String>) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.SELECTED_CONTACT_IDS] = SelectedContactIds.serialize(ids)
+            prefs[Keys.SELECTED_CONTACT_LOOKUP_KEYS] = SelectedContactLookupKeys.serialize(lookupKeys)
+        }
+        WidgetPrefs.saveSelectedSelection(context, ids, lookupKeys)
     }
 }
