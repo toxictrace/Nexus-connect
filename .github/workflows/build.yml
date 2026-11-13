@@ -50,6 +50,16 @@ jobs:
       - name: Build Debug and Release APKs
         run: gradle testDebugUnitTest assembleDebug assembleRelease
 
+      - name: Verify Release APK signature
+        run: |
+          APK="app/build/outputs/apk/release/app-release.apk"
+          test -s "$APK" || (echo "Release APK is missing or empty" && exit 1)
+          BUILD_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          test -n "$BUILD_TOOLS" || (echo "Android build-tools not found" && exit 1)
+          VERIFY_OUTPUT="$("$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK" 2>&1)" || { echo "$VERIFY_OUTPUT"; exit 1; }
+          echo "$VERIFY_OUTPUT"
+          echo "$VERIFY_OUTPUT" | grep -Fq "Verified using v2 scheme (APK Signature Scheme v2): true" || (echo "APK v2 signature verification failed" && exit 1)
+
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
