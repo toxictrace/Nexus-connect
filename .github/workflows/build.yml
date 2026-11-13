@@ -67,7 +67,7 @@ jobs:
       - name: Read release version
         id: release_version
         run: |
-          VERSION=$(sed -nE 's/.*versionName "([^"]+)".*/\\1/p' app/build.gradle | head -n 1)
+          VERSION=$(grep -oE 'versionName "[^"]+"' app/build.gradle | head -n 1 | cut -d '"' -f 2)
           test -n "$VERSION" || (echo "versionName not found" && exit 1)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
