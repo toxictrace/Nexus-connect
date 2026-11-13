@@ -10,7 +10,8 @@ data class Contact(
     val phoneNumber: String? = null,
     val isSelected: Boolean = false,
     val isStarred: Boolean = false,
-    val sortOrder: Int = 0
+    val sortOrder: Int = 0,
+    val lookupKey: String = ""
 )
 
 enum class ClickAction { SHOW_DIALOG, DIRECT_CALL }

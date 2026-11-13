@@ -34,6 +34,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _allContacts  = MutableStateFlow<List<Contact>>(emptyList())
     val allContacts: StateFlow<List<Contact>> = _allContacts.asStateFlow()
     private val _selectedIds  = MutableStateFlow<List<Long>>(emptyList())
+    private val _selectedLookupKeys = MutableStateFlow<List<String>>(emptyList())
     private val _searchQuery  = MutableStateFlow("")
     private val selectionSaveMutex = Mutex()
     private val settingsUpdateMutex = Mutex()
@@ -120,6 +121,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     .collect { list ->
                         AppLogger.i("MainViewModel", "contacts updated: ${list.size} contacts")
                         _allContacts.value = list
+                        reconcileSelectionWithContacts(list)
                     }
             } catch (e: Exception) {
                 AppLogger.e("MainViewModel", "loadContacts failed", e)
@@ -130,28 +132,62 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadSavedSelection() {
         viewModelScope.launch {
             try {
-                // Serialize startup loading with restore and backup operations. Otherwise,
-                // a delayed startup read could publish IDs from before a restore completed.
                 settingsUpdateMutex.withLock {
                     selectionSaveMutex.withLock {
-                        // Read persisted settings directly: settings.value may still contain
-                        // its initial defaults before the StateFlow has observed DataStore.
                         val currentSettings = settingsRepo.settings.first()
-                        val saved = settingsRepo.getSelectedContactIds()
+                        val savedIds = settingsRepo.getSelectedContactIds()
+                        val savedKeys = settingsRepo.getSelectedContactLookupKeys()
                         val maxTiles = currentSettings.columns * currentSettings.tileHeightDp
-                        val trimmed = SelectionLimit.trim(saved, maxTiles)
-                        if (trimmed.size != saved.size) {
-                            AppLogger.w("MainViewModel", "loadSavedSelection: trimming ${saved.size} ids to maxTiles=$maxTiles")
-                            settingsRepo.saveSelectedContactIds(trimmed)
+                        val trimmedIds = SelectionLimit.trim(savedIds, maxTiles)
+                        val trimmedKeys = savedKeys.take(maxTiles)
+                        if (trimmedIds.size != savedIds.size) {
+                            AppLogger.w("MainViewModel", "loadSavedSelection: trimming ${savedIds.size} IDs to maxTiles=$maxTiles")
+                            settingsRepo.saveSelectedContactIds(trimmedIds)
                         }
-                        _selectedIds.value = trimmed
-                        AppLogger.i("MainViewModel", "loadSavedSelection: ${trimmed.size} ids maxTiles=$maxTiles")
+                        if (trimmedKeys.size != savedKeys.size) settingsRepo.saveSelectedContactLookupKeys(trimmedKeys)
+                        _selectedLookupKeys.value = trimmedKeys
+                        val currentContacts = _allContacts.value
+                        _selectedIds.value = if (trimmedKeys.isNotEmpty() && currentContacts.isNotEmpty()) {
+                            ContactLookupResolver.resolveIds(trimmedKeys, currentContacts)
+                        } else trimmedIds
+                        AppLogger.i("MainViewModel", "loadSavedSelection: ids=${trimmedIds.size} lookupKeys=${trimmedKeys.size} resolved=${_selectedIds.value.size} maxTiles=$maxTiles")
                     }
                 }
             } catch (e: Exception) {
                 AppLogger.e("MainViewModel", "loadSavedSelection failed", e)
             }
         }
+    }
+
+    private suspend fun reconcileSelectionWithContacts(contacts: List<Contact>) {
+        settingsUpdateMutex.withLock {
+            selectionSaveMutex.withLock {
+                val currentSettings = settingsRepo.settings.first()
+                val maxTiles = currentSettings.columns * currentSettings.tileHeightDp
+                val savedIds = SelectionLimit.trim(settingsRepo.getSelectedContactIds(), maxTiles)
+                val savedKeys = settingsRepo.getSelectedContactLookupKeys().take(maxTiles)
+                if (savedKeys.isNotEmpty()) {
+                    _selectedLookupKeys.value = savedKeys
+                    _selectedIds.value = ContactLookupResolver.resolveIds(savedKeys, contacts)
+                } else {
+                    val mappedKeys = ContactLookupResolver.lookupKeysForIds(savedIds, contacts).take(maxTiles)
+                    _selectedLookupKeys.value = mappedKeys
+                    _selectedIds.value = if (mappedKeys.isNotEmpty()) {
+                        ContactLookupResolver.resolveIds(mappedKeys, contacts)
+                    } else savedIds.filter { id -> contacts.any { it.id == id } }
+                    if (mappedKeys.isNotEmpty()) settingsRepo.saveSelectedContactLookupKeys(mappedKeys)
+                }
+                AppLogger.i("MainViewModel", "reconcileSelection: savedIds=${savedIds.size} lookupKeys=${savedKeys.size} mapped=${_selectedLookupKeys.value.size} visible=${_selectedIds.value.size}")
+            }
+        }
+    }
+
+    private fun lookupKeysForUpdatedSelection(updatedIds: List<Long>): List<String> {
+        val contacts = _allContacts.value
+        val visibleKeys = ContactLookupResolver.lookupKeysForIds(updatedIds, contacts)
+        val oldVisibleKeys = ContactLookupResolver.lookupKeysForIds(_selectedIds.value, contacts).toSet()
+        val unresolvedKeys = _selectedLookupKeys.value.filter { it !in oldVisibleKeys }
+        return (visibleKeys + unresolvedKeys).distinct()
     }
 
     fun toggleContactSelection(contactId: Long) {
@@ -175,8 +211,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         } else {
                             AppLogger.i("MainViewModel", "contact selected: id=$contactId")
                         }
+                        val updatedLookupKeys = lookupKeysForUpdatedSelection(updated)
                         _selectedIds.value = updated
-                        settingsRepo.saveSelectedContactIds(updated)
+                        _selectedLookupKeys.value = updatedLookupKeys
+                        settingsRepo.saveSelectedContactSelection(updated, updatedLookupKeys)
                         ContactWidgetProvider.updateAllWidgets(getApplication())
                     }
                 }
@@ -207,8 +245,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     } else {
                         val fromIndex = current.indexOf(contactId)
                         val toIndex = fromIndex + direction
+                        val updatedLookupKeys = lookupKeysForUpdatedSelection(updated)
                         _selectedIds.value = updated
-                        settingsRepo.saveSelectedContactIds(updated)
+                        _selectedLookupKeys.value = updatedLookupKeys
+                        settingsRepo.saveSelectedContactSelection(updated, updatedLookupKeys)
                         ContactWidgetProvider.updateAllWidgets(getApplication())
                         AppLogger.i(
                             "MainViewModel",
@@ -257,8 +297,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     selectionSaveMutex.withLock {
                         val persistedSettings = settingsRepo.settings.first()
                         val selectedIds = settingsRepo.getSelectedContactIds()
+                        val selectedLookupKeys = settingsRepo.getSelectedContactLookupKeys()
                         persistedSettings to com.toxictrace.nexusconnect.data.backup.BackupManager
-                            .settingsToJson(persistedSettings, selectedIds)
+                            .settingsToJson(persistedSettings, selectedIds, selectedLookupKeys)
                     }
                 }
                 val folderUri = android.net.Uri.parse(currentSettings.backupFolderUri)
@@ -279,12 +320,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 AppLogger.i("MainViewModel", "restoreBackup started: $fileUri")
                 val json = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .loadBackup(getApplication(), fileUri)
-                val (restoredSettings, backupIds) = com.toxictrace.nexusconnect.data.backup.BackupManager
+                val (restoredSettings, backupIds, backupLookupKeys) = com.toxictrace.nexusconnect.data.backup.BackupManager
                     .jsonToSettings(json)
-                // Keep restored selection within the capacity defined by the restored layout,
-                // matching the limit applied when loading a saved selection at startup.
                 val maxTiles = restoredSettings.columns * restoredSettings.tileHeightDp
-                val restoredIds = SelectionLimit.trim(backupIds, maxTiles)
+                val restoredLookupKeys = backupLookupKeys.take(maxTiles)
+                val trimmedBackupIds = SelectionLimit.trim(backupIds, maxTiles)
+                val resolvedBackupIds = if (restoredLookupKeys.isNotEmpty()) {
+                    ContactLookupResolver.resolveIds(restoredLookupKeys, _allContacts.value)
+                } else emptyList()
+                val restoredIds = when {
+                    resolvedBackupIds.isNotEmpty() -> resolvedBackupIds
+                    restoredLookupKeys.isNotEmpty() && _allContacts.value.isNotEmpty() -> emptyList()
+                    else -> trimmedBackupIds
+                }
+                val finalLookupKeys = if (restoredLookupKeys.isNotEmpty()) restoredLookupKeys
+                    else ContactLookupResolver.lookupKeysForIds(restoredIds, _allContacts.value)
                 // Use the same lock order as saveBackup: settings first, then selection.
                 // This makes the restored settings and IDs appear as one consistent snapshot
                 // to backup creation and prevents stale selection writes from winning.
@@ -294,18 +344,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         settingsRepo.updateSettings(
                             restoredSettings.copy(backupFolderUri = currentSettings.backupFolderUri)
                         )
-                        settingsRepo.saveSelectedContactIds(restoredIds)
+                        settingsRepo.saveSelectedContactSelection(restoredIds, finalLookupKeys)
                         _selectedIds.value = restoredIds
+                        _selectedLookupKeys.value = finalLookupKeys
                     }
                 }
                 ContactWidgetProvider.updateAllWidgets(getApplication())
-                if (restoredIds.size != backupIds.size) {
-                    AppLogger.w(
-                        "MainViewModel",
-                        "restoreBackup: trimmed ${backupIds.size} selected ids to maxTiles=$maxTiles"
-                    )
+                if (restoredIds.size != backupIds.size || restoredLookupKeys.size != backupLookupKeys.size) {
+                    AppLogger.w("MainViewModel", "restoreBackup: selection trimmed to maxTiles=$maxTiles")
                 }
-                AppLogger.i("MainViewModel", "restoreBackup success: ${restoredIds.size} contacts restored")
+                AppLogger.i("MainViewModel", "restoreBackup success: ids=${restoredIds.size} lookupKeys=${finalLookupKeys.size} contacts restored")
                 onResult()
             } catch (e: Exception) {
                 AppLogger.e("MainViewModel", "restoreBackup failed", e)

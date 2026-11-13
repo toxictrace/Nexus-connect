@@ -78,11 +78,19 @@ object WidgetPrefs {
         else raw.split(",").mapNotNull { it.toLongOrNull() }
     }
 
+    fun getSelectedContactLookupKeys(context: Context): List<String> =
+        SelectedContactLookupKeys.parse(sp(context).getString("selected_lookup_keys", "") ?: "")
+
     fun getMessengerWhatsApp(context: Context): String = sp(context).getString("messenger_whatsapp", "") ?: ""
     fun getMessengerViber(context: Context):    String = sp(context).getString("messenger_viber", "")    ?: ""
     fun getMessengerTelegram(context: Context): String = sp(context).getString("messenger_telegram", "") ?: ""
 
-    fun sync(context: Context, settings: WidgetSettings, selectedIds: List<Long>) {
+    fun sync(
+        context: Context,
+        settings: WidgetSettings,
+        selectedIds: List<Long>,
+        selectedLookupKeys: List<String>
+    ) {
         sp(context).edit().apply {
             putInt("columns",              settings.columns)
             putInt("rows",                 settings.tileHeightDp)
@@ -105,6 +113,7 @@ object WidgetPrefs {
             putString("messenger_viber",    settings.messengerViber)
             putString("messenger_telegram", settings.messengerTelegram)
             putString("selected_ids",      selectedIds.joinToString(","))
+            putString("selected_lookup_keys", SelectedContactLookupKeys.serialize(selectedLookupKeys))
             putInt("recents_days",          settings.recentsDays)
             putBoolean("show_call_log_button", settings.showCallLogButton)
             putString("call_log_app_package", settings.callLogAppPackage)
@@ -115,6 +124,19 @@ object WidgetPrefs {
     fun saveSelectedIds(context: Context, ids: List<Long>) {
         sp(context).edit()
             .putString("selected_ids", ids.joinToString(","))
+            .apply()
+    }
+
+    fun saveSelectedLookupKeys(context: Context, lookupKeys: List<String>) {
+        sp(context).edit()
+            .putString("selected_lookup_keys", SelectedContactLookupKeys.serialize(lookupKeys))
+            .apply()
+    }
+
+    fun saveSelectedSelection(context: Context, ids: List<Long>, lookupKeys: List<String>) {
+        sp(context).edit()
+            .putString("selected_ids", ids.joinToString(","))
+            .putString("selected_lookup_keys", SelectedContactLookupKeys.serialize(lookupKeys))
             .apply()
     }
 }

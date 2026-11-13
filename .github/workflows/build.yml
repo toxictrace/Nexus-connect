@@ -2,9 +2,10 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, master, fix/favorite-contact-reordering, diagnostics/widget-photo-refresh ]
+    branches: [ main, master, fix/favorite-contact-reordering, diagnostics/widget-photo-refresh, diagnostic ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -44,7 +45,7 @@ jobs:
           chmod 600 "$KEYSTORE_PATH"
 
       - name: Build Debug and Release APKs
-        run: gradle assembleDebug assembleRelease
+        run: gradle testDebugUnitTest assembleDebug assembleRelease
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4

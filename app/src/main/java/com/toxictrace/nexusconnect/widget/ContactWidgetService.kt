@@ -45,7 +45,11 @@ class ContactWidgetFactory(
         settings = runBlocking { settingsRepo.settings.first() }
         val allContacts = contactsRepo.loadContacts()
         val selectedIds = runBlocking { settingsRepo.getSelectedContactIds() }
+        val selectedLookupKeys = runBlocking { settingsRepo.getSelectedContactLookupKeys() }
         contacts = when {
+            selectedLookupKeys.isNotEmpty() ->
+                selectedLookupKeys.mapNotNull { key -> allContacts.firstOrNull { it.lookupKey == key } }
+                    .take(settings.maxContacts)
             selectedIds.isNotEmpty() ->
                 selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
                     .take(settings.maxContacts)
