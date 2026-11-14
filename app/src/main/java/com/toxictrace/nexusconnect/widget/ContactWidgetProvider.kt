@@ -107,6 +107,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val remaining = maxTiles - baseContacts.size
             if (remaining <= 0 || !WidgetPrefs.getFilterFrequent(context)) return baseContacts
 
+            val callLogRepo = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
+            val numberMap = buildNumberToIdMap(context, allContacts)
             val frequentIds = callLogRepo.getFrequentContactIds(numberMap, 50)
             val frequentIndices = WidgetFrequentContactResolver.resolve(
                 frequentIds,
