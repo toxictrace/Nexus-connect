@@ -542,6 +542,85 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetTileNorms_e
     write_string_array(&mut env, &extract_tile_norms(&keys, &ids, &contact_ids, &phones))
 }
 
+
+/// Returns indices of the first recent call for each unknown normalized number.
+fn unknown_recent_call_indices(
+    norms: &[String],
+    dates: &[i64],
+    types: &[i32],
+    non_blank: &[i32],
+    known_norms: &[String],
+    row_count: usize,
+    limit: i32,
+) -> Vec<i32> {
+    if limit <= 0 {
+        return Vec::new();
+    }
+    let known: HashSet<&str> = known_norms.iter().map(String::as_str).collect();
+    let mut seen = HashSet::new();
+    let mut result = Vec::new();
+    let count = row_count.min(norms.len()).min(dates.len()).min(types.len()).min(non_blank.len());
+    for index in 0..count {
+        let norm = norms[index].as_str();
+        if non_blank[index] != 0 && !known.contains(norm) && seen.insert(norm) {
+            result.push(index as i32);
+            if result.len() >= limit as usize {
+                break;
+            }
+        }
+    }
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_UnknownRecentCallFilter_filterNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    numbers: JObjectArray,
+    norms: JObjectArray,
+    dates: JLongArray,
+    types: jni::objects::JIntArray,
+    non_blank: jni::objects::JIntArray,
+    known_norms: JObjectArray,
+    limit: jint,
+) -> jintArray {
+    let number_values = match read_string_array(&mut env, &numbers) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let normalized = match read_string_array(&mut env, &norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let date_values = match read_long_array(&mut env, &dates) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let type_values = match read_int_array(&mut env, &types) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let non_blank_values = match read_int_array(&mut env, &non_blank) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let known_values = match read_string_array(&mut env, &known_norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let indices = unknown_recent_call_indices(
+        &normalized,
+        &date_values,
+        &type_values,
+        &non_blank_values,
+        &known_values,
+        number_values.len(),
+        limit,
+    );
+    write_int_array(&mut env, &indices)
+}
+
 /// Serializes selected contact IDs using the existing comma-separated storage format.
 fn serialize_contact_ids(ids: &[i64]) -> String {
     ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
@@ -592,7 +671,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection};
+    use super::{build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices};
 
     #[test]
     fn frequent_contact_order_sorts_by_call_count() {
@@ -927,6 +1006,36 @@ mod tests {
         assert_eq!(
             extract_tile_norms(&["keep".into(), "ignored".into()], &[1], &[1], &[]),
             vec!["keep"]
+        );
+    }
+
+
+    #[test]
+    fn unknown_recent_calls_exclude_known_blank_and_duplicate_numbers() {
+        let norms = vec!["known".into(), "unknown-a".into(), "unknown-a".into(), "unknown-b".into(), "blank".into()];
+        assert_eq!(
+            unknown_recent_call_indices(&norms, &[5, 4, 3, 2, 1], &[1, 2, 3, 4, 5], &[1, 1, 1, 1, 0], &["known".into()], 5, 20),
+            vec![1, 3]
+        );
+    }
+
+    #[test]
+    fn unknown_recent_calls_respect_limit_and_input_order() {
+        let norms = vec!["a".into(), "b".into(), "c".into()];
+        assert_eq!(
+            unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 3, 2),
+            vec![0, 1]
+        );
+    }
+
+    #[test]
+    fn unknown_recent_calls_handle_non_positive_limits_and_mismatched_arrays() {
+        let norms = vec!["a".into(), "b".into(), "c".into()];
+        assert!(unknown_recent_call_indices(&norms, &[3, 2], &[1, 2, 3], &[1, 1, 1], &[], 3, 10).is_empty());
+        assert!(unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 3, 0).is_empty());
+        assert_eq!(
+            unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 2, 10),
+            vec![0, 1]
         );
     }
 

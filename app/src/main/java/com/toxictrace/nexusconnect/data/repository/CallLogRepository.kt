@@ -107,8 +107,11 @@ class CallLogRepository(private val context: Context) {
         val cutoff = if (days > 0)
             System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L
         else 0L
-        val seen = mutableSetOf<String>()
-        val result = mutableListOf<Triple<String, Long, Int>>()
+        val numbers = mutableListOf<String>()
+        val norms = mutableListOf<String>()
+        val dates = mutableListOf<Long>()
+        val types = mutableListOf<Int>()
+        val nonBlank = mutableListOf<Boolean>()
         return try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -118,20 +121,29 @@ class CallLogRepository(private val context: Context) {
                 "${CallLog.Calls.DATE} DESC"
             ) ?: return emptyList()
             cursor.use {
-                val numIdx  = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val numIdx = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val dateIdx = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
                 val typeIdx = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
-                while (it.moveToNext() && result.size < limit) {
+                while (it.moveToNext()) {
                     val number = it.getString(numIdx) ?: continue
-                    val norm = normalizeNum(number)
-                    // Unknown = not in contacts AND not seen yet
-                    if (norm !in numberToContactId && norm !in seen && number.isNotBlank()) {
-                        seen.add(norm)
-                        result.add(Triple(number, it.getLong(dateIdx), it.getInt(typeIdx)))
-                    }
+                    numbers.add(number)
+                    norms.add(normalizeNum(number))
+                    dates.add(it.getLong(dateIdx))
+                    types.add(it.getInt(typeIdx))
+                    nonBlank.add(number.isNotBlank())
                 }
             }
-            result
+            UnknownRecentCallFilter.filter(
+                numbers,
+                norms,
+                dates,
+                types,
+                nonBlank,
+                numberToContactId.keys.toList(),
+                limit
+            ).map { index ->
+                Triple(numbers[index], dates[index], types[index])
+            }
         } catch (e: Exception) {
             Log.e(TAG, "getUnknownRecentCalls: ${e.message}")
             emptyList()
