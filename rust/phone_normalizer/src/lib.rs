@@ -485,6 +485,73 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_Frequent
 }
 
 
+
+/// Resolves selected widget favorites in saved order, preferring lookup keys over IDs.
+fn widget_favorite_indices(
+    all_ids: &[i64],
+    all_lookup_keys: &[String],
+    selected_ids: &[i64],
+    selected_lookup_keys: &[String],
+    max_tiles: i32,
+) -> Vec<i32> {
+    if max_tiles <= 0 {
+        return Vec::new();
+    }
+    let mut used_ids = HashSet::new();
+    let mut result = Vec::new();
+
+    if !selected_lookup_keys.is_empty() {
+        for key in selected_lookup_keys {
+            if let Some(index) = all_lookup_keys.iter().take(all_ids.len()).position(|candidate| candidate == key) {
+                let id = all_ids[index];
+                if used_ids.insert(id) {
+                    result.push(index as i32);
+                    if result.len() >= max_tiles as usize { break; }
+                }
+            }
+        }
+    } else {
+        for id in selected_ids {
+            if let Some(index) = all_ids.iter().position(|candidate| candidate == id) {
+                if used_ids.insert(*id) {
+                    result.push(index as i32);
+                    if result.len() >= max_tiles as usize { break; }
+                }
+            }
+        }
+    }
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFavoriteResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    all_ids: JLongArray,
+    all_lookup_keys: JObjectArray,
+    selected_ids: JLongArray,
+    selected_lookup_keys: JObjectArray,
+    max_tiles: jint,
+) -> jintArray {
+    let ids = match read_long_array(&mut env, &all_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let keys = match read_string_array(&mut env, &all_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected_keys = match read_string_array(&mut env, &selected_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_int_array(&mut env, &widget_favorite_indices(&ids, &keys, &selected, &selected_keys, max_tiles))
+}
+
 /// Builds normalized numbers for widget tiles while preserving map and tile order.
 fn extract_tile_norms(
     number_keys: &[String],
@@ -800,7 +867,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices};
+    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
     #[test]
     fn recent_mixed_calls_preserve_order_and_deduplicate_contacts_and_unknowns() {
@@ -1152,6 +1219,32 @@ mod tests {
     #[test]
     fn normalize_removes_java_regex_ascii_whitespace() {
         assert_eq!(normalize_number("\t12\n34\u{000B}56\u{000C}78\r90"), "4567890");
+    }
+
+    #[test]
+    fn widget_favorites_resolve_lookup_keys_in_saved_order_and_deduplicate_ids() {
+        let ids = [10, 20, 10, 30];
+        let keys = vec!["a".into(), "b".into(), "c".into(), "d".into()];
+        let selected_keys = vec!["c".into(), "a".into(), "c".into(), "missing".into()];
+        assert_eq!(widget_favorite_indices(&ids, &keys, &[20], &selected_keys, 10), vec![2]);
+    }
+
+    #[test]
+    fn widget_favorites_use_ids_only_when_lookup_keys_are_empty() {
+        assert_eq!(
+            widget_favorite_indices(&[10, 20, 30], &["a".into(), "b".into(), "c".into()], &[30, 99, 10], &[], 10),
+            vec![2, 0]
+        );
+        assert!(widget_favorite_indices(&[10, 20], &["a".into(), "b".into()], &[10], &["missing".into()], 10).is_empty());
+    }
+
+    #[test]
+    fn widget_favorites_preserve_first_match_and_respect_capacity() {
+        assert_eq!(
+            widget_favorite_indices(&[10, 20, 10, 30], &["a".into(), "b".into(), "c".into(), "d".into()], &[], &["c".into(), "d".into()], 1),
+            vec![2]
+        );
+        assert!(widget_favorite_indices(&[10], &["a".into()], &[10], &[], 0).is_empty());
     }
 
     #[test]

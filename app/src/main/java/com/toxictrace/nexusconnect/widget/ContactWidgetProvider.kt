@@ -348,16 +348,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 )
             }
             // [Original logic from previous version - kept for compatibility]
-            val result = mutableListOf<Contact>()
-            val usedIds = mutableSetOf<Long>()
-
-            if (filterFavorites && selectedLookupKeys.isNotEmpty()) {
-                selectedLookupKeys.mapNotNull { key -> allContacts.firstOrNull { it.lookupKey == key } }
-                    .forEach { contact -> if (usedIds.add(contact.id)) result.add(contact) }
-            } else if (filterFavorites && selectedIds.isNotEmpty()) {
-                selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
-                    .forEach { contact -> if (usedIds.add(contact.id)) result.add(contact) }
+            val result = if (filterFavorites) {
+                WidgetFavoriteResolver.resolve(allContacts, selectedIds, selectedLookupKeys, maxTiles).toMutableList()
+            } else {
+                mutableListOf()
             }
+            val usedIds = result.map { it.id }.toMutableSet()
 
             if (result.size >= maxTiles) return result.take(maxTiles)
 
