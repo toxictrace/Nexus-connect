@@ -98,6 +98,12 @@ fn write_string_array(env: &mut JNIEnv, values: &[String]) -> jobjectArray {
     array.into_raw()
 }
 
+/// Counts selected IDs that exist in contacts, preserving repeated selected IDs.
+fn count_existing_selected_ids(selected_ids: &[i64], contact_ids: &[i64]) -> i32 {
+    let existing: HashSet<i64> = contact_ids.iter().copied().collect();
+    selected_ids.iter().filter(|id| existing.contains(id)).count() as i32
+}
+
 /// Keeps saved IDs that still exist in Contacts Provider, preserving order and duplicates.
 fn filter_existing_contact_ids(saved_ids: &[i64], contact_ids: &[i64]) -> Vec<i64> {
     let existing: HashSet<i64> = contact_ids.iter().copied().collect();
@@ -427,6 +433,24 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupR
         Err(_) => return std::ptr::null_mut(),
     };
     write_long_array(&mut env, Some(resolve_lookup_ids(&keys, &ids, &contact_keys)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_SelectedContactCount_countNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    selected_ids: JLongArray,
+    contact_ids: JLongArray,
+) -> jint {
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return 0,
+    };
+    let contacts = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return 0,
+    };
+    count_existing_selected_ids(&selected, &contacts)
 }
 
 #[no_mangle]
@@ -1767,6 +1791,18 @@ mod tests {
         assert_eq!(format_duration(-1), "-1s");
         assert_eq!(format_duration(-61), "-1s");
         assert_eq!(format_duration(i64::MIN), "-8s");
+    }
+
+    #[test]
+    fn selected_contact_count_counts_only_existing_ids_and_preserves_duplicates() {
+        assert_eq!(count_existing_selected_ids(&[7, 2, 7, 99, 3], &[3, 7, 7]), 3);
+    }
+
+    #[test]
+    fn selected_contact_count_handles_empty_and_missing_ids() {
+        assert_eq!(count_existing_selected_ids(&[], &[1, 2]), 0);
+        assert_eq!(count_existing_selected_ids(&[1, 2], &[]), 0);
+        assert_eq!(count_existing_selected_ids(&[8, 9], &[1, 2]), 0);
     }
 
     #[test]

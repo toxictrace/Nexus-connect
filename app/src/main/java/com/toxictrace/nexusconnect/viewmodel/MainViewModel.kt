@@ -47,8 +47,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val appsLoading = MutableStateFlow(true)
 
     val selectedCount: StateFlow<Int> = combine(_selectedIds, _allContacts) { ids, all ->
-        val allIds = all.map { it.id }.toSet()
-        ids.count { it in allIds }
+        SelectedContactCount.count(ids, all)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val displayContacts: StateFlow<List<Contact>> = combine(
