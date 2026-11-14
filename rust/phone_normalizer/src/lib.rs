@@ -552,6 +552,82 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFavoriteRes
     write_int_array(&mut env, &widget_favorite_indices(&ids, &keys, &selected, &selected_keys, max_tiles))
 }
 
+/// Resolves the call type for one widget tile while preserving Kotlin map iteration order.
+fn resolve_widget_call_type(
+    contact_id: i64,
+    is_unknown_with_phone: bool,
+    phone_norm: &str,
+    number_keys: &[String],
+    number_ids: &[i64],
+    call_type_keys: &[String],
+    call_type_values: &[i32],
+) -> i32 {
+    if is_unknown_with_phone {
+        return call_type_keys
+            .iter()
+            .zip(call_type_values.iter())
+            .find_map(|(key, value)| if key == phone_norm { Some(*value) } else { None })
+            .unwrap_or(i32::MIN);
+    }
+
+    for (key, id) in number_keys.iter().zip(number_ids.iter()) {
+        if *id != contact_id {
+            continue;
+        }
+        if let Some((_, value)) = call_type_keys
+            .iter()
+            .zip(call_type_values.iter())
+            .find(|(call_key, _)| *call_key == key)
+        {
+            return *value;
+        }
+    }
+    i32::MIN
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetCallTypeResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    contact_id: jlong,
+    is_unknown_with_phone: jint,
+    phone_norm: JString,
+    number_keys: JObjectArray,
+    number_ids: JLongArray,
+    call_type_keys: JObjectArray,
+    call_type_values: jni::objects::JIntArray,
+) -> jint {
+    let norm: String = match env.get_string(&phone_norm) {
+        Ok(value) => value.into(),
+        Err(_) => return i32::MIN,
+    };
+    let number_keys = match read_string_array(&mut env, &number_keys) {
+        Ok(values) => values,
+        Err(_) => return i32::MIN,
+    };
+    let number_ids = match read_long_array(&mut env, &number_ids) {
+        Ok(values) => values,
+        Err(_) => return i32::MIN,
+    };
+    let call_type_keys = match read_string_array(&mut env, &call_type_keys) {
+        Ok(values) => values,
+        Err(_) => return i32::MIN,
+    };
+    let call_type_values = match read_int_array(&mut env, &call_type_values) {
+        Ok(values) => values,
+        Err(_) => return i32::MIN,
+    };
+    resolve_widget_call_type(
+        contact_id,
+        is_unknown_with_phone != 0,
+        &norm,
+        &number_keys,
+        &number_ids,
+        &call_type_keys,
+        &call_type_values,
+    )
+}
+
 /// Builds normalized numbers for widget tiles while preserving map and tile order.
 fn extract_tile_norms(
     number_keys: &[String],
@@ -867,7 +943,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
     #[test]
     fn recent_mixed_calls_preserve_order_and_deduplicate_contacts_and_unknowns() {
@@ -1245,6 +1321,42 @@ mod tests {
             vec![2]
         );
         assert!(widget_favorite_indices(&[10], &["a".into()], &[10], &[], 0).is_empty());
+    }
+
+    #[test]
+    fn widget_call_type_resolver_uses_unknown_phone_norm_directly() {
+        assert_eq!(
+            resolve_widget_call_type(-1, true, "1234567", &[], &[], &["1234567".into()], &[3]),
+            3
+        );
+        assert_eq!(
+            resolve_widget_call_type(-1, true, "missing", &[], &[], &["1234567".into()], &[3]),
+            i32::MIN
+        );
+    }
+
+    #[test]
+    fn widget_call_type_resolver_uses_first_contact_number_with_call_type() {
+        let number_keys = vec!["first".into(), "second".into(), "third".into()];
+        let number_ids = vec![7, 7, 8];
+        let call_keys = vec!["second".into(), "first".into()];
+        let call_values = vec![2, 1];
+        assert_eq!(
+            resolve_widget_call_type(7, false, "", &number_keys, &number_ids, &call_keys, &call_values),
+            1
+        );
+    }
+
+    #[test]
+    fn widget_call_type_resolver_handles_missing_and_mismatched_arrays() {
+        assert_eq!(
+            resolve_widget_call_type(7, false, "", &["a".into()], &[], &["a".into()], &[2]),
+            i32::MIN
+        );
+        assert_eq!(
+            resolve_widget_call_type(7, false, "", &["a".into()], &[7], &["b".into()], &[2]),
+            i32::MIN
+        );
     }
 
     #[test]

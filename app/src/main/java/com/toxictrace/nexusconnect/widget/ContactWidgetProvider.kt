@@ -230,7 +230,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val callIconStyle = WidgetPrefs.getCallIconStyle(context)
             val glass = callIconStyle == "GLASS"
 
-            val callType = getCallTypeForContact(contact, callTypeMap, numberMap)
+            val callType = WidgetCallTypeResolver.resolve(contact, callTypeMap, numberMap)
 
             val iconRes = when (callType) {
                 android.provider.CallLog.Calls.INCOMING_TYPE -> if (glass) R.drawable.call_incoming_glass else R.drawable.call_incoming
@@ -248,19 +248,6 @@ class ContactWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        private fun getCallTypeForContact(
-            contact: Contact,
-            callTypeMap: Map<String, Int>,
-            numberMap: Map<String, Long>
-        ): Int? {
-            return if (contact.id < 0 && contact.phoneNumber != null) {
-                val norm = contact.phoneNumber.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
-                callTypeMap[norm]
-            } else {
-                val contactNorms = numberMap.entries.filter { it.value == contact.id }.map { it.key }
-                contactNorms.firstNotNullOfOrNull { callTypeMap[it] }
-            }
-        }
 
         private fun setupClickHandler(views: RemoteViews, context: Context, tileId: Int, contact: Contact) {
             val intent = Intent(context, ContactWidgetProvider::class.java).apply {
