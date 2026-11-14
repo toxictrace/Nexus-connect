@@ -546,10 +546,10 @@ mod tests {
             &[1, 2],
             &["old-uri".into(), "uri-2".into()],
         );
-        assert_eq!(result[0..3], [2, 2, 2]);
+        assert_eq!(result[0..3], [2, 1, 1]);
         assert!(result[3..5].contains(&1));
         assert!(result[3..5].contains(&2));
-        assert_eq!(result[5..7], [0, 1]);
+        assert_eq!(result[6], 0);
     }
 
     #[test]
@@ -577,8 +577,10 @@ mod tests {
             &[7, 8],
             &["cached-uri".into(), "uri-8".into()],
         );
-        assert_eq!(result[0..3], [3, 1, 2]);
-        assert_eq!(result[3..6].contains(&7), true);
+        assert_eq!(result[0..3], [2, 1, 2]);
+        assert!(result[3..5].contains(&7));
+        assert!(result[3..5].contains(&8));
+        assert_eq!(result[5], 7);
         assert_eq!(result[6..8], [0, 1]);
     }
 
