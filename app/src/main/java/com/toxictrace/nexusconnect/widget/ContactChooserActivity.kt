@@ -170,9 +170,10 @@ class ContactChooserActivity : ComponentActivity() {
                     CallLog.Calls.DURATION, CallLog.Calls.TYPE),
                 null, null, "${CallLog.Calls.DATE} DESC"
             ) ?: return CallStats(null, 0, 0L, 0)
-            val dates = mutableListOf<Long>()
-            val durations = mutableListOf<Long>()
-            val types = mutableListOf<Int>()
+            val callNorms = mutableListOf<String>()
+            val allDates = mutableListOf<Long>()
+            val allDurations = mutableListOf<Long>()
+            val allTypes = mutableListOf<Int>()
             cursor.use {
                 val ni = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val di = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
@@ -180,13 +181,16 @@ class ContactChooserActivity : ComponentActivity() {
                 val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
                 while (it.moveToNext()) {
                     val n = it.getString(ni)?.replace(Regex("[\\s\\-().+]"), "")?.takeLast(7) ?: continue
-                    if (n in norms) {
-                        dates.add(it.getLong(di))
-                        durations.add(it.getLong(ui))
-                        types.add(it.getInt(ti))
-                    }
+                    callNorms.add(n)
+                    allDates.add(it.getLong(di))
+                    allDurations.add(it.getLong(ui))
+                    allTypes.add(it.getInt(ti))
                 }
             }
+            val matchedIndices = CallStatsCallFilter.filter(callNorms, norms.toList())
+            val dates = matchedIndices.map { allDates[it] }
+            val durations = matchedIndices.map { allDurations[it] }
+            val types = matchedIndices.map { allTypes[it] }
             val resolved = CallStatsResolver.resolve(dates, durations, types)
             CallStats(
                 lastCallDate = resolved[0].takeUnless { it == Long.MIN_VALUE },

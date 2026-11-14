@@ -888,6 +888,32 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_RecentMi
     write_int_array(&mut env, &indices)
 }
 
+/// Returns call-log row indices whose normalized numbers belong to the requested contact.
+fn call_stats_match_indices(call_norms: &[String], target_norms: &[String]) -> Vec<i32> {
+    let targets: HashSet<&str> = target_norms.iter().map(String::as_str).collect();
+    call_norms.iter().enumerate()
+        .filter_map(|(index, norm)| targets.contains(norm.as_str()).then_some(index as i32))
+        .collect()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallStatsCallFilter_filterNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    call_norms: JObjectArray,
+    target_norms: JObjectArray,
+) -> jintArray {
+    let calls = match read_string_array(&mut env, &call_norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let targets = match read_string_array(&mut env, &target_norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_int_array(&mut env, &call_stats_match_indices(&calls, &targets))
+}
+
 /// Aggregates already-matched call-log rows while preserving Kotlin Int/Long overflow behavior.
 fn aggregate_call_stats(dates: &[i64], durations: &[i64], types: &[i32]) -> [i64; 4] {
     let count = dates.len().min(durations.len()).min(types.len());
@@ -1045,7 +1071,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_UpdatedSelecti
 
 #[cfg(test)]
 mod tests {
-    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
 
     #[test]
@@ -1105,6 +1131,26 @@ mod tests {
     fn recent_mixed_calls_handle_mismatched_arrays_and_both_groups_disabled() {
         assert_eq!(recent_mixed_call_indices(&["a".into(),"b".into()],&[2],&[1,i64::MIN],&[1,1],0,0,false,false,10), vec![0]);
         assert!(recent_mixed_call_indices(&["a".into()],&[1],&[1],&[1],0,0,true,true,10).is_empty());
+    }
+
+    #[test]
+    fn call_stats_filter_preserves_call_log_order_and_all_matching_rows() {
+        let calls = vec!["other".into(), "1234567".into(), "7654321".into(), "1234567".into()];
+        let targets = vec!["7654321".into(), "1234567".into()];
+        assert_eq!(call_stats_match_indices(&calls, &targets), vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn call_stats_filter_ignores_duplicate_targets_and_handles_empty_inputs() {
+        let calls = vec!["a".into(), "b".into(), "a".into()];
+        assert_eq!(call_stats_match_indices(&calls, &["a".into(), "a".into()]), vec![0, 2]);
+        assert!(call_stats_match_indices(&calls, &[]).is_empty());
+        assert!(call_stats_match_indices(&[], &["a".into()]).is_empty());
+    }
+
+    #[test]
+    fn call_stats_filter_matches_empty_normalized_numbers_when_requested() {
+        assert_eq!(call_stats_match_indices(&["".into(), "123".into()], &["".into()]), vec![0]);
     }
 
     #[test]
