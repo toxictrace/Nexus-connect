@@ -13,7 +13,17 @@ internal object SelectedContactLookupKeys {
     }
 
     fun serialize(keys: List<String>): String =
-        keys.filter { it.isNotBlank() }.joinToString(",") {
-            Base64.getUrlEncoder().withoutPadding().encodeToString(it.toByteArray(Charsets.UTF_8))
-        }
+        NativeSelectedContactLookupKeys.serialize(keys.filter { it.isNotBlank() }.toTypedArray())
+}
+
+/** Rust-backed serializer for the existing URL-safe Base64 storage format. */
+internal object NativeSelectedContactLookupKeys {
+    init {
+        System.loadLibrary("nexus_phone")
+    }
+
+    @JvmStatic
+    private external fun serializeNative(keys: Array<String>): String
+
+    fun serialize(keys: Array<String>): String = serializeNative(keys)
 }

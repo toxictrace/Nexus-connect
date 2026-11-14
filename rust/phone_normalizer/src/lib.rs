@@ -1,3 +1,5 @@
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::Engine;
 use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString};
 use jni::sys::{jint, jlong, jintArray, jlongArray, jobjectArray, jstring};
 use std::collections::{HashMap, HashSet};
@@ -18,6 +20,26 @@ fn toggle_selection(selected_ids: &[i64], contact_id: i64, max_tiles: i32) -> Op
 
     updated.push(contact_id);
     Some(updated)
+ 
+    #[test]
+    fn selected_lookup_keys_serialization_preserves_url_safe_base64_format() {
+        let keys = vec![
+            "0r7-abc:person,one".to_string(),
+            "lookup/key_two".to_string(),
+            "another-key".to_string(),
+            "ключ".to_string(),
+        ];
+        assert_eq!(
+            serialize_lookup_keys(&keys),
+            "MHI3LWFiYzpwZXJzb24sb25l,bG9va3VwL2tleV90d28,YW5vdGhlci1rZXk,0LrQu9GO0Yc"
+        );
+    }
+
+    #[test]
+    fn selected_lookup_keys_serialization_returns_empty_for_empty_input() {
+        assert_eq!(serialize_lookup_keys(&[]), "");
+    }
+
 }
 
 /// Mirrors ContactSelectionOperations.move, including first-match behavior.
@@ -436,6 +458,32 @@ fn serialize_contact_ids(ids: &[i64]) -> String {
     ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
 }
 
+ 
+/// Serializes lookup keys using URL-safe Base64 without padding.
+fn serialize_lookup_keys(keys: &[String]) -> String {
+    keys.iter()
+        .map(|key| URL_SAFE_NO_PAD.encode(key.as_bytes()))
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactLookupKeys_serializeNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    keys: JObjectArray,
+) -> jstring {
+    let values = match read_string_array(&mut env, &keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(serialize_lookup_keys(&values)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactIds_serializeNative(
     mut env: JNIEnv,
@@ -455,7 +503,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{build_contact_display_order, build_photo_cache_plan, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, toggle_selection, trim_selection};
+    use super::{build_contact_display_order, build_photo_cache_plan, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection};
 
     #[test]
     fn toggle_adds_contact_at_end() {
