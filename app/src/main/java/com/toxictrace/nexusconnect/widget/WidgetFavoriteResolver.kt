@@ -29,6 +29,6 @@ internal object WidgetFavoriteResolver {
             selectedLookupKeys.toTypedArray(),
             maxTiles
         )
-        return indices.mapNotNull { allContacts.getOrNull(it) }
+        return indices.map { allContacts.getOrNull(it) }.filterNotNull()
     }
 }
