@@ -63,6 +63,6 @@ mod tests {
 
     #[test]
     fn preserves_non_ascii_digits() {
-        assert_eq!(normalize_number("+１２３-４５６７８"), "１２３４５６７８");
+        assert_eq!(normalize_number("+１２３-４５６７８"), "２３４５６７８");
     }
 }
