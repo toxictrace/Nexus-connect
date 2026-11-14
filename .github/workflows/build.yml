@@ -49,8 +49,9 @@ jobs:
         run: cargo test --manifest-path rust/phone_normalizer/Cargo.toml
 
       - name: Build Rust Android libraries
+        working-directory: rust/phone_normalizer
         run: |
-          cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 --platform 26 --out app/build/generated/rustJniLibs build --release --manifest-path rust/phone_normalizer/Cargo.toml
+          cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 --platform 26 --out ../../app/build/generated/rustJniLibs build --release
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
