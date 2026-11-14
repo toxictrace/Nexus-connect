@@ -111,6 +111,26 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactSelecti
     write_long_array(&mut env, move_selection(&selected, contact_id, direction))
 }
 
+/// Mirrors SelectionLimit.trim while preserving order and capacity edge cases.
+fn trim_selection(ids: &[i64], capacity: i32) -> Vec<i64> {
+    ids.iter().take(capacity.max(0) as usize).copied().collect()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_SelectionLimit_trimNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    selected_ids: JLongArray,
+    capacity: jint,
+) -> jlongArray {
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_long_array(&mut env, Some(trim_selection(&selected, capacity)))
+}
+
 /// Mirrors the previous Kotlin expression:
 /// number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
 fn normalize_number(number: &str) -> String {
@@ -194,6 +214,27 @@ mod tests {
     #[test]
     fn move_uses_first_matching_duplicate() {
         assert_eq!(move_selection(&[1, 2, 1], 1, 1), Some(vec![2, 1, 1]));
+    }
+
+    #[test]
+    fn trim_selection_keeps_all_ids_within_capacity() {
+        assert_eq!(trim_selection(&[4, 8], 3), vec![4, 8]);
+    }
+
+    #[test]
+    fn trim_selection_limits_ids_and_preserves_order() {
+        assert_eq!(trim_selection(&[4, 8, 2], 2), vec![4, 8]);
+    }
+
+    #[test]
+    fn trim_selection_returns_empty_for_zero_or_negative_capacity() {
+        assert_eq!(trim_selection(&[4, 8], 0), Vec::<i64>::new());
+        assert_eq!(trim_selection(&[4, 8], -1), Vec::<i64>::new());
+    }
+
+    #[test]
+    fn trim_selection_keeps_empty_selection_empty() {
+        assert_eq!(trim_selection(&[], 12), Vec::<i64>::new());
     }
 
     #[test]

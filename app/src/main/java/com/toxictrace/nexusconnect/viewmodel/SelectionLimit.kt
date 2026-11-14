@@ -1,6 +1,14 @@
 package com.toxictrace.nexusconnect.viewmodel
 
+/** Limits selected contact IDs through the Rust JNI layer. */
 internal object SelectionLimit {
+    init {
+        System.loadLibrary("nexus_phone")
+    }
+
+    @JvmStatic
+    private external fun trimNative(ids: LongArray, capacity: Int): LongArray
+
     fun trim(ids: List<Long>, capacity: Int): List<Long> =
-        if (ids.size <= capacity) ids else ids.take(capacity.coerceAtLeast(0))
+        trimNative(ids.toLongArray(), capacity).toList()
 }
