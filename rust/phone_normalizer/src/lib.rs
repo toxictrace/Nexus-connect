@@ -1031,7 +1031,10 @@ mod tests {
     #[test]
     fn unknown_recent_calls_handle_non_positive_limits_and_mismatched_arrays() {
         let norms = vec!["a".into(), "b".into(), "c".into()];
-        assert!(unknown_recent_call_indices(&norms, &[3, 2], &[1, 2, 3], &[1, 1, 1], &[], 3, 10).is_empty());
+        assert_eq!(
+            unknown_recent_call_indices(&norms, &[3, 2], &[1, 2, 3], &[1, 1, 1], &[], 3, 10),
+            vec![0, 1]
+        );
         assert!(unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 3, 0).is_empty());
         assert_eq!(
             unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 2, 10),
