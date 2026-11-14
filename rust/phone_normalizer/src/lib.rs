@@ -1,5 +1,6 @@
-use jni::objects::{JClass, JLongArray, JString};
-use jni::sys::{jint, jlong, jlongArray, jstring};
+use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString};
+use jni::sys::{jint, jlong, jlongArray, jobjectArray, jstring};
+use std::collections::{HashMap, HashSet};
 use jni::JNIEnv;
 
 /// Mirrors ContactSelectionOperations.toggle without changing ordering or limits.
@@ -58,6 +59,63 @@ fn write_long_array(env: &mut JNIEnv, values: Option<Vec<i64>>) -> jlongArray {
     }
 
     array.into_raw()
+}
+
+fn read_string_array(env: &mut JNIEnv, array: &JObjectArray) -> Result<Vec<String>, jni::errors::Error> {
+    let length = env.get_array_length(array)?;
+    let mut values = Vec::with_capacity(length as usize);
+    for index in 0..length {
+        let object = env.get_object_array_element(array, index)?;
+        let value: String = env.get_string(&JString::from(object))?.into();
+        values.push(value);
+    }
+    Ok(values)
+}
+
+fn write_string_array(env: &mut JNIEnv, values: &[String]) -> jobjectArray {
+    let array = match env.new_object_array(values.len() as jint, "java/lang/String", JObject::null()) {
+        Ok(array) => array,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    for (index, value) in values.iter().enumerate() {
+        let string = match env.new_string(value) {
+            Ok(string) => string,
+            Err(_) => return std::ptr::null_mut(),
+        };
+        if env.set_object_array_element(&array, index as jint, string).is_err() {
+            return std::ptr::null_mut();
+        }
+    }
+    array.into_raw()
+}
+
+fn resolve_lookup_ids(
+    lookup_keys: &[String],
+    contact_ids: &[i64],
+    contact_lookup_keys: &[String],
+) -> Vec<i64> {
+    let mut by_lookup_key = HashMap::new();
+    for (id, key) in contact_ids.iter().zip(contact_lookup_keys.iter()) {
+        by_lookup_key.insert(key.as_str(), *id);
+    }
+
+    let mut seen = HashSet::new();
+    lookup_keys
+        .iter()
+        .filter_map(|key| by_lookup_key.get(key.as_str()).copied())
+        .filter(|id| seen.insert(*id))
+        .collect()
+}
+
+fn lookup_keys_for_ids(ids: &[i64], contact_ids: &[i64], contact_lookup_keys: &[String]) -> Vec<String> {
+    let mut by_id = HashMap::new();
+    for (id, key) in contact_ids.iter().zip(contact_lookup_keys.iter()) {
+        by_id.insert(*id, key.as_str());
+    }
+
+    ids.iter()
+        .map(|id| by_id.get(id).map(|key| (*key).to_owned()).unwrap_or_default())
+        .collect()
 }
 
 #[no_mangle]
@@ -131,6 +189,53 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_SelectionLimit
     write_long_array(&mut env, Some(trim_selection(&selected, capacity)))
 }
 
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupResolver_resolveIdsNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    lookup_keys: JObjectArray,
+    contact_ids: JLongArray,
+    contact_lookup_keys: JObjectArray,
+) -> jlongArray {
+    let keys = match read_string_array(&mut env, &lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contact_keys = match read_string_array(&mut env, &contact_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_long_array(&mut env, Some(resolve_lookup_ids(&keys, &ids, &contact_keys)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupResolver_lookupKeysForIdsNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    ids: JLongArray,
+    contact_ids: JLongArray,
+    contact_lookup_keys: JObjectArray,
+) -> jobjectArray {
+    let selected_ids = match read_long_array(&mut env, &ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let all_ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let keys = match read_string_array(&mut env, &contact_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let resolved = lookup_keys_for_ids(&selected_ids, &all_ids, &keys);
+    write_string_array(&mut env, &resolved)
+}
+
 /// Mirrors the previous Kotlin expression:
 /// number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
 fn normalize_number(number: &str) -> String {
@@ -150,7 +255,7 @@ fn normalize_number(number: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{move_selection, normalize_number, toggle_selection, trim_selection};
+    use super::{lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, toggle_selection, trim_selection};
 
     #[test]
     fn toggle_adds_contact_at_end() {
@@ -235,6 +340,50 @@ mod tests {
     #[test]
     fn trim_selection_keeps_empty_selection_empty() {
         assert_eq!(trim_selection(&[], 12), Vec::<i64>::new());
+    }
+
+
+    #[test]
+    fn resolve_lookup_ids_preserves_saved_order_and_skips_missing_keys() {
+        let keys = vec!["key-b".to_string(), "missing".to_string(), "key-a".to_string()];
+        let ids = vec![4553, 7001];
+        let contact_keys = vec!["key-a".to_string(), "key-b".to_string()];
+        assert_eq!(resolve_lookup_ids(&keys, &ids, &contact_keys), vec![7001, 4553]);
+    }
+
+    #[test]
+    fn resolve_lookup_ids_uses_last_contact_for_duplicate_lookup_key() {
+        let keys = vec!["same".to_string()];
+        let ids = vec![10, 20];
+        let contact_keys = vec!["same".to_string(), "same".to_string()];
+        assert_eq!(resolve_lookup_ids(&keys, &ids, &contact_keys), vec![20]);
+    }
+
+    #[test]
+    fn resolve_lookup_ids_removes_duplicate_resolved_ids() {
+        let keys = vec!["first".to_string(), "second".to_string()];
+        let ids = vec![42, 42];
+        let contact_keys = vec!["first".to_string(), "second".to_string()];
+        assert_eq!(resolve_lookup_ids(&keys, &ids, &contact_keys), vec![42]);
+    }
+
+    #[test]
+    fn lookup_keys_for_ids_preserves_selected_order_and_missing_placeholders() {
+        let ids = vec![7001, 9999, 4553];
+        let contact_ids = vec![4553, 7001];
+        let keys = vec!["key-a".to_string(), "key-b".to_string()];
+        assert_eq!(
+            lookup_keys_for_ids(&ids, &contact_ids, &keys),
+            vec!["key-b".to_string(), "".to_string(), "key-a".to_string()]
+        );
+    }
+
+    #[test]
+    fn lookup_keys_for_ids_uses_last_contact_for_duplicate_id() {
+        let ids = vec![7];
+        let contact_ids = vec![7, 7];
+        let keys = vec!["old-key".to_string(), "new-key".to_string()];
+        assert_eq!(lookup_keys_for_ids(&ids, &contact_ids, &keys), vec!["new-key".to_string()]);
     }
 
     #[test]
