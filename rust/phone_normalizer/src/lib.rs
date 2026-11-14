@@ -622,6 +622,51 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_UnknownR
 }
 
 
+
+/// Selects first recent rows for known contacts and unknown normalized numbers.
+fn recent_mixed_call_indices(
+    norms: &[String], dates: &[i64], contact_ids: &[i64], valid_unknown: &[i32],
+    contact_cutoff: i64, unknown_cutoff: i64,
+    contacts_disabled: bool, unknown_disabled: bool, limit: i32,
+) -> Vec<i32> {
+    if limit <= 0 || (contacts_disabled && unknown_disabled) { return Vec::new(); }
+    let count = norms.len().min(dates.len()).min(contact_ids.len()).min(valid_unknown.len());
+    let mut seen_contacts = HashSet::new();
+    let mut seen_unknown_norms = HashSet::new();
+    let mut result = Vec::new();
+    for index in 0..count {
+        if result.len() >= limit as usize { break; }
+        let contact_id = contact_ids[index];
+        if contact_id != i64::MIN {
+            if contacts_disabled || (contact_cutoff > 0 && dates[index] < contact_cutoff) { continue; }
+            if seen_contacts.insert(contact_id) { result.push(index as i32); }
+        } else {
+            if unknown_disabled || valid_unknown[index] == 0
+                || (unknown_cutoff > 0 && dates[index] < unknown_cutoff) { continue; }
+            if seen_unknown_norms.insert(norms[index].as_str()) { result.push(index as i32); }
+        }
+    }
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_RecentMixedCallResolver_resolveNative(
+    mut env: JNIEnv, _class: JClass, norms: JObjectArray, dates: JLongArray,
+    contact_ids: JLongArray, valid_unknown: jni::objects::JIntArray,
+    contact_cutoff: jlong, unknown_cutoff: jlong, contacts_disabled: jboolean,
+    unknown_disabled: jboolean, limit: jint,
+) -> jintArray {
+    let norm_values = match read_string_array(&mut env, &norms) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
+    let date_values = match read_long_array(&mut env, &dates) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
+    let contact_values = match read_long_array(&mut env, &contact_ids) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
+    let valid_values = match read_int_array(&mut env, &valid_unknown) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
+    let indices = recent_mixed_call_indices(
+        &norm_values, &date_values, &contact_values, &valid_values,
+        contact_cutoff, unknown_cutoff, contacts_disabled != 0, unknown_disabled != 0, limit
+    );
+    write_int_array(&mut env, &indices)
+}
+
 /// Aggregates already-matched call-log rows while preserving Kotlin Int/Long overflow behavior.
 fn aggregate_call_stats(dates: &[i64], durations: &[i64], types: &[i32]) -> [i64; 4] {
     let count = dates.len().min(durations.len()).min(types.len());
@@ -755,7 +800,35 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices};
+    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices};
+
+    #[test]
+    fn recent_mixed_calls_preserve_order_and_deduplicate_contacts_and_unknowns() {
+        let norms = vec!["a".into(), "x".into(), "a".into(), "y".into(), "x".into()];
+        assert_eq!(recent_mixed_call_indices(&norms, &[50,40,30,20,10], &[7,i64::MIN,7,i64::MIN,i64::MIN], &[1;5], 0,0,false,false,10), vec![0,1,3]);
+    }
+
+    #[test]
+    fn recent_mixed_calls_apply_independent_cutoffs_and_disabled_groups() {
+        let norms = vec!["known".into(), "unknown".into(), "known2".into(), "unknown2".into()];
+        let ids = vec![1,i64::MIN,2,i64::MIN];
+        assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],60,40,false,false,10), vec![0,1]);
+        assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],0,0,true,false,10), vec![1,3]);
+        assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],0,0,false,true,10), vec![0,2]);
+    }
+
+    #[test]
+    fn recent_mixed_calls_ignore_invalid_unknown_numbers_and_respect_limit() {
+        let norms = vec!["".into(),"-1".into(),"-2".into(),"valid".into(),"later".into()];
+        assert_eq!(recent_mixed_call_indices(&norms,&[5;5],&[i64::MIN;5],&[0,0,0,1,1],0,0,false,false,1), vec![3]);
+        assert!(recent_mixed_call_indices(&norms,&[5;5],&[i64::MIN;5],&[1;5],0,0,false,false,0).is_empty());
+    }
+
+    #[test]
+    fn recent_mixed_calls_handle_mismatched_arrays_and_both_groups_disabled() {
+        assert_eq!(recent_mixed_call_indices(&["a".into(),"b".into()],&[2],&[1,i64::MIN],&[1,1],0,0,false,false,10), vec![0]);
+        assert!(recent_mixed_call_indices(&["a".into()],&[1],&[1],&[1],0,0,true,true,10).is_empty());
+    }
 
     #[test]
     fn aggregate_call_stats_uses_first_row_and_sums_all_matches() {
