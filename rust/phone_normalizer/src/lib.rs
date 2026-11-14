@@ -577,6 +577,35 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFavoriteRes
     write_int_array(&mut env, &widget_favorite_indices(&ids, &keys, &selected, &selected_keys, max_tiles))
 }
 
+/// Resolves frequent contact IDs to first matching contact indices, preserving order.
+fn frequent_contact_indices(
+    frequent_ids: &[i64],
+    contact_ids: &[i64],
+    base_contact_ids: &[i64],
+    max_tiles: i32,
+) -> Vec<i32> {
+    let remaining = max_tiles as i64 - base_contact_ids.len() as i64;
+    if remaining <= 0 {
+        return Vec::new();
+    }
+    let mut used_ids: HashSet<i64> = base_contact_ids.iter().copied().collect();
+    let mut result = Vec::new();
+    for id in frequent_ids {
+        if result.len() as i64 >= remaining {
+            break;
+        }
+        if used_ids.contains(id) {
+            continue;
+        }
+        if let Some(index) = contact_ids.iter().position(|candidate| candidate == id) {
+            used_ids.insert(*id);
+            result.push(index as i32);
+        }
+    }
+    result
+}
+
+
 /// Resolves the call type for one widget tile while preserving Kotlin map iteration order.
 fn resolve_widget_call_type(
     contact_id: i64,
@@ -608,6 +637,30 @@ fn resolve_widget_call_type(
         }
     }
     i32::MIN
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFrequentContactResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    frequent_ids: JLongArray,
+    contact_ids: JLongArray,
+    base_contact_ids: JLongArray,
+    max_tiles: jint,
+) -> jintArray {
+    let frequent = match read_long_array(&mut env, &frequent_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contacts = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let base = match read_long_array(&mut env, &base_contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_int_array(&mut env, &frequent_contact_indices(&frequent, &contacts, &base, max_tiles))
 }
 
 #[no_mangle]
@@ -992,7 +1045,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_UpdatedSelecti
 
 #[cfg(test)]
 mod tests {
-    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
 
     #[test]
@@ -1402,6 +1455,38 @@ mod tests {
             vec![2]
         );
         assert!(widget_favorite_indices(&[10], &["a".into()], &[10], &[], 0).is_empty());
+    }
+
+    #[test]
+    fn frequent_contact_indices_preserve_order_and_exclude_base_contacts() {
+        assert_eq!(
+            frequent_contact_indices(&[3, 2, 4, 3], &[1, 2, 3, 4], &[1, 2], 4),
+            vec![2, 3]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_indices_use_first_matching_contact_and_deduplicate_ids() {
+        assert_eq!(
+            frequent_contact_indices(&[7, 7, 8], &[7, 7, 8], &[], 3),
+            vec![0, 2]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_indices_respect_remaining_capacity() {
+        assert_eq!(
+            frequent_contact_indices(&[2, 3, 4], &[1, 2, 3, 4], &[1, 9], 3),
+            vec![1]
+        );
+        assert!(frequent_contact_indices(&[2], &[1, 2], &[1, 9], 2).is_empty());
+    }
+
+    #[test]
+    fn frequent_contact_indices_handle_missing_ids_and_empty_inputs() {
+        assert!(frequent_contact_indices(&[9], &[1, 2], &[], 4).is_empty());
+        assert!(frequent_contact_indices(&[], &[1, 2], &[], 4).is_empty());
+        assert!(frequent_contact_indices(&[1], &[], &[], 4).is_empty());
     }
 
     #[test]
