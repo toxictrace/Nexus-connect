@@ -621,6 +621,51 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_UnknownR
     write_int_array(&mut env, &indices)
 }
 
+
+/// Aggregates already-matched call-log rows while preserving Kotlin Int/Long overflow behavior.
+fn aggregate_call_stats(dates: &[i64], durations: &[i64], types: &[i32]) -> [i64; 4] {
+    let count = dates.len().min(durations.len()).min(types.len());
+    let mut last_date = i64::MIN;
+    let mut total_calls = 0_i32;
+    let mut total_duration = 0_i64;
+    let mut last_call_type = 0_i32;
+
+    for index in 0..count {
+        if total_calls == 0 {
+            last_date = dates[index];
+            last_call_type = types[index];
+        }
+        total_calls = total_calls.wrapping_add(1);
+        total_duration = total_duration.wrapping_add(durations[index]);
+    }
+
+    [last_date, total_calls as i64, total_duration, last_call_type as i64]
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallStatsResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    dates: JLongArray,
+    durations: JLongArray,
+    types: jni::objects::JIntArray,
+) -> jlongArray {
+    let date_values = match read_long_array(&mut env, &dates) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let duration_values = match read_long_array(&mut env, &durations) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let type_values = match read_int_array(&mut env, &types) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_long_array(&mut env, Some(aggregate_call_stats(&date_values, &duration_values, &type_values).to_vec()))
+}
+
 /// Returns the first call-log row for each requested normalized number.
 fn last_call_type_indices(norms: &[String], types: &[i32], targets: &[String]) -> Vec<i32> {
     let target_set: HashSet<&str> = targets.iter().map(String::as_str).collect();
@@ -710,7 +755,30 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices};
+    use super::{aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices};
+
+    #[test]
+    fn aggregate_call_stats_uses_first_row_and_sums_all_matches() {
+        assert_eq!(
+            aggregate_call_stats(&[300, 200, 100], &[5, 7, 11], &[3, 1, 2]),
+            [300, 3, 23, 3]
+        );
+    }
+
+    #[test]
+    fn aggregate_call_stats_handles_empty_and_mismatched_inputs() {
+        assert_eq!(aggregate_call_stats(&[], &[], &[]), [i64::MIN, 0, 0, 0]);
+        assert_eq!(aggregate_call_stats(&[10, 20], &[4], &[2, 1]), [10, 1, 4, 2]);
+        assert_eq!(aggregate_call_stats(&[10], &[4, 6], &[2, 1]), [10, 1, 4, 2]);
+    }
+
+    #[test]
+    fn aggregate_call_stats_preserves_integer_overflow() {
+        assert_eq!(
+            aggregate_call_stats(&[1, 2], &[i64::MAX, 1], &[1, 2]),
+            [1, 2, i64::MIN, 1]
+        );
+    }
 
     #[test]
     fn frequent_contact_order_sorts_by_call_count() {

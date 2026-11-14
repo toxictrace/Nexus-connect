@@ -170,8 +170,9 @@ class ContactChooserActivity : ComponentActivity() {
                     CallLog.Calls.DURATION, CallLog.Calls.TYPE),
                 null, null, "${CallLog.Calls.DATE} DESC"
             ) ?: return CallStats(null, 0, 0L, 0)
-            var lastDate: Long? = null; var lastType = 0
-            var total = 0; var dur = 0L
+            val dates = mutableListOf<Long>()
+            val durations = mutableListOf<Long>()
+            val types = mutableListOf<Int>()
             cursor.use {
                 val ni = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val di = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
@@ -180,12 +181,19 @@ class ContactChooserActivity : ComponentActivity() {
                 while (it.moveToNext()) {
                     val n = it.getString(ni)?.replace(Regex("[\\s\\-().+]"), "")?.takeLast(7) ?: continue
                     if (n in norms) {
-                        if (lastDate == null) { lastDate = it.getLong(di); lastType = it.getInt(ti) }
-                        total++; dur += it.getLong(ui)
+                        dates.add(it.getLong(di))
+                        durations.add(it.getLong(ui))
+                        types.add(it.getInt(ti))
                     }
                 }
             }
-            CallStats(lastDate, total, dur, lastType)
+            val resolved = CallStatsResolver.resolve(dates, durations, types)
+            CallStats(
+                lastCallDate = resolved[0].takeUnless { it == Long.MIN_VALUE },
+                totalCalls = resolved[1].toInt(),
+                totalDurationSec = resolved[2],
+                lastCallType = resolved[3].toInt()
+            )
         } catch (e: Exception) { CallStats(null, 0, 0L, 0) }
     }
     private fun isInstalled(pkg: String): Boolean {
