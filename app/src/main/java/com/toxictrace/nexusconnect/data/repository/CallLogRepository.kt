@@ -185,8 +185,8 @@ class CallLogRepository(private val context: Context) {
 
     fun getLastCallTypesByNorm(norms: List<String>): Map<String, Int> {
         if (norms.isEmpty()) return emptyMap()
-        val normSet = norms.toSet()
-        val result = mutableMapOf<String, Int>()
+        val normalizedNumbers = mutableListOf<String>()
+        val callTypes = mutableListOf<Int>()
         return try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -197,12 +197,15 @@ class CallLogRepository(private val context: Context) {
             cursor.use {
                 val ni = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
-                while (it.moveToNext() && result.size < normSet.size) {
-                    val norm = normalizeNum(it.getString(ni) ?: continue)
-                    if (norm in normSet && norm !in result) {
-                        result[norm] = it.getInt(ti)
-                    }
+                while (it.moveToNext()) {
+                    val number = it.getString(ni) ?: continue
+                    normalizedNumbers.add(normalizeNum(number))
+                    callTypes.add(it.getInt(ti))
                 }
+            }
+            val result = linkedMapOf<String, Int>()
+            LastCallTypeResolver.resolve(normalizedNumbers, callTypes, norms.distinct()).forEach { index ->
+                result[normalizedNumbers[index]] = callTypes[index]
             }
             result
         } catch (e: Exception) {

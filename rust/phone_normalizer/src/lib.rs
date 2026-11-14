@@ -621,6 +621,45 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_UnknownR
     write_int_array(&mut env, &indices)
 }
 
+/// Returns the first call-log row for each requested normalized number.
+fn last_call_type_indices(norms: &[String], types: &[i32], targets: &[String]) -> Vec<i32> {
+    let target_set: HashSet<&str> = targets.iter().map(String::as_str).collect();
+    let mut seen = HashSet::new();
+    let mut result = Vec::new();
+    for (index, norm) in norms.iter().enumerate().take(types.len()) {
+        if target_set.contains(norm.as_str()) && seen.insert(norm.as_str()) {
+            result.push(index as i32);
+            if seen.len() == target_set.len() {
+                break;
+            }
+        }
+    }
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_LastCallTypeResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    norms: JObjectArray,
+    types: jni::objects::JIntArray,
+    targets: JObjectArray,
+) -> jintArray {
+    let normalized = match read_string_array(&mut env, &norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let call_types = match read_int_array(&mut env, &types) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let requested = match read_string_array(&mut env, &targets) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_int_array(&mut env, &last_call_type_indices(&normalized, &call_types, &requested))
+}
+
 /// Serializes selected contact IDs using the existing comma-separated storage format.
 fn serialize_contact_ids(ids: &[i64]) -> String {
     ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
@@ -1040,6 +1079,27 @@ mod tests {
             unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 2, 10),
             vec![0, 1]
         );
+    }
+
+    #[test]
+    fn last_call_type_indices_keep_latest_row_for_each_requested_number() {
+        let norms = vec!["a".into(), "b".into(), "a".into(), "c".into()];
+        let types = vec![3, 2, 1, 5];
+        assert_eq!(last_call_type_indices(&norms, &types, &["a".into(), "c".into(), "b".into()]), vec![0, 1, 3]);
+    }
+
+    #[test]
+    fn last_call_type_indices_ignore_unrequested_and_duplicate_targets() {
+        let norms = vec!["x".into(), "b".into(), "a".into(), "b".into()];
+        let types = vec![1, 5, 2, 3];
+        assert_eq!(last_call_type_indices(&norms, &types, &["b".into(), "b".into(), "a".into()]), vec![1, 2]);
+    }
+
+    #[test]
+    fn last_call_type_indices_handle_empty_and_mismatched_inputs() {
+        assert!(last_call_type_indices(&[], &[], &["a".into()]).is_empty());
+        assert!(last_call_type_indices(&["a".into()], &[], &["a".into()]).is_empty());
+        assert_eq!(last_call_type_indices(&["a".into(), "b".into()], &[4], &["a".into(), "b".into()]), vec![0]);
     }
 
     #[test]
