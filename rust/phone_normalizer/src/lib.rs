@@ -150,7 +150,7 @@ fn normalize_number(number: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{move_selection, normalize_number, toggle_selection};
+    use super::{move_selection, normalize_number, toggle_selection, trim_selection};
 
     #[test]
     fn toggle_adds_contact_at_end() {
