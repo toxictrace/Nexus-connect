@@ -1145,7 +1145,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallDurationForma
 
 #[cfg(test)]
 mod tests {
-    use super::{filter_existing_contact_ids, format_duration, recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{count_existing_selected_ids, filter_existing_contact_ids, format_duration, recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
 
     #[test]
