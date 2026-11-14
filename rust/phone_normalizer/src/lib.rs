@@ -710,7 +710,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices};
+    use super::{build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices};
 
     #[test]
     fn frequent_contact_order_sorts_by_call_count() {
