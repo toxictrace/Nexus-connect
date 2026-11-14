@@ -430,6 +430,29 @@ fn normalize_number(number: &str) -> String {
     filtered.chars().rev().take(7).collect::<String>().chars().rev().collect()
 }
 
+
+/// Serializes selected contact IDs using the existing comma-separated storage format.
+fn serialize_contact_ids(ids: &[i64]) -> String {
+    ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactIds_serializeNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    ids: JLongArray,
+) -> jstring {
+    let values = match read_long_array(&mut env, &ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(serialize_contact_ids(&values)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{build_contact_display_order, build_photo_cache_plan, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, toggle_selection, trim_selection};
@@ -702,6 +725,25 @@ mod tests {
     #[test]
     fn normalize_removes_java_regex_ascii_whitespace() {
         assert_eq!(normalize_number("\t12\n34\u{000B}56\u{000C}78\r90"), "4567890");
+    }
+
+    #[test]
+    fn selected_contact_ids_serialization_preserves_order_and_duplicates() {
+        assert_eq!(serialize_contact_ids(&[42, 7, 42]), "42,7,42");
+    }
+
+    #[test]
+    fn selected_contact_ids_serialization_handles_empty_and_negative_values() {
+        assert_eq!(serialize_contact_ids(&[]), "");
+        assert_eq!(serialize_contact_ids(&[-7, 0, 15]), "-7,0,15");
+    }
+
+    #[test]
+    fn selected_contact_ids_serialization_handles_long_boundaries() {
+        assert_eq!(
+            serialize_contact_ids(&[i64::MIN, i64::MAX]),
+            format!("{},{}", i64::MIN, i64::MAX)
+        );
     }
 
     #[test]
