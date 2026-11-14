@@ -455,7 +455,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{build_contact_display_order, build_photo_cache_plan, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, toggle_selection, trim_selection};
+    use super::{build_contact_display_order, build_photo_cache_plan, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, toggle_selection, trim_selection};
 
     #[test]
     fn toggle_adds_contact_at_end() {
