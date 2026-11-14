@@ -12,8 +12,11 @@ internal object SelectedContactLookupKeys {
         }
     }
 
-    fun serialize(keys: List<String>): String =
-        NativeSelectedContactLookupKeys.serialize(keys.filter { it.isNotBlank() }.toTypedArray())
+    fun serialize(keys: List<String>): String {
+        val nonBlankKeys = keys.filter { it.isNotBlank() }
+        if (nonBlankKeys.isEmpty()) return ""
+        return NativeSelectedContactLookupKeys.serialize(nonBlankKeys.toTypedArray())
+    }
 }
 
 /** Rust-backed serializer for the existing URL-safe Base64 storage format. */
