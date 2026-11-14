@@ -63,6 +63,13 @@ fn write_long_array(env: &mut JNIEnv, values: Option<Vec<i64>>) -> jlongArray {
     array.into_raw()
 }
 
+fn read_int_array(env: &mut JNIEnv, array: &jni::objects::JIntArray) -> Result<Vec<i32>, jni::errors::Error> {
+    let length = env.get_array_length(array)?;
+    let mut values = vec![0_i32; length as usize];
+    env.get_int_array_region(array, 0, &mut values)?;
+    Ok(values)
+}
+
 fn read_string_array(env: &mut JNIEnv, array: &JObjectArray) -> Result<Vec<String>, jni::errors::Error> {
     let length = env.get_array_length(array)?;
     let mut values = Vec::with_capacity(length as usize);
@@ -433,6 +440,50 @@ fn normalize_number(number: &str) -> String {
 }
 
 
+/// Orders contact IDs by incoming/outgoing call count, preserving first-seen order for ties.
+fn frequent_contact_order(contact_ids: &[i64], call_types: &[i32]) -> Vec<i64> {
+    let mut positions = HashMap::new();
+    let mut counts: Vec<(i64, i32)> = Vec::new();
+
+    for (contact_id, call_type) in contact_ids.iter().zip(call_types.iter()) {
+        if *call_type != 1 && *call_type != 2 {
+            continue;
+        }
+        let index = match positions.get(contact_id) {
+            Some(index) => *index,
+            None => {
+                let index = counts.len();
+                positions.insert(*contact_id, index);
+                counts.push((*contact_id, 0));
+                index
+            }
+        };
+        counts[index].1 = counts[index].1.wrapping_add(1);
+    }
+
+    counts.sort_by(|left, right| right.1.cmp(&left.1));
+    counts.into_iter().map(|(contact_id, _)| contact_id).collect()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_FrequentContactOrder_orderNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    contact_ids: JLongArray,
+    call_types: jni::objects::JIntArray,
+) -> jlongArray {
+    let ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let types = match read_int_array(&mut env, &call_types) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_long_array(&mut env, Some(frequent_contact_order(&ids, &types)))
+}
+
 /// Serializes selected contact IDs using the existing comma-separated storage format.
 fn serialize_contact_ids(ids: &[i64]) -> String {
     ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
@@ -483,7 +534,38 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{build_contact_display_order, build_photo_cache_plan, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection};
+    use super::{build_contact_display_order, build_photo_cache_plan, frequent_contact_order, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection};
+
+    #[test]
+    fn frequent_contact_order_sorts_by_call_count() {
+        assert_eq!(
+            frequent_contact_order(&[10, 20, 10, 30, 10, 20], &[1, 1, 2, 2, 1, 2]),
+            vec![10, 20, 30]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_order_preserves_first_seen_order_for_ties() {
+        assert_eq!(
+            frequent_contact_order(&[30, 20, 10, 20, 30, 10], &[1, 1, 1, 2, 2, 2]),
+            vec![30, 20, 10]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_order_ignores_missed_and_unmatched_calls() {
+        assert_eq!(
+            frequent_contact_order(&[10, 20, 10, 30], &[3, 1, 2, 5]),
+            vec![20, 10]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_order_handles_empty_and_mismatched_inputs() {
+        assert_eq!(frequent_contact_order(&[], &[]), Vec::<i64>::new());
+        assert_eq!(frequent_contact_order(&[7, 8], &[1]), vec![7]);
+        assert_eq!(frequent_contact_order(&[7], &[1, 2]), vec![7]);
+    }
 
     #[test]
     fn toggle_adds_contact_at_end() {

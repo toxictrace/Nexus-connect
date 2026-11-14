@@ -16,7 +16,8 @@ class CallLogRepository(private val context: Context) {
      * Matches call log numbers against contacts map.
      */
     fun getFrequentContactIds(numberToContactId: Map<String, Long>, limit: Int = 50): List<Long> {
-        val freq = mutableMapOf<Long, Int>()
+        val matchedContactIds = mutableListOf<Long>()
+        val matchedCallTypes = mutableListOf<Int>()
         try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -30,22 +31,23 @@ class CallLogRepository(private val context: Context) {
                 val typeIdx = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
                 while (it.moveToNext()) {
                     val number = it.getString(numIdx) ?: continue
-                    val type   = it.getInt(typeIdx)
+                    val type = it.getInt(typeIdx)
                     // Count outgoing + incoming (not missed)
                     if (type == CallLog.Calls.OUTGOING_TYPE || type == CallLog.Calls.INCOMING_TYPE) {
                         val norm = normalizeNum(number)
                         val contactId = numberToContactId[norm] ?: continue
-                        freq[contactId] = (freq[contactId] ?: 0) + 1
+                        matchedContactIds.add(contactId)
+                        matchedCallTypes.add(type)
                     }
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "getFrequentContactIds: ${e.message}")
         }
-        return freq.entries
-            .sortedByDescending { it.value }
-            .take(limit)
-            .map { it.key }
+        return FrequentContactOrder.order(
+            matchedContactIds.toLongArray(),
+            matchedCallTypes.toIntArray()
+        ).take(limit)
     }
 
     /**
