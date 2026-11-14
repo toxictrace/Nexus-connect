@@ -266,8 +266,8 @@ class CallLogRepository(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
+            // Preserve rows collected before a cursor failure, as the original implementation did.
             Log.e(TAG, "getRecentMixed: ${e.message}")
-            return emptyList()
         }
         val selectedIndices = RecentMixedCallResolver.resolve(
             norms, dates, contactIds, validUnknown,
