@@ -20,26 +20,6 @@ fn toggle_selection(selected_ids: &[i64], contact_id: i64, max_tiles: i32) -> Op
 
     updated.push(contact_id);
     Some(updated)
- 
-    #[test]
-    fn selected_lookup_keys_serialization_preserves_url_safe_base64_format() {
-        let keys = vec![
-            "0r7-abc:person,one".to_string(),
-            "lookup/key_two".to_string(),
-            "another-key".to_string(),
-            "ключ".to_string(),
-        ];
-        assert_eq!(
-            serialize_lookup_keys(&keys),
-            "MHI3LWFiYzpwZXJzb24sb25l,bG9va3VwL2tleV90d28,YW5vdGhlci1rZXk,0LrQu9GO0Yc"
-        );
-    }
-
-    #[test]
-    fn selected_lookup_keys_serialization_returns_empty_for_empty_input() {
-        assert_eq!(serialize_lookup_keys(&[]), "");
-    }
-
 }
 
 /// Mirrors ContactSelectionOperations.move, including first-match behavior.
@@ -798,4 +778,23 @@ mod tests {
     fn normalize_preserves_non_ascii_digits() {
         assert_eq!(normalize_number("+１２３-４５６７８"), "２３４５６７８");
     }
+    #[test]
+    fn selected_lookup_keys_serialization_preserves_url_safe_base64_format() {
+        let keys = vec![
+            "0r7-abc:person,one".to_string(),
+            "lookup/key_two".to_string(),
+            "another-key".to_string(),
+            "ключ".to_string(),
+        ];
+        assert_eq!(
+            serialize_lookup_keys(&keys),
+            "MHI3LWFiYzpwZXJzb24sb25l,bG9va3VwL2tleV90d28,YW5vdGhlci1rZXk,0LrQu9GO0Yc"
+        );
+    }
+
+    #[test]
+    fn selected_lookup_keys_serialization_returns_empty_for_empty_input() {
+        assert_eq!(serialize_lookup_keys(&[]), "");
+    }
+
 }
