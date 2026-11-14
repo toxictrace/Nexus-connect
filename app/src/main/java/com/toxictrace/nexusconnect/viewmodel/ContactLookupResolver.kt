@@ -16,11 +16,20 @@ internal object ContactLookupResolver {
     ): LongArray
 
     @JvmStatic
+    private external fun filterExistingIdsNative(
+        savedIds: LongArray,
+        contactIds: LongArray
+    ): LongArray
+
+    @JvmStatic
     private external fun lookupKeysForIdsNative(
         ids: LongArray,
         contactIds: LongArray,
         contactLookupKeys: Array<String>
     ): Array<String>
+
+    fun filterExistingIds(savedIds: List<Long>, contacts: List<Contact>): List<Long> =
+        filterExistingIdsNative(savedIds.toLongArray(), contacts.map { it.id }.toLongArray()).toList()
 
     fun resolveIds(lookupKeys: List<String>, contacts: List<Contact>): List<Long> {
         val validContacts = contacts.filter { it.lookupKey.isNotBlank() }

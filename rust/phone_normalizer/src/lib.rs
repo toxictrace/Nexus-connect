@@ -98,6 +98,12 @@ fn write_string_array(env: &mut JNIEnv, values: &[String]) -> jobjectArray {
     array.into_raw()
 }
 
+/// Keeps saved IDs that still exist in Contacts Provider, preserving order and duplicates.
+fn filter_existing_contact_ids(saved_ids: &[i64], contact_ids: &[i64]) -> Vec<i64> {
+    let existing: HashSet<i64> = contact_ids.iter().copied().collect();
+    saved_ids.iter().copied().filter(|id| existing.contains(id)).collect()
+}
+
 fn resolve_lookup_ids(
     lookup_keys: &[String],
     contact_ids: &[i64],
@@ -421,6 +427,24 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupR
         Err(_) => return std::ptr::null_mut(),
     };
     write_long_array(&mut env, Some(resolve_lookup_ids(&keys, &ids, &contact_keys)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupResolver_filterExistingIdsNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    saved_ids: JLongArray,
+    contact_ids: JLongArray,
+) -> jlongArray {
+    let saved = match read_long_array(&mut env, &saved_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contacts = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_long_array(&mut env, Some(filter_existing_contact_ids(&saved, &contacts)))
 }
 
 #[no_mangle]
@@ -1097,7 +1121,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallDurationForma
 
 #[cfg(test)]
 mod tests {
-    use super::{format_duration, recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{filter_existing_contact_ids, format_duration, recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
 
     #[test]
@@ -1743,6 +1767,21 @@ mod tests {
         assert_eq!(format_duration(-1), "-1s");
         assert_eq!(format_duration(-61), "-1s");
         assert_eq!(format_duration(i64::MIN), "-8s");
+    }
+
+    #[test]
+    fn filter_existing_contact_ids_preserves_saved_order_and_duplicates() {
+        assert_eq!(
+            filter_existing_contact_ids(&[7, 2, 7, 99, 3], &[3, 7, 7]),
+            vec![7, 7, 3]
+        );
+    }
+
+    #[test]
+    fn filter_existing_contact_ids_handles_empty_and_missing_ids() {
+        assert!(filter_existing_contact_ids(&[], &[1, 2]).is_empty());
+        assert!(filter_existing_contact_ids(&[1, 2], &[]).is_empty());
+        assert_eq!(filter_existing_contact_ids(&[8, 9], &[1, 2]), Vec::<i64>::new());
     }
 
 }

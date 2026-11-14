@@ -174,7 +174,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     _selectedLookupKeys.value = mappedKeys
                     _selectedIds.value = if (mappedKeys.isNotEmpty()) {
                         ContactLookupResolver.resolveIds(mappedKeys, contacts)
-                    } else savedIds.filter { id -> contacts.any { it.id == id } }
+                    } else ContactLookupResolver.filterExistingIds(savedIds, contacts)
                     if (mappedKeys.isNotEmpty()) settingsRepo.saveSelectedContactLookupKeys(mappedKeys)
                 }
                 AppLogger.i("MainViewModel", "reconcileSelection: savedIds=${savedIds.size} lookupKeys=${savedKeys.size} mapped=${_selectedLookupKeys.value.size} visible=${_selectedIds.value.size}")
