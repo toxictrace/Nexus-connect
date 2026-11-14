@@ -3,6 +3,7 @@ package com.toxictrace.nexusconnect.data.repository
 import android.content.Context
 import android.provider.CallLog
 import android.util.Log
+import com.toxictrace.nexusconnect.util.NativePhoneNumber
 
 class CallLogRepository(private val context: Context) {
 
@@ -264,5 +265,5 @@ class CallLogRepository(private val context: Context) {
     }
 
     private fun normalizeNum(number: String): String =
-        number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+        NativePhoneNumber.normalize(number)
 }

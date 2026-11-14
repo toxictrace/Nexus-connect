@@ -11,11 +11,17 @@ android {
         applicationId "com.toxictrace.nexusconnect"
         minSdk 26
         targetSdk 34
-        versionCode 96
-        versionName "0.19.45"
+        versionCode 97
+        versionName "0.19.46-test"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDir "$buildDir/generated/rustJniLibs"
+        }
     }
 
     signingConfigs {
@@ -60,7 +66,7 @@ dependencies {
     implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.6'
     implementation 'androidx.activity:activity-compose:1.9.3'
-    
+
     // Compose BOM
     implementation platform('androidx.compose:compose-bom:2024.10.00')
     implementation 'androidx.compose.ui:ui'
@@ -87,7 +93,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     androidTestImplementation platform('androidx.compose:compose-bom:2024.10.00')
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
-    
+
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }

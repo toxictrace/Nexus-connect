@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, master, fix/favorite-contact-reordering, diagnostics/widget-photo-refresh, diagnostic ]
+    branches: [ main, master, fix/favorite-contact-reordering, diagnostics/widget-photo-refresh, diagnostic, rust-connection ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
@@ -28,6 +28,27 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK
+        run: sdkmanager "ndk;26.3.11579264"
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
+
+      - name: Run Rust unit tests
+        run: cargo test --manifest-path rust/phone_normalizer/Cargo.toml
+
+      - name: Build Rust Android libraries
+        run: |
+          cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 --platform 26 --out app/build/generated/rustJniLibs build --release --manifest-path rust/phone_normalizer/Cargo.toml
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
