@@ -332,7 +332,7 @@ private fun ChooserSheet(
                             horizontalArrangement = Arrangement.SpaceEvenly) {
                             StatItem(Icons.Default.Call, stats.totalCalls.toString(), stringResource(R.string.calls))
                             VerticalDivider(modifier = Modifier.height(44.dp))
-                            StatItem(Icons.Default.AccessTime, formatDuration(stats.totalDurationSec), stringResource(R.string.total_time))
+                            StatItem(Icons.Default.AccessTime, CallDurationFormatter.format(stats.totalDurationSec), stringResource(R.string.total_time))
                             VerticalDivider(modifier = Modifier.height(44.dp))
                             StatItem(
                                 icon = when (stats.lastCallType) {
@@ -417,13 +417,6 @@ private fun CallOption(icon: ImageVector, label: String, sublabel: String, color
         Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.outline,
             modifier = Modifier.size(20.dp))
     }
-}
-
-private fun formatDuration(seconds: Long): String {
-    val h = TimeUnit.SECONDS.toHours(seconds)
-    val m = TimeUnit.SECONDS.toMinutes(seconds) % 60
-    val s = seconds % 60
-    return when { h > 0 -> "${h}h ${m}m"; m > 0 -> "${m}m ${s}s"; else -> "${s}s" }
 }
 
 private fun formatDate(ts: Long, todayLabel: String = "Today"): String {

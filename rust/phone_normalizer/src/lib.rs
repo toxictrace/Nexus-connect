@@ -997,6 +997,20 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_LastCall
     write_int_array(&mut env, &last_call_type_indices(&normalized, &call_types, &requested))
 }
 
+/// Formats call duration with the same thresholds and signed remainder behavior as Kotlin.
+fn format_duration(seconds: i64) -> String {
+    let hours = seconds / 3600;
+    let minutes = (seconds / 60) % 60;
+    let remainder = seconds % 60;
+    if hours > 0 {
+        format!("{hours}h {minutes}m")
+    } else if minutes > 0 {
+        format!("{minutes}m {remainder}s")
+    } else {
+        format!("{remainder}s")
+    }
+}
+
 /// Serializes selected contact IDs using the existing comma-separated storage format.
 fn serialize_contact_ids(ids: &[i64]) -> String {
     ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
@@ -1069,9 +1083,21 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_UpdatedSelecti
     write_string_array(&mut env, &merge_updated_lookup_keys(&visible, &old_visible, &saved))
 }
 
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallDurationFormatter_formatNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    seconds: jlong,
+) -> jstring {
+    match env.new_string(format_duration(seconds)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{format_duration, recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
 
     #[test]
@@ -1700,6 +1726,23 @@ mod tests {
     #[test]
     fn selected_lookup_keys_serialization_returns_empty_for_empty_input() {
         assert_eq!(serialize_lookup_keys(&[]), "");
+    }
+
+    #[test]
+    fn format_duration_matches_kotlin_thresholds() {
+        assert_eq!(format_duration(0), "0s");
+        assert_eq!(format_duration(59), "59s");
+        assert_eq!(format_duration(60), "1m 0s");
+        assert_eq!(format_duration(3_599), "59m 59s");
+        assert_eq!(format_duration(3_600), "1h 0m");
+        assert_eq!(format_duration(3_661), "1h 1m");
+    }
+
+    #[test]
+    fn format_duration_preserves_negative_remainder_behavior() {
+        assert_eq!(format_duration(-1), "-1s");
+        assert_eq!(format_duration(-61), "-1s");
+        assert_eq!(format_duration(i64::MIN), "-8s");
     }
 
 }
