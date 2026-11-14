@@ -7,22 +7,41 @@ import com.toxictrace.nexusconnect.data.model.Contact
  * Selected contacts stay at the top in their saved order; search filters only unselected contacts.
  */
 internal object ContactDisplayList {
-    fun build(allContacts: List<Contact>, selectedIds: List<Long>, query: String): List<Contact> {
-        val selectedIdSet = selectedIds.toSet()
-        val selectedById = allContacts
-            .filter { it.id in selectedIdSet }
-            .associateBy { it.id }
+    init {
+        System.loadLibrary("nexus_phone")
+    }
 
-        val selectedOrdered = selectedIds.mapNotNull { id ->
-            selectedById[id]?.let { if (it.isSelected) it else it.copy(isSelected = true) }
-        }
-        val unselected = allContacts.filter { it.id !in selectedIdSet }.let { contacts ->
-            if (query.isBlank()) contacts
-            else contacts.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                    it.phoneNumber?.contains(query) == true
+    @JvmStatic
+    private external fun buildOrderNative(
+        allIds: LongArray,
+        selectedIds: LongArray,
+        queryMatches: LongArray,
+        queryIsBlank: Int
+    ): IntArray
+
+    fun build(allContacts: List<Contact>, selectedIds: List<Long>, query: String): List<Contact> {
+        val queryIsBlank = query.isBlank()
+        val queryMatches = allContacts.map { contact ->
+            queryIsBlank ||
+                contact.name.contains(query, ignoreCase = true) ||
+                contact.phoneNumber?.contains(query) == true
+        }.map { if (it) 1L else 0L }.toLongArray()
+
+        val order = buildOrderNative(
+            allContacts.map { it.id }.toLongArray(),
+            selectedIds.toLongArray(),
+            queryMatches,
+            if (queryIsBlank) 1 else 0
+        )
+
+        val selectedIdSet = selectedIds.toSet()
+        return order.map { index ->
+            val contact = allContacts[index]
+            if (contact.id in selectedIdSet && !contact.isSelected) {
+                contact.copy(isSelected = true)
+            } else {
+                contact
             }
         }
-        return selectedOrdered + unselected
     }
 }

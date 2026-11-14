@@ -1,5 +1,5 @@
 use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString};
-use jni::sys::{jint, jlong, jlongArray, jobjectArray, jstring};
+use jni::sys::{jint, jlong, jintArray, jlongArray, jobjectArray, jstring};
 use std::collections::{HashMap, HashSet};
 use jni::JNIEnv;
 
@@ -118,6 +118,53 @@ fn lookup_keys_for_ids(ids: &[i64], contact_ids: &[i64], contact_lookup_keys: &[
         .collect()
 }
 
+
+fn write_int_array(env: &mut JNIEnv, values: &[i32]) -> jintArray {
+    let array = match env.new_int_array(values.len() as jint) {
+        Ok(array) => array,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    if env.set_int_array_region(&array, 0, values).is_err() {
+        return std::ptr::null_mut();
+    }
+
+    array.into_raw()
+}
+
+/// Returns contact indices in display order while preserving Kotlin map/list semantics.
+fn build_contact_display_order(
+    all_ids: &[i64],
+    selected_ids: &[i64],
+    query_matches: &[bool],
+    query_is_blank: bool,
+) -> Vec<i32> {
+    let mut selected_by_id = HashMap::new();
+    for (index, id) in all_ids.iter().enumerate() {
+        selected_by_id.insert(*id, index);
+    }
+
+    let selected_set: HashSet<i64> = selected_ids.iter().copied().collect();
+    let mut result = Vec::new();
+
+    for id in selected_ids {
+        if let Some(index) = selected_by_id.get(id) {
+            result.push(*index as i32);
+        }
+    }
+
+    for (index, id) in all_ids.iter().enumerate() {
+        if selected_set.contains(id) {
+            continue;
+        }
+        if query_is_blank || query_matches.get(index).copied().unwrap_or(false) {
+            result.push(index as i32);
+        }
+    }
+
+    result
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_toxictrace_nexusconnect_util_NativePhoneNumber_normalize(
     mut env: JNIEnv,
@@ -189,6 +236,33 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_SelectionLimit
     write_long_array(&mut env, Some(trim_selection(&selected, capacity)))
 }
 
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactDisplayList_buildOrderNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    all_ids: JLongArray,
+    selected_ids: JLongArray,
+    query_matches: JLongArray,
+    query_is_blank: jint,
+) -> jintArray {
+    let all = match read_long_array(&mut env, &all_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let matches = match read_long_array(&mut env, &query_matches) {
+        Ok(values) => values.into_iter().map(|value| value != 0).collect::<Vec<_>>(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let order = build_contact_display_order(&all, &selected, &matches, query_is_blank != 0);
+    write_int_array(&mut env, &order)
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupResolver_resolveIdsNative(
     mut env: JNIEnv,
@@ -255,7 +329,7 @@ fn normalize_number(number: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, toggle_selection, trim_selection};
+    use super::{build_contact_display_order, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, toggle_selection, trim_selection};
 
     #[test]
     fn toggle_adds_contact_at_end() {
@@ -342,6 +416,47 @@ mod tests {
         assert_eq!(trim_selection(&[], 12), Vec::<i64>::new());
     }
 
+
+
+    #[test]
+    fn contact_display_order_keeps_selected_ids_in_saved_order() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2, 3, 4], &[3, 1], &[true; 4], true),
+            vec![2, 0, 1, 3]
+        );
+    }
+
+    #[test]
+    fn contact_display_order_filters_only_unselected_contacts() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2, 3, 4], &[3], &[false, true, false, false], false),
+            vec![2, 1]
+        );
+    }
+
+    #[test]
+    fn contact_display_order_skips_missing_selected_ids() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2, 3, 4], &[99, 2], &[true; 4], true),
+            vec![1, 0, 2, 3]
+        );
+    }
+
+    #[test]
+    fn contact_display_order_uses_last_contact_for_duplicate_ids() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2, 1, 3], &[1], &[true; 4], true),
+            vec![2, 1, 3]
+        );
+    }
+
+    #[test]
+    fn contact_display_order_preserves_repeated_selected_ids() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2], &[2, 2], &[true; 2], true),
+            vec![1, 1, 0]
+        );
+    }
 
     #[test]
     fn resolve_lookup_ids_preserves_saved_order_and_skips_missing_keys() {
