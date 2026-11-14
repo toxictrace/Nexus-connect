@@ -484,6 +484,64 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_Frequent
     write_long_array(&mut env, Some(frequent_contact_order(&ids, &types)))
 }
 
+
+/// Builds normalized numbers for widget tiles while preserving map and tile order.
+fn extract_tile_norms(
+    number_keys: &[String],
+    number_ids: &[i64],
+    tile_ids: &[i64],
+    tile_phone_numbers: &[String],
+) -> Vec<String> {
+    let tile_id_set: HashSet<i64> = tile_ids.iter().copied().collect();
+    let mut norms = Vec::new();
+
+    for (key, id) in number_keys.iter().zip(number_ids.iter()) {
+        if tile_id_set.contains(id) {
+            norms.push(key.clone());
+        }
+    }
+
+    for (id, phone_number) in tile_ids.iter().zip(tile_phone_numbers.iter()) {
+        if *id < 0 {
+            let norm = normalize_number(phone_number);
+            if !norm.trim().is_empty() {
+                norms.push(norm);
+            }
+        }
+    }
+
+    norms
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetTileNorms_extractNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    number_keys: JObjectArray,
+    number_ids: JLongArray,
+    tile_ids: JLongArray,
+    tile_phone_numbers: JObjectArray,
+) -> jobjectArray {
+    let keys = match read_string_array(&mut env, &number_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let ids = match read_long_array(&mut env, &number_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contact_ids = match read_long_array(&mut env, &tile_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let phones = match read_string_array(&mut env, &tile_phone_numbers) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_string_array(&mut env, &extract_tile_norms(&keys, &ids, &contact_ids, &phones))
+}
+
 /// Serializes selected contact IDs using the existing comma-separated storage format.
 fn serialize_contact_ids(ids: &[i64]) -> String {
     ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
@@ -534,7 +592,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
 
 #[cfg(test)]
 mod tests {
-    use super::{build_contact_display_order, build_photo_cache_plan, frequent_contact_order, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection};
+    use super::{build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection};
 
     #[test]
     fn frequent_contact_order_sorts_by_call_count() {
@@ -835,6 +893,41 @@ mod tests {
     #[test]
     fn normalize_removes_java_regex_ascii_whitespace() {
         assert_eq!(normalize_number("\t12\n34\u{000B}56\u{000C}78\r90"), "4567890");
+    }
+
+    #[test]
+    fn widget_tile_norms_preserve_map_order_and_include_only_tile_contacts() {
+        assert_eq!(
+            extract_tile_norms(
+                &["norm-a".into(), "norm-b".into(), "norm-c".into()],
+                &[10, 20, 30],
+                &[30, 10, -1],
+                &["".into(), "".into(), "+1 (234) 567-8901".into()],
+            ),
+            vec!["norm-a", "norm-c", "5678901"]
+        );
+    }
+
+    #[test]
+    fn widget_tile_norms_preserve_duplicate_keys_and_unknown_tile_order() {
+        assert_eq!(
+            extract_tile_norms(
+                &["same".into(), "same".into()],
+                &[7, 7],
+                &[7, -2, -3, 8],
+                &["".into(), "12-34-567".into(), "   ".into(), "999".into()],
+            ),
+            vec!["same", "same", "1234567"]
+        );
+    }
+
+    #[test]
+    fn widget_tile_norms_handle_empty_and_mismatched_inputs() {
+        assert_eq!(extract_tile_norms(&[], &[], &[], &[]), Vec::<String>::new());
+        assert_eq!(
+            extract_tile_norms(&["keep".into(), "ignored".into()], &[1], &[1], &[]),
+            vec!["keep"]
+        );
     }
 
     #[test]

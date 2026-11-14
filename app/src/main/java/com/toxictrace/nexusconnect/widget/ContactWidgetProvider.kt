@@ -328,21 +328,8 @@ class ContactWidgetProvider : AppWidgetProvider() {
             return numberMap
         }
 
-        private fun extractTileNorms(tileContacts: List<Contact>, numberMap: Map<String, Long>): List<String> {
-            val norms = mutableListOf<String>()
-            val tileContactIds = tileContacts.map { it.id }.toSet()
-
-            numberMap.entries
-                .filter { it.value in tileContactIds }
-                .map { it.key }
-                .forEach { norms.add(it) }
-
-            tileContacts.filter { it.id < 0 && it.phoneNumber != null }.forEach {
-                val norm = it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
-                if (norm.isNotBlank()) norms.add(norm)
-            }
-            return norms
-        }
+        private fun extractTileNorms(tileContacts: List<Contact>, numberMap: Map<String, Long>): List<String> =
+            WidgetTileNorms.build(tileContacts, numberMap)
 
         // Keep the original buildWidgetContacts for now (can be refactored later)
         private fun buildWidgetContacts(
