@@ -116,6 +116,31 @@ fn resolve_lookup_ids(
         .collect()
 }
 
+
+/// Merges visible lookup keys with unresolved saved keys, preserving Kotlin list order.
+fn merge_updated_lookup_keys(
+    visible_keys: &[String],
+    old_visible_keys: &[String],
+    saved_keys: &[String],
+) -> Vec<String> {
+    let old_visible: HashSet<&str> = old_visible_keys.iter().map(String::as_str).collect();
+    let mut seen = HashSet::new();
+    let mut result = Vec::new();
+
+    for key in visible_keys {
+        if seen.insert(key.as_str()) {
+            result.push(key.clone());
+        }
+    }
+    for key in saved_keys {
+        if !old_visible.contains(key.as_str()) && seen.insert(key.as_str()) {
+            result.push(key.clone());
+        }
+    }
+    result
+}
+
+
 fn lookup_keys_for_ids(ids: &[i64], contact_ids: &[i64], contact_lookup_keys: &[String]) -> Vec<String> {
     let mut by_id = HashMap::new();
     for (id, key) in contact_ids.iter().zip(contact_lookup_keys.iter()) {
@@ -941,9 +966,65 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeS
     }
 }
 
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_UpdatedSelectionLookupKeys_mergeNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    visible_keys: JObjectArray,
+    old_visible_keys: JObjectArray,
+    saved_keys: JObjectArray,
+) -> jobjectArray {
+    let visible = match read_string_array(&mut env, &visible_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let old_visible = match read_string_array(&mut env, &old_visible_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let saved = match read_string_array(&mut env, &saved_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_string_array(&mut env, &merge_updated_lookup_keys(&visible, &old_visible, &saved))
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{recent_mixed_call_indices, aggregate_call_stats, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+
+
+    #[test]
+    fn updated_selection_lookup_keys_keep_visible_order_and_append_unresolved_keys() {
+        let visible = vec!["new-a".into(), "new-b".into()];
+        let old_visible = vec!["old-a".into(), "old-b".into()];
+        let saved = vec!["old-a".into(), "missing".into(), "old-b".into(), "missing".into()];
+        assert_eq!(
+            merge_updated_lookup_keys(&visible, &old_visible, &saved),
+            vec!["new-a", "new-b", "missing"]
+        );
+    }
+
+    #[test]
+    fn updated_selection_lookup_keys_remove_duplicates_without_reordering() {
+        let visible = vec!["same".into(), "same".into(), "new".into()];
+        let old_visible = vec!["old".into()];
+        let saved = vec!["new".into(), "extra".into(), "extra".into()];
+        assert_eq!(
+            merge_updated_lookup_keys(&visible, &old_visible, &saved),
+            vec!["same", "new", "extra"]
+        );
+    }
+
+    #[test]
+    fn updated_selection_lookup_keys_handle_empty_inputs() {
+        assert!(merge_updated_lookup_keys(&[], &[], &[]).is_empty());
+        assert_eq!(
+            merge_updated_lookup_keys(&[], &["gone".into()], &["gone".into(), "orphan".into()]),
+            vec!["orphan"]
+        );
+    }
 
     #[test]
     fn recent_mixed_calls_preserve_order_and_deduplicate_contacts_and_unknowns() {

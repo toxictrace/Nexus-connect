@@ -186,8 +186,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val contacts = _allContacts.value
         val visibleKeys = ContactLookupResolver.lookupKeysForIds(updatedIds, contacts)
         val oldVisibleKeys = ContactLookupResolver.lookupKeysForIds(_selectedIds.value, contacts).toSet()
-        val unresolvedKeys = _selectedLookupKeys.value.filter { it !in oldVisibleKeys }
-        return (visibleKeys + unresolvedKeys).distinct()
+        return UpdatedSelectionLookupKeys.merge(visibleKeys, oldVisibleKeys, _selectedLookupKeys.value)
     }
 
     fun toggleContactSelection(contactId: Long) {
