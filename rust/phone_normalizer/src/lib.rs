@@ -653,8 +653,8 @@ fn recent_mixed_call_indices(
 pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_RecentMixedCallResolver_resolveNative(
     mut env: JNIEnv, _class: JClass, norms: JObjectArray, dates: JLongArray,
     contact_ids: JLongArray, valid_unknown: jni::objects::JIntArray,
-    contact_cutoff: jlong, unknown_cutoff: jlong, contacts_disabled: jboolean,
-    unknown_disabled: jboolean, limit: jint,
+    contact_cutoff: jlong, unknown_cutoff: jlong, contacts_disabled: jint,
+    unknown_disabled: jint, limit: jint,
 ) -> jintArray {
     let norm_values = match read_string_array(&mut env, &norms) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
     let date_values = match read_long_array(&mut env, &dates) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
