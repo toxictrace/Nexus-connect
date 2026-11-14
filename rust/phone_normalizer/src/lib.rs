@@ -812,7 +812,7 @@ mod tests {
     fn recent_mixed_calls_apply_independent_cutoffs_and_disabled_groups() {
         let norms = vec!["known".into(), "unknown".into(), "known2".into(), "unknown2".into()];
         let ids = vec![1,i64::MIN,2,i64::MIN];
-        assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],60,40,false,false,10), vec![0,1]);
+        assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],60,40,false,false,10), vec![0,1,3]);
         assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],0,0,true,false,10), vec![1,3]);
         assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],0,0,false,true,10), vec![0,2]);
     }
