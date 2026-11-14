@@ -237,6 +237,61 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_SelectionLimit
 }
 
 
+
+/// Calculates photo-cache retention, reload IDs, and contact indices in display order.
+fn build_photo_cache_plan(
+    contact_ids: &[i64],
+    photo_uris: &[String],
+    has_photo: &[bool],
+    cached_bitmap_ids: &[i64],
+    cached_photo_ids: &[i64],
+    cached_photo_uris: &[String],
+) -> Vec<i64> {
+    let mut cached_uri_by_id = HashMap::new();
+    for (id, uri) in cached_photo_ids.iter().zip(cached_photo_uris.iter()) {
+        cached_uri_by_id.insert(*id, uri.as_str());
+    }
+
+    let cached_bitmaps: HashSet<i64> = cached_bitmap_ids.iter().copied().collect();
+    let mut retained_ids = HashSet::new();
+    let mut reload_ids = HashSet::new();
+
+    for (index, id) in contact_ids.iter().enumerate() {
+        if !has_photo.get(index).copied().unwrap_or(false) {
+            continue;
+        }
+        let uri = match photo_uris.get(index) {
+            Some(uri) => uri,
+            None => continue,
+        };
+        retained_ids.insert(*id);
+        if !cached_bitmaps.contains(id) || cached_uri_by_id.get(id).copied() != Some(uri.as_str()) {
+            reload_ids.insert(*id);
+        }
+    }
+
+    let contacts_to_load: Vec<i64> = contact_ids
+        .iter()
+        .enumerate()
+        .filter_map(|(index, id)| {
+            if has_photo.get(index).copied().unwrap_or(false) && reload_ids.contains(id) {
+                Some(index as i64)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let mut result = Vec::with_capacity(3 + retained_ids.len() + reload_ids.len() + contacts_to_load.len());
+    result.push(retained_ids.len() as i64);
+    result.push(reload_ids.len() as i64);
+    result.push(contacts_to_load.len() as i64);
+    result.extend(retained_ids);
+    result.extend(reload_ids);
+    result.extend(contacts_to_load);
+    result
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactDisplayList_buildOrderNative(
     mut env: JNIEnv,
@@ -261,6 +316,54 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactDisplay
 
     let order = build_contact_display_order(&all, &selected, &matches, query_is_blank != 0);
     write_int_array(&mut env, &order)
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_PhotoCachePlan_buildNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    contact_ids: JLongArray,
+    photo_uris: JObjectArray,
+    has_photo: JLongArray,
+    cached_bitmap_ids: JLongArray,
+    cached_photo_ids: JLongArray,
+    cached_photo_uris: JObjectArray,
+) -> jlongArray {
+    let ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let uris = match read_string_array(&mut env, &photo_uris) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let photo_flags = match read_long_array(&mut env, &has_photo) {
+        Ok(values) => values.into_iter().map(|value| value != 0).collect::<Vec<_>>(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let bitmap_ids = match read_long_array(&mut env, &cached_bitmap_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let cached_ids = match read_long_array(&mut env, &cached_photo_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let cached_uris = match read_string_array(&mut env, &cached_photo_uris) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let result = build_photo_cache_plan(
+        &ids,
+        &uris,
+        &photo_flags,
+        &bitmap_ids,
+        &cached_ids,
+        &cached_uris,
+    );
+    write_long_array(&mut env, Some(result))
 }
 
 #[no_mangle]
@@ -329,7 +432,7 @@ fn normalize_number(number: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{build_contact_display_order, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, toggle_selection, trim_selection};
+    use super::{build_contact_display_order, build_photo_cache_plan, lookup_keys_for_ids, move_selection, normalize_number, resolve_lookup_ids, toggle_selection, trim_selection};
 
     #[test]
     fn toggle_adds_contact_at_end() {
@@ -417,6 +520,83 @@ mod tests {
     }
 
 
+
+
+    #[test]
+    fn photo_cache_plan_reuses_unchanged_cached_photos() {
+        let result = build_photo_cache_plan(
+            &[1, 2],
+            &["uri-1".into(), "uri-2".into()],
+            &[true, true],
+            &[1, 2],
+            &[1, 2],
+            &["uri-1".into(), "uri-2".into()],
+        );
+        assert_eq!(result[0..3], [2, 0, 0]);
+        assert_eq!(result.len(), 5);
+    }
+
+    #[test]
+    fn photo_cache_plan_reloads_missing_bitmaps_and_changed_uris() {
+        let result = build_photo_cache_plan(
+            &[1, 2],
+            &["new-uri".into(), "uri-2".into()],
+            &[true, true],
+            &[2],
+            &[1, 2],
+            &["old-uri".into(), "uri-2".into()],
+        );
+        assert_eq!(result[0..3], [2, 2, 2]);
+        assert!(result[3..5].contains(&1));
+        assert!(result[3..5].contains(&2));
+        assert_eq!(result[5..7], [0, 1]);
+    }
+
+    #[test]
+    fn photo_cache_plan_excludes_blank_and_missing_photos_and_deleted_ids() {
+        let result = build_photo_cache_plan(
+            &[1, 2, 3],
+            &["uri-1".into(), "   ".into(), "".into()],
+            &[true, false, false],
+            &[1, 2, 3, 4],
+            &[1, 2, 3, 4],
+            &["uri-1".into(), "uri-2".into(), "uri-3".into(), "uri-4".into()],
+        );
+        assert_eq!(result[0..3], [1, 0, 0]);
+        assert_eq!(result[3], 1);
+        assert_eq!(result.len(), 4);
+    }
+
+    #[test]
+    fn photo_cache_plan_preserves_contact_load_order_and_duplicate_id_semantics() {
+        let result = build_photo_cache_plan(
+            &[7, 7, 8],
+            &["old-uri".into(), "new-uri".into(), "uri-8".into()],
+            &[true, true, true],
+            &[7, 8],
+            &[7, 8],
+            &["cached-uri".into(), "uri-8".into()],
+        );
+        assert_eq!(result[0..3], [3, 1, 2]);
+        assert_eq!(result[3..6].contains(&7), true);
+        assert_eq!(result[6..8], [0, 1]);
+    }
+
+    #[test]
+    fn photo_cache_plan_handles_mismatched_input_lengths_without_panicking() {
+        let result = build_photo_cache_plan(
+            &[1, 2],
+            &["uri-1".into()],
+            &[true, true],
+            &[],
+            &[],
+            &[],
+        );
+        assert_eq!(result[0..3], [1, 1, 1]);
+        assert_eq!(result[3], 1);
+        assert_eq!(result[4], 1);
+        assert_eq!(result[5], 0);
+    }
 
     #[test]
     fn contact_display_order_keeps_selected_ids_in_saved_order() {
