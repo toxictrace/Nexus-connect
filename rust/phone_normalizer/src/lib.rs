@@ -654,6 +654,50 @@ fn frequent_contact_indices(
 }
 
 
+
+/// Resolves ContactWidgetFactory rows while preserving Kotlin first-match and ordering behavior.
+fn widget_factory_contact_indices(
+    contact_ids: &[i64],
+    lookup_keys: &[String],
+    starred: &[bool],
+    selected_ids: &[i64],
+    selected_lookup_keys: &[String],
+    filter_favorites: bool,
+    max_contacts: i32,
+) -> Vec<i32> {
+    let limit = max_contacts.max(0) as usize;
+    if limit == 0 {
+        return Vec::new();
+    }
+
+    let mut result = Vec::new();
+    if !selected_lookup_keys.is_empty() {
+        for key in selected_lookup_keys {
+            if let Some(index) = lookup_keys.iter().take(contact_ids.len()).position(|candidate| candidate == key) {
+                result.push(index as i32);
+                if result.len() >= limit { break; }
+            }
+        }
+    } else if !selected_ids.is_empty() {
+        for id in selected_ids {
+            if let Some(index) = contact_ids.iter().position(|candidate| candidate == id) {
+                result.push(index as i32);
+                if result.len() >= limit { break; }
+            }
+        }
+    } else if filter_favorites {
+        for (index, is_starred) in starred.iter().enumerate().take(contact_ids.len()) {
+            if *is_starred {
+                result.push(index as i32);
+                if result.len() >= limit { break; }
+            }
+        }
+    } else {
+        result.extend((0..contact_ids.len().min(limit)).map(|index| index as i32));
+    }
+    result
+}
+
 /// Selects recent widget rows while preserving the original Kotlin filtering and capacity rules.
 fn recent_widget_contact_indices(
     mixed_ids: &[i64],
@@ -752,6 +796,45 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFrequentCon
         Err(_) => return std::ptr::null_mut(),
     };
     write_int_array(&mut env, &frequent_contact_indices(&frequent, &contacts, &base, max_tiles))
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFactoryContactResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    contact_ids: JLongArray,
+    lookup_keys: JObjectArray,
+    starred: JLongArray,
+    selected_ids: JLongArray,
+    selected_lookup_keys: JObjectArray,
+    filter_favorites: jint,
+    max_contacts: jint,
+) -> jintArray {
+    let ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let keys = match read_string_array(&mut env, &lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let stars = match read_long_array(&mut env, &starred) {
+        Ok(values) => values.into_iter().map(|value| value != 0).collect::<Vec<_>>(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected_keys = match read_string_array(&mut env, &selected_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let indices = widget_factory_contact_indices(
+        &ids, &keys, &stars, &selected, &selected_keys, filter_favorites != 0, max_contacts
+    );
+    write_int_array(&mut env, &indices)
 }
 
 #[no_mangle]
@@ -1288,7 +1371,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallDurationForma
 
 #[cfg(test)]
 mod tests {
-    use super::{sanitize_messenger_phone, count_existing_selected_ids, filter_existing_contact_ids, resolve_locale_code, format_duration, recent_mixed_call_indices, recent_widget_contact_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{sanitize_messenger_phone, count_existing_selected_ids, filter_existing_contact_ids, resolve_locale_code, format_duration, recent_mixed_call_indices, recent_widget_contact_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, widget_factory_contact_indices, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
 
     #[test]
@@ -1750,6 +1833,42 @@ mod tests {
         assert!(frequent_contact_indices(&[9], &[1, 2], &[], 4).is_empty());
         assert!(frequent_contact_indices(&[], &[1, 2], &[], 4).is_empty());
         assert!(frequent_contact_indices(&[1], &[], &[], 4).is_empty());
+    }
+
+
+    #[test]
+    fn widget_factory_prefers_lookup_keys_and_preserves_repeated_first_matches() {
+        let ids = [10, 20, 30];
+        let keys = vec!["a".into(), "b".into(), "a".into()];
+        assert_eq!(
+            widget_factory_contact_indices(&ids, &keys, &[false; 3], &[20], &["a".into(), "missing".into(), "a".into()], false, 5),
+            vec![0, 0]
+        );
+    }
+
+    #[test]
+    fn widget_factory_uses_ids_only_when_lookup_keys_are_empty() {
+        assert_eq!(
+            widget_factory_contact_indices(&[10, 20, 10], &["a".into(), "b".into(), "c".into()], &[false; 3], &[10, 99, 20], &[], false, 5),
+            vec![0, 1]
+        );
+    }
+
+    #[test]
+    fn widget_factory_filters_favorites_in_contact_order() {
+        assert_eq!(
+            widget_factory_contact_indices(&[1, 2, 3, 4], &["a".into(), "b".into(), "c".into(), "d".into()], &[false, true, true, false], &[], &[], true, 5),
+            vec![1, 2]
+        );
+    }
+
+    #[test]
+    fn widget_factory_defaults_to_contact_order_and_respects_capacity() {
+        assert_eq!(
+            widget_factory_contact_indices(&[1, 2, 3, 4], &["a".into(), "b".into(), "c".into(), "d".into()], &[false; 4], &[], &[], false, 2),
+            vec![0, 1]
+        );
+        assert!(widget_factory_contact_indices(&[1, 2], &["a".into(), "b".into()], &[false; 2], &[], &[], false, 0).is_empty());
     }
 
     #[test]
