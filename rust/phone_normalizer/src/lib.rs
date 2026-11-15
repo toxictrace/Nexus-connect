@@ -1045,6 +1045,38 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_LastCall
     write_int_array(&mut env, &last_call_type_indices(&normalized, &call_types, &requested))
 }
 
+/// Resolves the app locale using the existing English/Russian fallback rules.
+fn resolve_locale_code(language: &str, system_language: &str) -> &'static str {
+    match language {
+        "en" => "en",
+        "ru" => "ru",
+        _ if system_language == "ru" => "ru",
+        _ => "en",
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_util_NativeLocaleResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    language: JString,
+    system_language: JString,
+) -> jstring {
+    let language: String = match env.get_string(&language) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let system_language: String = match env.get_string(&system_language) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(resolve_locale_code(&language, &system_language)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
 /// Formats call duration with the same thresholds and signed remainder behavior as Kotlin.
 fn format_duration(seconds: i64) -> String {
     let hours = seconds / 3600;
@@ -1145,7 +1177,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallDurationForma
 
 #[cfg(test)]
 mod tests {
-    use super::{count_existing_selected_ids, filter_existing_contact_ids, format_duration, recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{count_existing_selected_ids, filter_existing_contact_ids, resolve_locale_code, format_duration, recent_mixed_call_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
 
     #[test]
@@ -1774,6 +1806,20 @@ mod tests {
     #[test]
     fn selected_lookup_keys_serialization_returns_empty_for_empty_input() {
         assert_eq!(serialize_lookup_keys(&[]), "");
+    }
+
+    #[test]
+    fn locale_resolution_honors_explicit_language_over_system_language() {
+        assert_eq!(resolve_locale_code("en", "ru"), "en");
+        assert_eq!(resolve_locale_code("ru", "en"), "ru");
+    }
+
+    #[test]
+    fn locale_resolution_uses_russian_only_for_russian_system_language() {
+        assert_eq!(resolve_locale_code("system", "ru"), "ru");
+        assert_eq!(resolve_locale_code("system", "en"), "en");
+        assert_eq!(resolve_locale_code("unknown", "fr"), "en");
+        assert_eq!(resolve_locale_code("", ""), "en");
     }
 
     #[test]

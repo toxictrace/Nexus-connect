@@ -28,14 +28,14 @@ object LocaleHelper {
      * - "system" → Russian if system locale is ru-*, otherwise English
      */
     fun resolveLocale(language: String): Locale {
-        return when (language) {
-            "en" -> Locale.ENGLISH
+        val systemLanguage = if (language == "en" || language == "ru") {
+            ""
+        } else {
+            systemLocale().language
+        }
+        return when (NativeLocaleResolver.resolve(language, systemLanguage)) {
             "ru" -> Locale("ru")
-            else -> {
-                // "system" — follow OS but only between EN and RU
-                val sys = systemLocale()
-                if (sys.language == "ru") Locale("ru") else Locale.ENGLISH
-            }
+            else -> Locale.ENGLISH
         }
     }
 

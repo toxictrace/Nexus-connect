@@ -11,8 +11,8 @@ android {
         applicationId "com.toxictrace.nexusconnect"
         minSdk 26
         targetSdk 34
-        versionCode 120
-        versionName "0.19.69-test"
+        versionCode 121
+        versionName "0.19.70-test"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
