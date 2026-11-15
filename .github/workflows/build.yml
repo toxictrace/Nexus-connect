@@ -53,6 +53,15 @@ jobs:
         run: |
           cargo ndk -t arm64-v8a -t armeabi-v7a -t x86 -t x86_64 --platform 26 -o ../../app/build/generated/rustJniLibs build --release
 
+      - name: Verify Rust libraries for all Android ABIs
+        run: |
+          LIB_ROOT="app/build/generated/rustJniLibs"
+          for ABI in arm64-v8a armeabi-v7a x86 x86_64; do
+            LIB="$LIB_ROOT/$ABI/libnexus_phone.so"
+            test -s "$LIB" || { echo "Missing Rust library: $LIB"; exit 1; }
+            echo "Verified: $LIB"
+          done
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
@@ -106,7 +115,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Publish GitHub Release
-        if: ${{ !contains(steps.release_version.outputs.version, '-test') }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(steps.release_version.outputs.version, '-test') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.release_version.outputs.version }}
