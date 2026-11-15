@@ -34,6 +34,6 @@ internal object WidgetFactoryContactResolver {
             if (filterFavorites) 1 else 0,
             maxContacts
         )
-        return indices.mapNotNull { allContacts.getOrNull(it) }
+        return indices.map { allContacts.getOrNull(it) }.filterNotNull()
     }
 }
