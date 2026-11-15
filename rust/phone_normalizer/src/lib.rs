@@ -759,15 +759,13 @@ fn resolve_widget_call_type(
             .unwrap_or(i32::MIN);
     }
 
-    for (key, id) in number_keys.iter().zip(number_ids.iter()) {
-        if *id != contact_id {
-            continue;
-        }
-        if let Some((_, value)) = call_type_keys
+    // call_type_keys preserves newest-first CallLog order across every requested number.
+    for (call_key, value) in call_type_keys.iter().zip(call_type_values.iter()) {
+        let belongs_to_contact = number_keys
             .iter()
-            .zip(call_type_values.iter())
-            .find(|(call_key, _)| *call_key == key)
-        {
+            .zip(number_ids.iter())
+            .any(|(number_key, id)| number_key == call_key && *id == contact_id);
+        if belongs_to_contact {
             return *value;
         }
     }
@@ -2034,14 +2032,15 @@ mod tests {
     }
 
     #[test]
-    fn widget_call_type_resolver_uses_first_contact_number_with_call_type() {
+    fn widget_call_type_resolver_uses_newest_call_across_all_contact_numbers() {
         let number_keys = vec!["first".into(), "second".into(), "third".into()];
         let number_ids = vec![7, 7, 8];
-        let call_keys = vec!["second".into(), "first".into()];
-        let call_values = vec![2, 1];
+        // CallLog results are ordered newest first, independently of contact-number order.
+        let call_keys = vec!["second".into(), "third".into(), "first".into()];
+        let call_values = vec![2, 3, 1];
         assert_eq!(
             resolve_widget_call_type(7, false, "", &number_keys, &number_ids, &call_keys, &call_values),
-            1
+            2
         );
     }
 
