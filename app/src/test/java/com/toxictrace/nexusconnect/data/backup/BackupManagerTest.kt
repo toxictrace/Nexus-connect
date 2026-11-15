@@ -78,4 +78,69 @@ class BackupManagerTest {
         assertEquals(listOf(12L, 5L), restoredIds)
         assertEquals(emptyList<String>(), restoredLookupKeys)
     }
+
+    @Test
+    fun backupJsonKeepsVersionThreePortableSchema() {
+        val json = JSONObject(
+            BackupManager.settingsToJson(WidgetSettings(), emptyList(), emptyList())
+        )
+
+        assertEquals(3, json.getInt("version"))
+        assertEquals(
+            setOf(
+                "version",
+                "columns",
+                "tileHeightDp",
+                "maxContacts",
+                "filterFavorites",
+                "filterRecents",
+                "filterFrequent",
+                "clickAction",
+                "hapticFeedback",
+                "theme",
+                "dynamicColors",
+                "accentColorIndex",
+                "avatarIdentity",
+                "customAvatarUri",
+                "showUnknownNumbers",
+                "unknownNumbersDays",
+                "messengerWhatsApp",
+                "messengerViber",
+                "messengerTelegram",
+                "showCallTypeIcon",
+                "callIconStyle",
+                "language",
+                "recentsDays",
+                "showCallLogButton",
+                "callLogAppPackage",
+                "selectedContactIds",
+                "selectedContactLookupKeys"
+            ),
+            json.keySet()
+        )
+        org.junit.Assert.assertFalse(json.has("backupFolderUri"))
+    }
+
+    @Test
+    fun malformedEnumsAndSelectedIdsUseExistingFallbackRules() {
+        val json = """
+            {
+              "version": 3,
+              "clickAction": "UNKNOWN_ACTION",
+              "theme": "UNKNOWN_THEME",
+              "avatarIdentity": "UNKNOWN_AVATAR",
+              "selectedContactIds": "10,invalid,-2,9223372036854775808",
+              "selectedContactLookupKeys": "bG9va3Vw,bad!"
+            }
+        """.trimIndent()
+
+        val (restored, ids, lookupKeys) = BackupManager.jsonToSettings(json)
+
+        assertEquals(ClickAction.SHOW_DIALOG, restored.clickAction)
+        assertEquals(AppTheme.LIGHT, restored.theme)
+        assertEquals(AvatarIdentity.DEFAULT, restored.avatarIdentity)
+        assertEquals(listOf(10L, -2L), ids)
+        assertEquals(listOf("lookup"), lookupKeys)
+    }
+
 }
