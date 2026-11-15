@@ -249,7 +249,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
 
         private fun setupClickHandler(views: RemoteViews, context: Context, tileId: Int, contact: Contact) {
-            val intent = Intent(context, ContactWidgetProvider::class.java).apply {
+            val intent = Intent(context, WidgetActionReceiver::class.java).apply {
                 action = ACTION_CONTACT_CLICK
                 putExtra(EXTRA_CONTACT_ID, contact.id)
                 putExtra(EXTRA_CONTACT_PHONE, contact.phoneNumber ?: "")
@@ -270,7 +270,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             if (callLogBtnId != 0) {
                 if (showCallLogBtn) {
                     views.setViewVisibility(callLogBtnId, View.VISIBLE)
-                    val callLogIntent = Intent(context, ContactWidgetProvider::class.java).apply {
+                    val callLogIntent = Intent(context, WidgetActionReceiver::class.java).apply {
                         action = ACTION_OPEN_CALL_LOG
                     }
                     val callLogPi = PendingIntent.getBroadcast(
@@ -408,37 +408,5 @@ class ContactWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         Log.d(TAG, "onReceive action=${intent.action}")
-        if (intent.action == ACTION_OPEN_CALL_LOG) {
-            AppLogger.i(TAG, "open call log")
-            val preferredPkg = WidgetPrefs.getCallLogAppPackage(context)
-            if (preferredPkg.isNotBlank()) {
-                val launchIntent = context.packageManager.getLaunchIntentForPackage(preferredPkg)
-                if (launchIntent != null) {
-                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    AppLogger.i(TAG, "open call log: launching preferred package $preferredPkg directly")
-                    context.startActivity(launchIntent)
-                    return
-                } else {
-                    AppLogger.w(TAG, "open call log: preferred package $preferredPkg not launchable, falling back")
-                }
-            }
-            val i = Intent(Intent.ACTION_VIEW).apply {
-                type = "vnd.android.cursor.dir/calls"
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            if (i.resolveActivity(context.packageManager) != null) {
-                context.startActivity(i)
-            } else {
-                val fallback = Intent(Intent.ACTION_DIAL).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(fallback)
-            }
-        }
-        if (intent.action == ACTION_CONTACT_CLICK) {
-            val id = intent.getLongExtra(EXTRA_CONTACT_ID, -1L)
-            val phone = intent.getStringExtra(EXTRA_CONTACT_PHONE)
-            val name = intent.getStringExtra(EXTRA_CONTACT_NAME)
-            Log.d(TAG, "Click: $name id=$id")
-            ContactActionHandler.handle(context, id, phone, name)
-        }
     }
 }
