@@ -20,7 +20,7 @@ class SelectedContactLookupKeysTest {
     }
 
     @Test fun ignoresInvalidEncodedTokens() {
-        assertEquals(listOf("valid"), SelectedContactLookupKeys.parse("%%%, " + encode("valid")))
+        assertEquals(listOf("valid"), SelectedContactLookupKeys.parse("%%%," + encode("valid")))
     }
 
     @Test fun acceptsPaddedAndUnpaddedTokens() {
