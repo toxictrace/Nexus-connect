@@ -1,4 +1,4 @@
-use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::engine::general_purpose::{URL_SAFE, URL_SAFE_NO_PAD};
 use base64::Engine;
 use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString};
 use jni::sys::{jint, jlong, jintArray, jlongArray, jobjectArray, jstring};
@@ -1285,6 +1285,29 @@ fn format_duration(seconds: i64) -> String {
     }
 }
 
+
+/// Parses persisted comma-separated contact IDs, ignoring invalid tokens.
+fn parse_selected_contact_ids(raw: &str) -> Vec<i64> {
+    raw.split(',').filter_map(|token| token.parse::<i64>().ok()).collect()
+}
+
+/// Matches Kotlin Char.isWhitespace and Char.isSpaceChar blank checks.
+fn is_kotlin_blank(value: &str) -> bool {
+    value.chars().all(|character| character.is_whitespace()
+        || matches!(character, '\u{00A0}' | '\u{2007}' | '\u{202F}'))
+}
+
+/// Parses URL-safe Base64 keys with Java-compatible UTF-8 replacement.
+fn parse_selected_contact_lookup_keys(raw: &str) -> Vec<String> {
+    if is_kotlin_blank(raw) { return Vec::new(); }
+    raw.split(',').filter_map(|token| {
+        let decoded = URL_SAFE.decode(token)
+            .or_else(|_| URL_SAFE_NO_PAD.decode(token)).ok()?;
+        let value = String::from_utf8_lossy(&decoded).into_owned();
+        if is_kotlin_blank(&value) { None } else { Some(value) }
+    }).collect()
+}
+
 /// Serializes selected contact IDs using the existing comma-separated storage format.
 fn serialize_contact_ids(ids: &[i64]) -> String {
     ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
@@ -1297,6 +1320,28 @@ fn serialize_lookup_keys(keys: &[String]) -> String {
         .map(|key| URL_SAFE_NO_PAD.encode(key.as_bytes()))
         .collect::<Vec<_>>()
         .join(",")
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactIds_parseNative(
+    mut env: JNIEnv, _class: JClass, raw: JString,
+) -> jlongArray {
+    let input: String = match env.get_string(&raw) {
+        Ok(value) => value.into(), Err(_) => return std::ptr::null_mut(),
+    };
+    write_long_array(&mut env, Some(parse_selected_contact_ids(&input)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactLookupKeys_parseNative(
+    mut env: JNIEnv, _class: JClass, raw: JString,
+) -> jobjectArray {
+    let input: String = match env.get_string(&raw) {
+        Ok(value) => value.into(), Err(_) => return std::ptr::null_mut(),
+    };
+    let values = parse_selected_contact_lookup_keys(&input);
+    write_string_array(&mut env, &values)
 }
 
 #[no_mangle]
@@ -1371,7 +1416,7 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallDurationForma
 
 #[cfg(test)]
 mod tests {
-    use super::{sanitize_messenger_phone, count_existing_selected_ids, filter_existing_contact_ids, resolve_locale_code, format_duration, recent_mixed_call_indices, recent_widget_contact_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, widget_factory_contact_indices, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+    use super::{sanitize_messenger_phone, count_existing_selected_ids, filter_existing_contact_ids, resolve_locale_code, format_duration, recent_mixed_call_indices, recent_widget_contact_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, widget_factory_contact_indices, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, parse_selected_contact_ids, parse_selected_contact_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
 
 
     #[test]
@@ -2099,6 +2144,38 @@ mod tests {
         assert!(last_call_type_indices(&[], &[], &["a".into()]).is_empty());
         assert!(last_call_type_indices(&["a".into()], &[], &["a".into()]).is_empty());
         assert_eq!(last_call_type_indices(&["a".into(), "b".into()], &[4], &["a".into(), "b".into()]), vec![0]);
+    }
+
+
+    #[test]
+    fn selected_contact_ids_parsing_preserves_order_duplicates_and_signed_values() {
+        assert_eq!(parse_selected_contact_ids("42,+7,-9,42"), vec![42, 7, -9, 42]);
+    }
+
+    #[test]
+    fn selected_contact_ids_parsing_ignores_invalid_empty_and_overflow_tokens() {
+        assert_eq!(parse_selected_contact_ids("42,nope,,9223372036854775808,-9223372036854775809,7"), vec![42, 7]);
+        assert!(parse_selected_contact_ids("").is_empty());
+        assert!(parse_selected_contact_ids(" , ").is_empty());
+    }
+
+    #[test]
+    fn selected_lookup_keys_parsing_accepts_padded_and_unpadded_tokens() {
+        assert_eq!(parse_selected_contact_lookup_keys("dmFsaWQ,dHJhaWxpbmc="),
+            vec!["valid".to_string(), "trailing".to_string()]);
+    }
+
+    #[test]
+    fn selected_lookup_keys_parsing_ignores_invalid_and_blank_tokens() {
+        assert_eq!(parse_selected_contact_lookup_keys("%%%,,IA,ICAg,dmFsaWQ"),
+            vec!["valid".to_string()]);
+        assert!(parse_selected_contact_lookup_keys("").is_empty());
+        assert!(parse_selected_contact_lookup_keys(" \u{00A0} ").is_empty());
+    }
+
+    #[test]
+    fn selected_lookup_keys_parsing_replaces_invalid_utf8_like_java() {
+        assert_eq!(parse_selected_contact_lookup_keys("_w"), vec!["�".to_string()]);
     }
 
     #[test]
