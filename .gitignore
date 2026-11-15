@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+**/build/
+
+# Local configuration
+local.properties
+*.iml
+.idea/
+
+# Android
+*.apk
+*.aab
+
+# Logs and temporary diagnostics
+*.log
+logfile.txt
+
+# Rust build output
+target/
