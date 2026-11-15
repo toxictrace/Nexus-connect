@@ -1057,7 +1057,7 @@ fn resolve_locale_code(language: &str, system_language: &str) -> &'static str {
 
 #[no_mangle]
 pub extern "system" fn Java_com_toxictrace_nexusconnect_util_NativeLocaleResolver_resolveNative(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     language: JString,
     system_language: JString,
