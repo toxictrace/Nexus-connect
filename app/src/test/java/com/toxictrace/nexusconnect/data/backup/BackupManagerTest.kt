@@ -10,6 +10,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.io.ByteArrayOutputStream
+import java.util.Base64
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -179,5 +180,27 @@ class BackupManagerTest {
         assertThrows(IllegalArgumentException::class.java) {
             BackupManager.unpackZip(output.toByteArray())
         }
+    }
+
+    @Test
+    fun legacyEncryptedBackupFixtureDecryptsWithTheExistingFormat() {
+        val encrypted = Base64.getDecoder().decode(
+            "AAECAwQFBgcICQoLDA0OD5riTtZ18eAPc8ZJ4kZ1tvnjBLRogzVrThJyAZXG43MshpR8kgxHonidEPJTx/ilw0jg8qYVsxQjfg0te+FKFpU="
+        )
+
+        assertEquals(
+            """{"version":3,"columns":4,"selectedContactIds":"41,7"}""",
+            BackupManager.decrypt(encrypted)
+        )
+    }
+
+    @Test
+    fun encryptionRoundTripPreservesUtf8AndUsesIvPrefixedCiphertext() {
+        val plaintext = """{"version":3,"label":"резервная копия"}"""
+        val encrypted = BackupManager.encrypt(plaintext)
+
+        assertEquals(0, (encrypted.size - 16) % 16)
+        assertEquals(16, encrypted.size - ((encrypted.size - 16) / 16) * 16 - ((encrypted.size - 16) % 16))
+        assertEquals(plaintext, BackupManager.decrypt(encrypted))
     }
 }

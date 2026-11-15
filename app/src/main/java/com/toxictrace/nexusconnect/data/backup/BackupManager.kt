@@ -100,13 +100,13 @@ object BackupManager {
         return SecretKeySpec(bytes, "AES")
     }
 
-    private fun encrypt(data: String): ByteArray {
+    internal fun encrypt(data: String): ByteArray {
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.ENCRYPT_MODE, deriveKey())
         return cipher.iv + cipher.doFinal(data.toByteArray(Charsets.UTF_8))
     }
 
-    private fun decrypt(data: ByteArray): String {
+    internal fun decrypt(data: ByteArray): String {
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.DECRYPT_MODE, deriveKey(), IvParameterSpec(data.copyOfRange(0, 16)))
         return String(cipher.doFinal(data.copyOfRange(16, data.size)), Charsets.UTF_8)
