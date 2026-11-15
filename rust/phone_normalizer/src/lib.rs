@@ -1077,6 +1077,31 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_util_NativeLocaleResolve
     }
 }
 
+/// Keeps the characters accepted by the existing messenger URI phone filters.
+fn sanitize_messenger_phone(phone: &str) -> String {
+    phone
+        .chars()
+        .filter(|character| character.is_ascii_digit() || *character == '+')
+        .collect()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_MessengerPhoneResolver_sanitizeNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    phone: JString,
+) -> jstring {
+    let phone: String = match env.get_string(&phone) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(sanitize_messenger_phone(&phone)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
 /// Formats call duration with the same thresholds and signed remainder behavior as Kotlin.
 fn format_duration(seconds: i64) -> String {
     let hours = seconds / 3600;
@@ -1806,6 +1831,18 @@ mod tests {
     #[test]
     fn selected_lookup_keys_serialization_returns_empty_for_empty_input() {
         assert_eq!(serialize_lookup_keys(&[]), "");
+    }
+
+    #[test]
+    fn messenger_phone_sanitization_preserves_ascii_digits_and_plus_signs() {
+        assert_eq!(sanitize_messenger_phone(" +1 (234)-56.7# ext 89 "), "+123456789");
+        assert_eq!(sanitize_messenger_phone("++12+34"), "++12+34");
+    }
+
+    #[test]
+    fn messenger_phone_sanitization_removes_non_ascii_digits() {
+        assert_eq!(sanitize_messenger_phone("+１２３٤٥٦"), "+");
+        assert_eq!(sanitize_messenger_phone(""), "");
     }
 
     #[test]

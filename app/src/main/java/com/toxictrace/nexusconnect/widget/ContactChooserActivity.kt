@@ -223,7 +223,7 @@ class ContactChooserActivity : ComponentActivity() {
 
     private fun openViber(phone: String, pkg: String) {
         val effectivePkg = pkg.ifBlank { "com.viber.voip" }
-        val c = phone.replace(Regex("[^+\\d]"), "").trimStart('+')
+        val c = MessengerPhoneResolver.sanitize(phone).trimStart('+')
         // viber://chat?number=XXXXXXXXXXX (without +, with country code)
         val chatIntent = Intent(Intent.ACTION_VIEW, Uri.parse("viber://chat?number=$c")).apply {
             setPackage(effectivePkg)
@@ -241,12 +241,12 @@ class ContactChooserActivity : ComponentActivity() {
     }
 
     private fun buildWhatsAppUri(phone: String): Uri {
-        val c = phone.replace(Regex("[^+\\d]"), "")
+        val c = MessengerPhoneResolver.sanitize(phone)
         return Uri.parse("whatsapp://send?phone=$c")
     }
 
     private fun buildTelegramUri(phone: String): Uri {
-        val c = phone.replace(Regex("[^+\\d]"), "")
+        val c = MessengerPhoneResolver.sanitize(phone)
         return Uri.parse("tg://resolve?phone=$c")
     }
 }
