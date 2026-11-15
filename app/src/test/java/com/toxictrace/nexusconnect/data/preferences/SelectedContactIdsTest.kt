@@ -20,6 +20,10 @@ class SelectedContactIdsTest {
         assertEquals(listOf(7L, 7L, -2L), SelectedContactIds.parse("+7,7,-2"))
     }
 
+    @Test fun serializesIdsInExistingCommaSeparatedFormat() {
+        assertEquals("4,7,-2", SelectedContactIds.serialize(listOf(4L, 7L, -2L)))
+    }
+
     @Test fun ignoresOverflowAndWhitespaceTokens() {
         assertEquals(listOf(1L), SelectedContactIds.parse("9223372036854775808, 1,1"))
     }

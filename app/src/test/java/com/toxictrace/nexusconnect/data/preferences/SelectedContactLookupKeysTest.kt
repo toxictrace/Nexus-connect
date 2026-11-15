@@ -33,6 +33,10 @@ class SelectedContactLookupKeysTest {
         assertEquals(listOf("valid"), SelectedContactLookupKeys.parse(raw))
     }
 
+    @Test fun serializesUrlSafeBase64WithoutPadding() {
+        assertEquals("dmFsaWQ", SelectedContactLookupKeys.serialize(listOf("valid")))
+    }
+
     @Test fun replacesInvalidUtf8BytesLikeJavaDecoder() {
         assertEquals(listOf("�"), SelectedContactLookupKeys.parse("_w"))
     }
