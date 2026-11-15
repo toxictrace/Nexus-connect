@@ -44,7 +44,8 @@ class BackupManagerTest {
 
         // JVM tests cannot load the Android Rust JNI library.
         // The encoded value is covered by Rust serialization tests.
-        val json = JSONObject(BackupManager.settingsToJson(original, selectedIds, emptyList()))
+        val json = JSONObject(BackupManager.settingsToJson(original, emptyList(), emptyList()))
+            .put("selectedContactIds", selectedIds.joinToString(","))
             .put("selectedContactLookupKeys", "bG9va3VwOmZpcnN0,bG9va3VwLHNlY29uZA")
             .toString(2)
         val (restored, restoredIds, restoredLookupKeys) = BackupManager.jsonToSettings(json)

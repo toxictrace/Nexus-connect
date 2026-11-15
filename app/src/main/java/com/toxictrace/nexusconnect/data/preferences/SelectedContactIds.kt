@@ -9,7 +9,7 @@ internal object SelectedContactIds {
         raw.split(",").mapNotNull { it.toLongOrNull() }
 
     fun serialize(ids: List<Long>): String =
-        NativeSelectedContactIds.serialize(ids.toLongArray())
+        if (ids.isEmpty()) "" else NativeSelectedContactIds.serialize(ids.toLongArray())
 }
 
 /** Rust-backed serializer for the existing selected-contact ID storage format. */

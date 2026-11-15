@@ -5,6 +5,7 @@ import android.net.Uri
 import com.toxictrace.nexusconnect.data.model.*
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
 import com.toxictrace.nexusconnect.data.preferences.SelectedContactLookupKeys
+import com.toxictrace.nexusconnect.data.preferences.SelectedContactIds
 import org.json.JSONObject
 import java.io.*
 import java.text.SimpleDateFormat
@@ -55,7 +56,7 @@ object BackupManager {
             put("recentsDays",        settings.recentsDays)
             put("showCallLogButton",  settings.showCallLogButton)
             put("callLogAppPackage",  settings.callLogAppPackage)
-            put("selectedContactIds", selectedIds.joinToString(","))
+            put("selectedContactIds", SelectedContactIds.serialize(selectedIds))
             put("selectedContactLookupKeys", SelectedContactLookupKeys.serialize(selectedLookupKeys))
         }.toString(2)
     }
@@ -88,8 +89,7 @@ object BackupManager {
             showCallLogButton  = o.optBoolean("showCallLogButton", false),
             callLogAppPackage  = o.optString("callLogAppPackage", "")
         )
-        val ids = o.optString("selectedContactIds", "")
-            .split(",").mapNotNull { it.toLongOrNull() }
+        val ids = SelectedContactIds.parse(o.optString("selectedContactIds", ""))
         val lookupKeys = SelectedContactLookupKeys.parse(o.optString("selectedContactLookupKeys", ""))
         return Triple(settings, ids, lookupKeys)
     }
