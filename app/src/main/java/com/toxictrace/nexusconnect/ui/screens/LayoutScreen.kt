@@ -27,13 +27,15 @@ fun LayoutScreen(viewModel: MainViewModel) {
 
     var draft by remember(settings) { mutableStateOf(settings) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp, bottom = 104.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         SettingsCard {
             SettingsSlider(
                 label = stringResource(R.string.number_of_columns),
@@ -171,15 +173,27 @@ fun LayoutScreen(viewModel: MainViewModel) {
             }
         }
 
-        Button(
-            onClick = { viewModel.updateSettings { draft } },
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            shape = RoundedCornerShape(28.dp)
-        ) {
-            Text(stringResource(R.string.apply_layout), style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(8.dp))
         }
 
-        Spacer(Modifier.height(8.dp))
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter),
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 8.dp
+        ) {
+            Button(
+                onClick = { viewModel.updateSettings { draft } },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .height(52.dp),
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Text(stringResource(R.string.apply_layout), style = MaterialTheme.typography.titleMedium)
+            }
+        }
     }
 }
 
