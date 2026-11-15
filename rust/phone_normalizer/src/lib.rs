@@ -1774,7 +1774,7 @@ mod tests {
         assert_eq!(
             recent_widget_contact_indices(
                 &[-1, -2, -3, 7],
-                &[1, 0, 1, 0],
+                &[true, false, true, false],
                 &[7],
                 &[],
                 true,
@@ -1791,7 +1791,7 @@ mod tests {
         assert_eq!(
             recent_widget_contact_indices(
                 &[7, -1, 8],
-                &[0, 1, 0],
+                &[false, true, false],
                 &[7, 8],
                 &[],
                 false,
@@ -1803,7 +1803,7 @@ mod tests {
         );
         assert!(recent_widget_contact_indices(
             &[7, -1],
-            &[0, 1],
+            &[false, true],
             &[7],
             &[],
             true,
@@ -1818,7 +1818,7 @@ mod tests {
         assert_eq!(
             recent_widget_contact_indices(
                 &[-1, -2],
-                &[1, 1],
+                &[true, true],
                 &[],
                 &[],
                 false,
@@ -1834,7 +1834,7 @@ mod tests {
     fn recent_widget_contacts_handle_mismatched_flags_and_non_positive_capacity() {
         assert!(recent_widget_contact_indices(
             &[-1, -2],
-            &[1],
+            &[true],
             &[],
             &[],
             false,
@@ -1844,7 +1844,7 @@ mod tests {
         ).is_empty());
         assert!(recent_widget_contact_indices(
             &[-1],
-            &[1],
+            &[true],
             &[],
             &[],
             false,
