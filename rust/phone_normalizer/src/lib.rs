@@ -1832,16 +1832,19 @@ mod tests {
 
     #[test]
     fn recent_widget_contacts_handle_mismatched_flags_and_non_positive_capacity() {
-        assert!(recent_widget_contact_indices(
-            &[-1, -2],
-            &[true],
-            &[],
-            &[],
-            false,
-            true,
-            4,
-            0,
-        ).is_empty());
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[-1, -2],
+                &[true],
+                &[],
+                &[],
+                false,
+                true,
+                4,
+                0,
+            ),
+            vec![0]
+        );
         assert!(recent_widget_contact_indices(
             &[-1],
             &[true],
