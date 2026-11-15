@@ -654,6 +654,49 @@ fn frequent_contact_indices(
 }
 
 
+/// Selects recent widget rows while preserving the original Kotlin filtering and capacity rules.
+fn recent_widget_contact_indices(
+    mixed_ids: &[i64],
+    valid_unknown_numbers: &[bool],
+    contact_ids: &[i64],
+    used_contact_ids: &[i64],
+    filter_recents: bool,
+    show_unknown_numbers: bool,
+    max_tiles: i32,
+    initial_count: i32,
+) -> Vec<i32> {
+    let capacity = max_tiles.max(0) as usize;
+    let mut selected_count = initial_count.max(0) as usize;
+    if selected_count >= capacity {
+        return Vec::new();
+    }
+
+    let available_contacts: HashSet<i64> = contact_ids.iter().copied().collect();
+    let mut used: HashSet<i64> = used_contact_ids.iter().copied().collect();
+    let mut result = Vec::new();
+
+    for (index, id) in mixed_ids.iter().enumerate() {
+        if selected_count >= capacity {
+            break;
+        }
+
+        if *id > 0 {
+            if !filter_recents || !available_contacts.contains(id) || !used.insert(*id) {
+                continue;
+            }
+        } else {
+            if !show_unknown_numbers || !valid_unknown_numbers.get(index).copied().unwrap_or(false) {
+                continue;
+            }
+        }
+
+        result.push(index as i32);
+        selected_count += 1;
+    }
+
+    result
+}
+
 /// Resolves the call type for one widget tile while preserving Kotlin map iteration order.
 fn resolve_widget_call_type(
     contact_id: i64,
@@ -709,6 +752,49 @@ pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFrequentCon
         Err(_) => return std::ptr::null_mut(),
     };
     write_int_array(&mut env, &frequent_contact_indices(&frequent, &contacts, &base, max_tiles))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetRecentContactResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    mixed_ids: JLongArray,
+    valid_unknown_numbers: JLongArray,
+    contact_ids: JLongArray,
+    used_contact_ids: JLongArray,
+    filter_recents: jint,
+    show_unknown_numbers: jint,
+    max_tiles: jint,
+    initial_count: jint,
+) -> jintArray {
+    let mixed = match read_long_array(&mut env, &mixed_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let valid_unknown = match read_long_array(&mut env, &valid_unknown_numbers) {
+        Ok(values) => values.into_iter().map(|value| value != 0).collect::<Vec<_>>(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contacts = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let used = match read_long_array(&mut env, &used_contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let indices = recent_widget_contact_indices(
+        &mixed,
+        &valid_unknown,
+        &contacts,
+        &used,
+        filter_recents != 0,
+        show_unknown_numbers != 0,
+        max_tiles,
+        initial_count,
+    );
+    write_int_array(&mut env, &indices)
 }
 
 #[no_mangle]
@@ -1664,6 +1750,108 @@ mod tests {
         assert!(frequent_contact_indices(&[9], &[1, 2], &[], 4).is_empty());
         assert!(frequent_contact_indices(&[], &[1, 2], &[], 4).is_empty());
         assert!(frequent_contact_indices(&[1], &[], &[], 4).is_empty());
+    }
+
+    #[test]
+    fn recent_widget_contacts_keep_recent_order_and_exclude_missing_or_used_contacts() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[3, 2, 99, 3, -1],
+                &[false; 5],
+                &[1, 2, 3],
+                &[1, 2],
+                true,
+                false,
+                6,
+                2,
+            ),
+            vec![0]
+        );
+    }
+
+    #[test]
+    fn recent_widget_contacts_include_valid_unknown_numbers_in_order() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[-1, -2, -3, 7],
+                &[1, 0, 1, 0],
+                &[7],
+                &[],
+                true,
+                true,
+                5,
+                0,
+            ),
+            vec![0, 2, 3]
+        );
+    }
+
+    #[test]
+    fn recent_widget_contacts_respect_filters_and_remaining_capacity() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[7, -1, 8],
+                &[0, 1, 0],
+                &[7, 8],
+                &[],
+                false,
+                true,
+                3,
+                1,
+            ),
+            vec![1]
+        );
+        assert!(recent_widget_contact_indices(
+            &[7, -1],
+            &[0, 1],
+            &[7],
+            &[],
+            true,
+            true,
+            2,
+            2,
+        ).is_empty());
+    }
+
+    #[test]
+    fn recent_widget_contacts_do_not_deduplicate_unknown_numbers() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[-1, -2],
+                &[1, 1],
+                &[],
+                &[],
+                false,
+                true,
+                4,
+                0,
+            ),
+            vec![0, 1]
+        );
+    }
+
+    #[test]
+    fn recent_widget_contacts_handle_mismatched_flags_and_non_positive_capacity() {
+        assert!(recent_widget_contact_indices(
+            &[-1, -2],
+            &[1],
+            &[],
+            &[],
+            false,
+            true,
+            4,
+            0,
+        ).is_empty());
+        assert!(recent_widget_contact_indices(
+            &[-1],
+            &[1],
+            &[],
+            &[],
+            false,
+            true,
+            0,
+            0,
+        ).is_empty());
     }
 
     #[test]

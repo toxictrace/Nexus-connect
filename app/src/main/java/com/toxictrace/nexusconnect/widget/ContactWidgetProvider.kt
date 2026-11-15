@@ -355,15 +355,23 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     unknownDays = if (WidgetPrefs.getShowUnknownNumbers(context)) unknownDays else -1,
                     limit = maxTiles
                 )
+                val showUnknownNumbers = WidgetPrefs.getShowUnknownNumbers(context)
+                val selectedIndices = WidgetRecentContactResolver.resolve(
+                    mixed = mixed,
+                    allContactIds = allContacts.map { it.id }.toLongArray(),
+                    usedContactIds = usedIds.toLongArray(),
+                    filterRecents = filterRecents,
+                    showUnknownNumbers = showUnknownNumbers,
+                    maxTiles = maxTiles,
+                    initialCount = result.size
+                )
                 var unknownCount = 1
-                mixed.forEach { (id, phone) ->
-                    if (result.size >= maxTiles) return result.take(maxTiles)
+                selectedIndices.forEach { index ->
+                    val (id, phone) = mixed[index]
                     if (id > 0) {
-                        if (!filterRecents) return@forEach
-                        val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
-                        if (usedIds.add(c.id)) result.add(c)
+                        val contact = allContacts.firstOrNull { it.id == id } ?: return@forEach
+                        if (usedIds.add(contact.id)) result.add(contact)
                     } else {
-                        if (!WidgetPrefs.getShowUnknownNumbers(context)) return@forEach
                         if (phone.isNullOrBlank()) return@forEach
                         val unknownContact = Contact(
                             id = -(unknownCount++).toLong(),
