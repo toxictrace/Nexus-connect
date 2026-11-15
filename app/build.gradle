@@ -84,6 +84,9 @@ dependencies {
     // Coil для изображений
     implementation 'io.coil-kt:coil-compose:2.6.0'
 
+    // AppCompat (на всякий случай)
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20240303'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
