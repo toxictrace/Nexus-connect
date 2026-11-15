@@ -19,6 +19,7 @@ import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 import com.toxictrace.nexusconnect.util.AppLogger
+import com.toxictrace.nexusconnect.util.NativePhoneNumber
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 
 class ContactWidgetProvider : AppWidgetProvider() {
@@ -301,13 +302,13 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     while (it.moveToNext()) {
                         val id = it.getLong(idIdx)
                         val num = it.getString(numIdx) ?: continue
-                        val norm = num.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                        val norm = NativePhoneNumber.normalize(num)
                         if (norm.isNotBlank()) numberMap[norm] = id
                     }
                 }
             } catch (e: Exception) {
                 allContacts.filter { it.phoneNumber != null }.forEach {
-                    val norm = it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                    val norm = NativePhoneNumber.normalize(it.phoneNumber!!)
                     numberMap[norm] = it.id
                 }
             }

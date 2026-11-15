@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
+import com.toxictrace.nexusconnect.util.NativePhoneNumber
 import com.toxictrace.nexusconnect.ui.theme.NexusConnectTheme
 import java.text.SimpleDateFormat
 import java.util.*
@@ -143,7 +144,7 @@ class ContactChooserActivity : ComponentActivity() {
         if (phone.isBlank() && contactId <= 0) return CallStats(null, 0, 0L, 0)
         val norms = mutableSetOf<String>()
         if (phone.isNotBlank()) {
-            norms.add(phone.replace(Regex("[\\s\\-().+]"), "").takeLast(7))
+            norms.add(NativePhoneNumber.normalize(phone))
         }
         if (contactId > 0) {
             try {
@@ -157,7 +158,7 @@ class ContactChooserActivity : ComponentActivity() {
                     val ni = it.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER)
                     while (it.moveToNext()) {
                         val n = it.getString(ni) ?: continue
-                        norms.add(n.replace(Regex("[\\s\\-().+]"), "").takeLast(7))
+                        norms.add(NativePhoneNumber.normalize(n))
                     }
                 }
             } catch (_: Exception) {}
@@ -180,7 +181,7 @@ class ContactChooserActivity : ComponentActivity() {
                 val ui = it.getColumnIndexOrThrow(CallLog.Calls.DURATION)
                 val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
                 while (it.moveToNext()) {
-                    val n = it.getString(ni)?.replace(Regex("[\\s\\-().+]"), "")?.takeLast(7) ?: continue
+                    val n = it.getString(ni)?.let { number -> NativePhoneNumber.normalize(number) } ?: continue
                     callNorms.add(n)
                     allDates.add(it.getLong(di))
                     allDurations.add(it.getLong(ui))

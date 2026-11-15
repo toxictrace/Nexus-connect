@@ -1,6 +1,7 @@
 package com.toxictrace.nexusconnect.widget
 
 import com.toxictrace.nexusconnect.data.model.Contact
+import com.toxictrace.nexusconnect.util.NativePhoneNumber
 
 /** Rust-backed lookup of the call type displayed on a widget contact tile. */
 internal object WidgetCallTypeResolver {
@@ -24,7 +25,7 @@ internal object WidgetCallTypeResolver {
         numberMap: Map<String, Long>
     ): Int? {
         val phoneNorm = if (contact.id < 0 && contact.phoneNumber != null) {
-            contact.phoneNumber.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+            NativePhoneNumber.normalize(contact.phoneNumber)
         } else {
             ""
         }
