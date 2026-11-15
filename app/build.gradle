@@ -11,8 +11,8 @@ android {
         applicationId "com.toxictrace.nexusconnect"
         minSdk 26
         targetSdk 34
-        versionCode 126
-        versionName "0.19.75-test"
+        versionCode 127
+        versionName "0.19.76-test"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -83,9 +83,6 @@ dependencies {
 
     // Coil для изображений
     implementation 'io.coil-kt:coil-compose:2.6.0'
-
-    // AppCompat (на всякий случай)
-    implementation 'androidx.appcompat:appcompat:1.7.0'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20240303'

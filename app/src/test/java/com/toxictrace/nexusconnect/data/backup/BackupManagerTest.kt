@@ -6,7 +6,13 @@ import com.toxictrace.nexusconnect.data.model.ClickAction
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Test
+import java.io.ByteArrayOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 
 class BackupManagerTest {
 
@@ -119,7 +125,7 @@ class BackupManagerTest {
             ),
             json.keySet()
         )
-        org.junit.Assert.assertFalse(json.has("backupFolderUri"))
+        assertFalse(json.has("backupFolderUri"))
     }
 
     @Test
@@ -144,4 +150,34 @@ class BackupManagerTest {
         assertEquals(listOf("lookup"), lookupKeys)
     }
 
+    @Test
+    fun zipRoundTripPreservesTheSettingsEntryAndPayloadBytes() {
+        val payload = "Nexus backup payload\u0000with UTF-8: резервная копия".toByteArray(Charsets.UTF_8)
+
+        val archive = BackupManager.packZip(payload)
+        val zip = ZipInputStream(archive.inputStream())
+        val entry = zip.use {
+            val first = it.nextEntry
+            val bytes = it.readBytes()
+            first?.name to bytes
+        }
+
+        assertEquals("settings.json", entry.first)
+        assertEquals(payload.toList(), entry.second.toList())
+        assertEquals(payload.toList(), BackupManager.unpackZip(archive).toList())
+    }
+
+    @Test
+    fun zipReaderRejectsAnArchiveWithoutTheExpectedSettingsEntry() {
+        val output = ByteArrayOutputStream()
+        ZipOutputStream(output).use { zip ->
+            zip.putNextEntry(ZipEntry("other.json"))
+            zip.write("{}".toByteArray(Charsets.UTF_8))
+            zip.closeEntry()
+        }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            BackupManager.unpackZip(output.toByteArray())
+        }
+    }
 }

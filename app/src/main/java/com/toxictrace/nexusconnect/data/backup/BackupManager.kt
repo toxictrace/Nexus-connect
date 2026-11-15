@@ -112,13 +112,13 @@ object BackupManager {
         return String(cipher.doFinal(data.copyOfRange(16, data.size)), Charsets.UTF_8)
     }
 
-    private fun packZip(payload: ByteArray): ByteArray {
+    internal fun packZip(payload: ByteArray): ByteArray {
         val baos = ByteArrayOutputStream()
         ZipOutputStream(baos).use { it.putNextEntry(ZipEntry(ZIP_ENTRY)); it.write(payload); it.closeEntry() }
         return baos.toByteArray()
     }
 
-    private fun unpackZip(data: ByteArray): ByteArray {
+    internal fun unpackZip(data: ByteArray): ByteArray {
         ZipInputStream(ByteArrayInputStream(data)).use { zip ->
             if (zip.nextEntry?.name == ZIP_ENTRY) return zip.readBytes()
         }
