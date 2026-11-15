@@ -198,14 +198,13 @@ class BackupManagerTest {
 
     @Test
     fun legacyEncryptedBackupFixtureLoadsThroughTheZipContainer() {
-        val encrypted = Base64.getDecoder().decode(
-            "AAECAwQFBgcICQoLDA0OD5riTtZ18eAPc8ZJ4kZ1tvnjBLRogzVrThJyAZXG43MshpR8kgxHonidEPJTx/ilw0jg8qYVsxQjfg0te+FKFpU="
+        val legacyArchive = Base64.getDecoder().decode(
+            "UEsDBBQAAAAIAAAAIVi7anIHVQAAAFAAAAANAAAAc2V0dGluZ3MuanNvbgFQAK//AAECAwQFBgcICQoLDA0OD5riTtZ18eAPc8ZJ4kZ1tvnjBLRogzVrThJyAZXG43MshpR8kgxHonidEPJTx/ilw0jg8qYVsxQjfg0te+FKFpVQSwECFAMUAAAACAAAACFYu2pyB1UAAABQAAAADQAAAAAAAAAAAAAAgAEAAAAAc2V0dGluZ3MuanNvblBLBQYAAAAAAQABADsAAACAAAAAAAA="
         )
-        val archive = BackupManager.packZip(encrypted)
 
         assertEquals(
             """{"version":3,"columns":4,"selectedContactIds":"41,7"}""",
-            BackupManager.decrypt(BackupManager.unpackZip(archive))
+            BackupManager.decrypt(BackupManager.unpackZip(legacyArchive))
         )
     }
 
