@@ -111,7 +111,7 @@ fun NexusApp() {
                             icon = { Icon(screen.icon, contentDescription = stringResource(screen.labelRes)) },
                             label = { Text(stringResource(screen.labelRes).uppercase()) },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                 selectedTextColor = MaterialTheme.colorScheme.primary,
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer
                             )
