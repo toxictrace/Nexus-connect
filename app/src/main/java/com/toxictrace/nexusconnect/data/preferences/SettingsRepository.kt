@@ -33,7 +33,7 @@ data class WidgetSettings(
     val messengerViber: String = "",
     val messengerTelegram: String = "",
     val showCallTypeIcon: Boolean = true,
-    val callIconStyle: String = "MATERIAL", // NONE, MATERIAL, GLASS
+    val callIconStyle: String = "MATERIAL", // NONE, MATERIAL, GLASS, GLOSSY
     val backupFolderUri: String = "",
     val language: String = "system",
     val recentsDays: Int = 3,

@@ -328,6 +328,7 @@ private fun CallIconSection(settings: WidgetSettings, onUpdate: (WidgetSettings)
         "NONE"     to stringResource(R.string.call_icon_none),
         "MATERIAL" to stringResource(R.string.call_icon_material),
         "GLASS"    to stringResource(R.string.call_icon_glass),
+        "GLOSSY"   to stringResource(R.string.call_icon_glossy),
     )
     val currentLabel = options.firstOrNull { it.first == settings.callIconStyle }?.second
         ?: stringResource(R.string.call_icon_material)

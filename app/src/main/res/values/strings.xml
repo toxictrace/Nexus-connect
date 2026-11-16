@@ -152,6 +152,7 @@
     <string name="call_icon_none">No icons</string>
     <string name="call_icon_material">Material</string>
     <string name="call_icon_glass">Glass</string>
+    <string name="call_icon_glossy">Glossy 3D</string>
     <!-- Diagnostics -->
     <string name="diagnostics">DIAGNOSTICS</string>
     <string name="diagnostics_subtitle">Export application log for troubleshooting.</string>

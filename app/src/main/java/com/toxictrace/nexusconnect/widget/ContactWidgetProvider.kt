@@ -229,15 +229,26 @@ class ContactWidgetProvider : AppWidgetProvider() {
 
             val callIconStyle = WidgetPrefs.getCallIconStyle(context)
             val glass = callIconStyle == "GLASS"
+            val glossy = callIconStyle == "GLOSSY"
 
             val callType = WidgetCallTypeResolver.resolve(contact, callTypeMap, numberMap)
 
-            val iconRes = when (callType) {
-                android.provider.CallLog.Calls.INCOMING_TYPE -> if (glass) R.drawable.call_incoming_glass else R.drawable.call_incoming
-                android.provider.CallLog.Calls.OUTGOING_TYPE -> if (glass) R.drawable.call_outgoing_glass else R.drawable.call_outgoing
-                android.provider.CallLog.Calls.MISSED_TYPE -> if (glass) R.drawable.call_missed_glass else R.drawable.call_missed
-                5 -> if (glass) R.drawable.call_rejected_glass else R.drawable.call_rejected
-                else -> if (callType != null) if (glass) R.drawable.call_unknown_glass else R.drawable.call_unknown else 0
+            val iconRes = if (glossy) {
+                when (callType) {
+                    android.provider.CallLog.Calls.INCOMING_TYPE -> R.drawable.call_incoming_glossy
+                    android.provider.CallLog.Calls.OUTGOING_TYPE -> R.drawable.call_outgoing_glossy
+                    android.provider.CallLog.Calls.MISSED_TYPE -> R.drawable.call_missed_glossy
+                    5 -> R.drawable.call_declined_glossy
+                    else -> if (callType != null) R.drawable.call_unknown_glossy else 0
+                }
+            } else {
+                when (callType) {
+                    android.provider.CallLog.Calls.INCOMING_TYPE -> if (glass) R.drawable.call_incoming_glass else R.drawable.call_incoming
+                    android.provider.CallLog.Calls.OUTGOING_TYPE -> if (glass) R.drawable.call_outgoing_glass else R.drawable.call_outgoing
+                    android.provider.CallLog.Calls.MISSED_TYPE -> if (glass) R.drawable.call_missed_glass else R.drawable.call_missed
+                    5 -> if (glass) R.drawable.call_rejected_glass else R.drawable.call_rejected
+                    else -> if (callType != null) if (glass) R.drawable.call_unknown_glass else R.drawable.call_unknown else 0
+                }
             }
 
             if (iconRes != 0) {

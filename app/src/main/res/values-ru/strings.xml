@@ -152,6 +152,7 @@
     <string name="call_icon_none">Без иконок</string>
     <string name="call_icon_material">Material</string>
     <string name="call_icon_glass">Glass</string>
+    <string name="call_icon_glossy">Глянцевые 3D</string>
     <!-- Диагностика -->
     <string name="diagnostics">ДИАГНОСТИКА</string>
     <string name="diagnostics_subtitle">Экспорт журнала для диагностики ошибок.</string>
