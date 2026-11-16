@@ -230,10 +230,19 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val callIconStyle = WidgetPrefs.getCallIconStyle(context)
             val glass = callIconStyle == "GLASS"
             val glossy = callIconStyle == "GLOSSY"
+            val sfSymbols = callIconStyle == "SF_SYMBOLS"
 
             val callType = WidgetCallTypeResolver.resolve(contact, callTypeMap, numberMap)
 
-            val iconRes = if (glossy) {
+            val iconRes = if (sfSymbols) {
+                when (callType) {
+                    android.provider.CallLog.Calls.INCOMING_TYPE -> R.drawable.call_incoming_symbols
+                    android.provider.CallLog.Calls.OUTGOING_TYPE -> R.drawable.call_outgoing_symbols
+                    android.provider.CallLog.Calls.MISSED_TYPE -> R.drawable.call_missed_symbols
+                    5 -> R.drawable.call_declined_symbols
+                    else -> if (callType != null) R.drawable.call_unknown_symbols else 0
+                }
+            } else if (glossy) {
                 when (callType) {
                     android.provider.CallLog.Calls.INCOMING_TYPE -> R.drawable.call_incoming_glossy
                     android.provider.CallLog.Calls.OUTGOING_TYPE -> R.drawable.call_outgoing_glossy

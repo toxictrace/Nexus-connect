@@ -153,6 +153,7 @@
     <string name="call_icon_material">Material</string>
     <string name="call_icon_glass">Glass</string>
     <string name="call_icon_glossy">Глянцевые 3D</string>
+    <string name="call_icon_sf_symbols">SF Symbols</string>
     <!-- Диагностика -->
     <string name="diagnostics">ДИАГНОСТИКА</string>
     <string name="diagnostics_subtitle">Экспорт журнала для диагностики ошибок.</string>
