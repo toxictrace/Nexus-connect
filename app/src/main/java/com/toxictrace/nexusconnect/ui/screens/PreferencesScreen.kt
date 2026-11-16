@@ -414,7 +414,18 @@ private fun FeedbackSection(settings: WidgetSettings, onUpdate: (Boolean) -> Uni
                     Text(stringResource(R.string.haptic_subtitle), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = settings.hapticFeedback, onCheckedChange = onUpdate)
+                Switch(
+                    checked = settings.hapticFeedback,
+                    onCheckedChange = onUpdate,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        checkedBorderColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.primary,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+                        uncheckedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
             }
         }
     }
@@ -461,7 +472,15 @@ private fun AppearanceSection(settings: WidgetSettings, onUpdate: (WidgetSetting
                 }
                 Switch(
                     checked = settings.dynamicColors,
-                    onCheckedChange = { onUpdate(settings.copy(dynamicColors = it)) }
+                    onCheckedChange = { onUpdate(settings.copy(dynamicColors = it)) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        checkedBorderColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.primary,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+                        uncheckedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         }
@@ -856,7 +875,15 @@ private fun CallLogButtonSection(settings: WidgetSettings, apps: List<AppInfo>, 
                 }
                 Switch(
                     checked = settings.showCallLogButton,
-                    onCheckedChange = { onUpdate(settings.copy(showCallLogButton = it)) }
+                    onCheckedChange = { onUpdate(settings.copy(showCallLogButton = it)) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        checkedBorderColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.primary,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+                        uncheckedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
             if (settings.showCallLogButton) {

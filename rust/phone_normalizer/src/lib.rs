@@ -1,0 +1,2292 @@
+use base64::engine::general_purpose::{URL_SAFE, URL_SAFE_NO_PAD};
+use base64::Engine;
+use jni::objects::{JClass, JLongArray, JObject, JObjectArray, JString};
+use jni::sys::{jint, jlong, jintArray, jlongArray, jobjectArray, jstring};
+use std::collections::{HashMap, HashSet};
+use jni::JNIEnv;
+
+/// Mirrors ContactSelectionOperations.toggle without changing ordering or limits.
+fn toggle_selection(selected_ids: &[i64], contact_id: i64, max_tiles: i32) -> Option<Vec<i64>> {
+    let mut updated = selected_ids.to_vec();
+
+    if let Some(index) = updated.iter().position(|id| *id == contact_id) {
+        updated.remove(index);
+        return Some(updated);
+    }
+
+    if max_tiles < 0 || updated.len() >= max_tiles as usize {
+        return None;
+    }
+
+    updated.push(contact_id);
+    Some(updated)
+}
+
+/// Mirrors ContactSelectionOperations.move, including first-match behavior.
+fn move_selection(selected_ids: &[i64], contact_id: i64, direction: i32) -> Option<Vec<i64>> {
+    if direction != -1 && direction != 1 {
+        return None;
+    }
+
+    let from_index = selected_ids.iter().position(|id| *id == contact_id)?;
+    let to_index = from_index as i64 + direction as i64;
+    if to_index < 0 || to_index >= selected_ids.len() as i64 {
+        return None;
+    }
+
+    let mut updated = selected_ids.to_vec();
+    updated.swap(from_index, to_index as usize);
+    Some(updated)
+}
+
+fn read_long_array(env: &mut JNIEnv, array: &JLongArray) -> Result<Vec<i64>, jni::errors::Error> {
+    let length = env.get_array_length(array)?;
+    let mut values = vec![0_i64; length as usize];
+    env.get_long_array_region(array, 0, &mut values)?;
+    Ok(values)
+}
+
+fn write_long_array(env: &mut JNIEnv, values: Option<Vec<i64>>) -> jlongArray {
+    let Some(values) = values else {
+        return std::ptr::null_mut();
+    };
+
+    let array = match env.new_long_array(values.len() as jint) {
+        Ok(array) => array,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    if env.set_long_array_region(&array, 0, &values).is_err() {
+        return std::ptr::null_mut();
+    }
+
+    array.into_raw()
+}
+
+fn read_int_array(env: &mut JNIEnv, array: &jni::objects::JIntArray) -> Result<Vec<i32>, jni::errors::Error> {
+    let length = env.get_array_length(array)?;
+    let mut values = vec![0_i32; length as usize];
+    env.get_int_array_region(array, 0, &mut values)?;
+    Ok(values)
+}
+
+fn read_string_array(env: &mut JNIEnv, array: &JObjectArray) -> Result<Vec<String>, jni::errors::Error> {
+    let length = env.get_array_length(array)?;
+    let mut values = Vec::with_capacity(length as usize);
+    for index in 0..length {
+        let object = env.get_object_array_element(array, index)?;
+        let value: String = env.get_string(&JString::from(object))?.into();
+        values.push(value);
+    }
+    Ok(values)
+}
+
+fn write_string_array(env: &mut JNIEnv, values: &[String]) -> jobjectArray {
+    let array = match env.new_object_array(values.len() as jint, "java/lang/String", JObject::null()) {
+        Ok(array) => array,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    for (index, value) in values.iter().enumerate() {
+        let string = match env.new_string(value) {
+            Ok(string) => string,
+            Err(_) => return std::ptr::null_mut(),
+        };
+        if env.set_object_array_element(&array, index as jint, string).is_err() {
+            return std::ptr::null_mut();
+        }
+    }
+    array.into_raw()
+}
+
+/// Counts selected IDs that exist in contacts, preserving repeated selected IDs.
+fn count_existing_selected_ids(selected_ids: &[i64], contact_ids: &[i64]) -> i32 {
+    let existing: HashSet<i64> = contact_ids.iter().copied().collect();
+    selected_ids.iter().filter(|id| existing.contains(id)).count() as i32
+}
+
+/// Keeps saved IDs that still exist in Contacts Provider, preserving order and duplicates.
+fn filter_existing_contact_ids(saved_ids: &[i64], contact_ids: &[i64]) -> Vec<i64> {
+    let existing: HashSet<i64> = contact_ids.iter().copied().collect();
+    saved_ids.iter().copied().filter(|id| existing.contains(id)).collect()
+}
+
+fn resolve_lookup_ids(
+    lookup_keys: &[String],
+    contact_ids: &[i64],
+    contact_lookup_keys: &[String],
+) -> Vec<i64> {
+    let mut by_lookup_key = HashMap::new();
+    for (id, key) in contact_ids.iter().zip(contact_lookup_keys.iter()) {
+        by_lookup_key.insert(key.as_str(), *id);
+    }
+
+    let mut seen = HashSet::new();
+    lookup_keys
+        .iter()
+        .filter_map(|key| by_lookup_key.get(key.as_str()).copied())
+        .filter(|id| seen.insert(*id))
+        .collect()
+}
+
+
+/// Merges visible lookup keys with unresolved saved keys, preserving Kotlin list order.
+fn merge_updated_lookup_keys(
+    visible_keys: &[String],
+    old_visible_keys: &[String],
+    saved_keys: &[String],
+) -> Vec<String> {
+    let old_visible: HashSet<&str> = old_visible_keys.iter().map(String::as_str).collect();
+    let mut seen = HashSet::new();
+    let mut result = Vec::new();
+
+    for key in visible_keys {
+        if seen.insert(key.as_str()) {
+            result.push(key.clone());
+        }
+    }
+    for key in saved_keys {
+        if !old_visible.contains(key.as_str()) && seen.insert(key.as_str()) {
+            result.push(key.clone());
+        }
+    }
+    result
+}
+
+
+fn lookup_keys_for_ids(ids: &[i64], contact_ids: &[i64], contact_lookup_keys: &[String]) -> Vec<String> {
+    let mut by_id = HashMap::new();
+    for (id, key) in contact_ids.iter().zip(contact_lookup_keys.iter()) {
+        by_id.insert(*id, key.as_str());
+    }
+
+    ids.iter()
+        .map(|id| by_id.get(id).map(|key| (*key).to_owned()).unwrap_or_default())
+        .collect()
+}
+
+
+fn write_int_array(env: &mut JNIEnv, values: &[i32]) -> jintArray {
+    let array = match env.new_int_array(values.len() as jint) {
+        Ok(array) => array,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    if env.set_int_array_region(&array, 0, values).is_err() {
+        return std::ptr::null_mut();
+    }
+
+    array.into_raw()
+}
+
+/// Returns contact indices in display order while preserving Kotlin map/list semantics.
+fn build_contact_display_order(
+    all_ids: &[i64],
+    selected_ids: &[i64],
+    query_matches: &[bool],
+    query_is_blank: bool,
+) -> Vec<i32> {
+    let mut selected_by_id = HashMap::new();
+    for (index, id) in all_ids.iter().enumerate() {
+        selected_by_id.insert(*id, index);
+    }
+
+    let selected_set: HashSet<i64> = selected_ids.iter().copied().collect();
+    let mut result = Vec::new();
+
+    for id in selected_ids {
+        if let Some(index) = selected_by_id.get(id) {
+            result.push(*index as i32);
+        }
+    }
+
+    for (index, id) in all_ids.iter().enumerate() {
+        if selected_set.contains(id) {
+            continue;
+        }
+        if query_is_blank || query_matches.get(index).copied().unwrap_or(false) {
+            result.push(index as i32);
+        }
+    }
+
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_util_NativePhoneNumber_normalize(
+    mut env: JNIEnv,
+    _class: JClass,
+    number: JString,
+) -> jstring {
+    let input: String = match env.get_string(&number) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(normalize_number(&input)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+/// Rust implementation of the previous Kotlin selection toggle operation.
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactSelectionOperations_toggleNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    selected_ids: JLongArray,
+    contact_id: jlong,
+    max_tiles: jint,
+) -> jlongArray {
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_long_array(&mut env, toggle_selection(&selected, contact_id, max_tiles))
+}
+
+/// Rust implementation of the previous Kotlin selection move operation.
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactSelectionOperations_moveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    selected_ids: JLongArray,
+    contact_id: jlong,
+    direction: jint,
+) -> jlongArray {
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_long_array(&mut env, move_selection(&selected, contact_id, direction))
+}
+
+/// Mirrors SelectionLimit.trim while preserving order and capacity edge cases.
+fn trim_selection(ids: &[i64], capacity: i32) -> Vec<i64> {
+    ids.iter().take(capacity.max(0) as usize).copied().collect()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_SelectionLimit_trimNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    selected_ids: JLongArray,
+    capacity: jint,
+) -> jlongArray {
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_long_array(&mut env, Some(trim_selection(&selected, capacity)))
+}
+
+
+
+/// Calculates photo-cache retention, reload IDs, and contact indices in display order.
+fn build_photo_cache_plan(
+    contact_ids: &[i64],
+    photo_uris: &[String],
+    has_photo: &[bool],
+    cached_bitmap_ids: &[i64],
+    cached_photo_ids: &[i64],
+    cached_photo_uris: &[String],
+) -> Vec<i64> {
+    let mut cached_uri_by_id = HashMap::new();
+    for (id, uri) in cached_photo_ids.iter().zip(cached_photo_uris.iter()) {
+        cached_uri_by_id.insert(*id, uri.as_str());
+    }
+
+    let cached_bitmaps: HashSet<i64> = cached_bitmap_ids.iter().copied().collect();
+    let mut retained_ids = HashSet::new();
+    let mut reload_ids = HashSet::new();
+
+    for (index, id) in contact_ids.iter().enumerate() {
+        if !has_photo.get(index).copied().unwrap_or(false) {
+            continue;
+        }
+        let uri = match photo_uris.get(index) {
+            Some(uri) => uri,
+            None => continue,
+        };
+        retained_ids.insert(*id);
+        if !cached_bitmaps.contains(id) || cached_uri_by_id.get(id).copied() != Some(uri.as_str()) {
+            reload_ids.insert(*id);
+        }
+    }
+
+    let contacts_to_load: Vec<i64> = contact_ids
+        .iter()
+        .enumerate()
+        .filter_map(|(index, id)| {
+            if has_photo.get(index).copied().unwrap_or(false) && reload_ids.contains(id) {
+                Some(index as i64)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let mut result = Vec::with_capacity(3 + retained_ids.len() + reload_ids.len() + contacts_to_load.len());
+    result.push(retained_ids.len() as i64);
+    result.push(reload_ids.len() as i64);
+    result.push(contacts_to_load.len() as i64);
+    result.extend(retained_ids);
+    result.extend(reload_ids);
+    result.extend(contacts_to_load);
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactDisplayList_buildOrderNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    all_ids: JLongArray,
+    selected_ids: JLongArray,
+    query_matches: JLongArray,
+    query_is_blank: jint,
+) -> jintArray {
+    let all = match read_long_array(&mut env, &all_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let matches = match read_long_array(&mut env, &query_matches) {
+        Ok(values) => values.into_iter().map(|value| value != 0).collect::<Vec<_>>(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let order = build_contact_display_order(&all, &selected, &matches, query_is_blank != 0);
+    write_int_array(&mut env, &order)
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_PhotoCachePlan_buildNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    contact_ids: JLongArray,
+    photo_uris: JObjectArray,
+    has_photo: JLongArray,
+    cached_bitmap_ids: JLongArray,
+    cached_photo_ids: JLongArray,
+    cached_photo_uris: JObjectArray,
+) -> jlongArray {
+    let ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let uris = match read_string_array(&mut env, &photo_uris) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let photo_flags = match read_long_array(&mut env, &has_photo) {
+        Ok(values) => values.into_iter().map(|value| value != 0).collect::<Vec<_>>(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let bitmap_ids = match read_long_array(&mut env, &cached_bitmap_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let cached_ids = match read_long_array(&mut env, &cached_photo_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let cached_uris = match read_string_array(&mut env, &cached_photo_uris) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let result = build_photo_cache_plan(
+        &ids,
+        &uris,
+        &photo_flags,
+        &bitmap_ids,
+        &cached_ids,
+        &cached_uris,
+    );
+    write_long_array(&mut env, Some(result))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupResolver_resolveIdsNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    lookup_keys: JObjectArray,
+    contact_ids: JLongArray,
+    contact_lookup_keys: JObjectArray,
+) -> jlongArray {
+    let keys = match read_string_array(&mut env, &lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contact_keys = match read_string_array(&mut env, &contact_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_long_array(&mut env, Some(resolve_lookup_ids(&keys, &ids, &contact_keys)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_SelectedContactCount_countNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    selected_ids: JLongArray,
+    contact_ids: JLongArray,
+) -> jint {
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return 0,
+    };
+    let contacts = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return 0,
+    };
+    count_existing_selected_ids(&selected, &contacts)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupResolver_filterExistingIdsNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    saved_ids: JLongArray,
+    contact_ids: JLongArray,
+) -> jlongArray {
+    let saved = match read_long_array(&mut env, &saved_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contacts = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_long_array(&mut env, Some(filter_existing_contact_ids(&saved, &contacts)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_ContactLookupResolver_lookupKeysForIdsNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    ids: JLongArray,
+    contact_ids: JLongArray,
+    contact_lookup_keys: JObjectArray,
+) -> jobjectArray {
+    let selected_ids = match read_long_array(&mut env, &ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let all_ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let keys = match read_string_array(&mut env, &contact_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let resolved = lookup_keys_for_ids(&selected_ids, &all_ids, &keys);
+    write_string_array(&mut env, &resolved)
+}
+
+/// Mirrors the previous Kotlin expression:
+/// number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+fn normalize_number(number: &str) -> String {
+    let filtered: String = number
+        .chars()
+        .filter(|character| {
+            !matches!(
+                character,
+                ' ' | '\t' | '\n' | '\u{000B}' | '\u{000C}' | '\r'
+                    | '-' | '(' | ')' | '.' | '+'
+            )
+        })
+        .collect();
+
+    filtered.chars().rev().take(7).collect::<String>().chars().rev().collect()
+}
+
+
+/// Orders contact IDs by incoming/outgoing call count, preserving first-seen order for ties.
+fn frequent_contact_order(contact_ids: &[i64], call_types: &[i32]) -> Vec<i64> {
+    let mut positions = HashMap::new();
+    let mut counts: Vec<(i64, i32)> = Vec::new();
+
+    for (contact_id, call_type) in contact_ids.iter().zip(call_types.iter()) {
+        if *call_type != 1 && *call_type != 2 {
+            continue;
+        }
+        let index = match positions.get(contact_id) {
+            Some(index) => *index,
+            None => {
+                let index = counts.len();
+                positions.insert(*contact_id, index);
+                counts.push((*contact_id, 0));
+                index
+            }
+        };
+        counts[index].1 = counts[index].1.wrapping_add(1);
+    }
+
+    counts.sort_by(|left, right| right.1.cmp(&left.1));
+    counts.into_iter().map(|(contact_id, _)| contact_id).collect()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_FrequentContactOrder_orderNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    contact_ids: JLongArray,
+    call_types: jni::objects::JIntArray,
+) -> jlongArray {
+    let ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let types = match read_int_array(&mut env, &call_types) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_long_array(&mut env, Some(frequent_contact_order(&ids, &types)))
+}
+
+
+
+/// Resolves selected widget favorites in saved order, preferring lookup keys over IDs.
+fn widget_favorite_indices(
+    all_ids: &[i64],
+    all_lookup_keys: &[String],
+    selected_ids: &[i64],
+    selected_lookup_keys: &[String],
+    max_tiles: i32,
+) -> Vec<i32> {
+    if max_tiles <= 0 {
+        return Vec::new();
+    }
+    let mut used_ids = HashSet::new();
+    let mut result = Vec::new();
+
+    if !selected_lookup_keys.is_empty() {
+        for key in selected_lookup_keys {
+            if let Some(index) = all_lookup_keys.iter().take(all_ids.len()).position(|candidate| candidate == key) {
+                let id = all_ids[index];
+                if used_ids.insert(id) {
+                    result.push(index as i32);
+                    if result.len() >= max_tiles as usize { break; }
+                }
+            }
+        }
+    } else {
+        for id in selected_ids {
+            if let Some(index) = all_ids.iter().position(|candidate| candidate == id) {
+                if used_ids.insert(*id) {
+                    result.push(index as i32);
+                    if result.len() >= max_tiles as usize { break; }
+                }
+            }
+        }
+    }
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFavoriteResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    all_ids: JLongArray,
+    all_lookup_keys: JObjectArray,
+    selected_ids: JLongArray,
+    selected_lookup_keys: JObjectArray,
+    max_tiles: jint,
+) -> jintArray {
+    let ids = match read_long_array(&mut env, &all_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let keys = match read_string_array(&mut env, &all_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected_keys = match read_string_array(&mut env, &selected_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_int_array(&mut env, &widget_favorite_indices(&ids, &keys, &selected, &selected_keys, max_tiles))
+}
+
+/// Resolves frequent contact IDs to first matching contact indices, preserving order.
+fn frequent_contact_indices(
+    frequent_ids: &[i64],
+    contact_ids: &[i64],
+    base_contact_ids: &[i64],
+    max_tiles: i32,
+) -> Vec<i32> {
+    let remaining = max_tiles as i64 - base_contact_ids.len() as i64;
+    if remaining <= 0 {
+        return Vec::new();
+    }
+    let mut used_ids: HashSet<i64> = base_contact_ids.iter().copied().collect();
+    let mut result = Vec::new();
+    for id in frequent_ids {
+        if result.len() as i64 >= remaining {
+            break;
+        }
+        if used_ids.contains(id) {
+            continue;
+        }
+        if let Some(index) = contact_ids.iter().position(|candidate| candidate == id) {
+            used_ids.insert(*id);
+            result.push(index as i32);
+        }
+    }
+    result
+}
+
+
+
+/// Resolves ContactWidgetFactory rows while preserving Kotlin first-match and ordering behavior.
+fn widget_factory_contact_indices(
+    contact_ids: &[i64],
+    lookup_keys: &[String],
+    starred: &[bool],
+    selected_ids: &[i64],
+    selected_lookup_keys: &[String],
+    filter_favorites: bool,
+    max_contacts: i32,
+) -> Vec<i32> {
+    let limit = max_contacts.max(0) as usize;
+    if limit == 0 {
+        return Vec::new();
+    }
+
+    let mut result = Vec::new();
+    if !selected_lookup_keys.is_empty() {
+        for key in selected_lookup_keys {
+            if let Some(index) = lookup_keys.iter().take(contact_ids.len()).position(|candidate| candidate == key) {
+                result.push(index as i32);
+                if result.len() >= limit { break; }
+            }
+        }
+    } else if !selected_ids.is_empty() {
+        for id in selected_ids {
+            if let Some(index) = contact_ids.iter().position(|candidate| candidate == id) {
+                result.push(index as i32);
+                if result.len() >= limit { break; }
+            }
+        }
+    } else if filter_favorites {
+        for (index, is_starred) in starred.iter().enumerate().take(contact_ids.len()) {
+            if *is_starred {
+                result.push(index as i32);
+                if result.len() >= limit { break; }
+            }
+        }
+    } else {
+        result.extend((0..contact_ids.len().min(limit)).map(|index| index as i32));
+    }
+    result
+}
+
+/// Selects recent widget rows while preserving the original Kotlin filtering and capacity rules.
+fn recent_widget_contact_indices(
+    mixed_ids: &[i64],
+    valid_unknown_numbers: &[bool],
+    contact_ids: &[i64],
+    used_contact_ids: &[i64],
+    filter_recents: bool,
+    show_unknown_numbers: bool,
+    max_tiles: i32,
+    initial_count: i32,
+) -> Vec<i32> {
+    let capacity = max_tiles.max(0) as usize;
+    let mut selected_count = initial_count.max(0) as usize;
+    if selected_count >= capacity {
+        return Vec::new();
+    }
+
+    let available_contacts: HashSet<i64> = contact_ids.iter().copied().collect();
+    let mut used: HashSet<i64> = used_contact_ids.iter().copied().collect();
+    let mut result = Vec::new();
+
+    for (index, id) in mixed_ids.iter().enumerate() {
+        if selected_count >= capacity {
+            break;
+        }
+
+        if *id > 0 {
+            if !filter_recents || !available_contacts.contains(id) || !used.insert(*id) {
+                continue;
+            }
+        } else {
+            if !show_unknown_numbers || !valid_unknown_numbers.get(index).copied().unwrap_or(false) {
+                continue;
+            }
+        }
+
+        result.push(index as i32);
+        selected_count += 1;
+    }
+
+    result
+}
+
+/// Resolves the call type for one widget tile while preserving Kotlin map iteration order.
+fn resolve_widget_call_type(
+    contact_id: i64,
+    is_unknown_with_phone: bool,
+    phone_norm: &str,
+    number_keys: &[String],
+    number_ids: &[i64],
+    call_type_keys: &[String],
+    call_type_values: &[i32],
+) -> i32 {
+    if is_unknown_with_phone {
+        return call_type_keys
+            .iter()
+            .zip(call_type_values.iter())
+            .find_map(|(key, value)| if key == phone_norm { Some(*value) } else { None })
+            .unwrap_or(i32::MIN);
+    }
+
+    // call_type_keys preserves newest-first CallLog order across every requested number.
+    for (call_key, value) in call_type_keys.iter().zip(call_type_values.iter()) {
+        let belongs_to_contact = number_keys
+            .iter()
+            .zip(number_ids.iter())
+            .any(|(number_key, id)| number_key == call_key && *id == contact_id);
+        if belongs_to_contact {
+            return *value;
+        }
+    }
+    i32::MIN
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFrequentContactResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    frequent_ids: JLongArray,
+    contact_ids: JLongArray,
+    base_contact_ids: JLongArray,
+    max_tiles: jint,
+) -> jintArray {
+    let frequent = match read_long_array(&mut env, &frequent_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contacts = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let base = match read_long_array(&mut env, &base_contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_int_array(&mut env, &frequent_contact_indices(&frequent, &contacts, &base, max_tiles))
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetFactoryContactResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    contact_ids: JLongArray,
+    lookup_keys: JObjectArray,
+    starred: JLongArray,
+    selected_ids: JLongArray,
+    selected_lookup_keys: JObjectArray,
+    filter_favorites: jint,
+    max_contacts: jint,
+) -> jintArray {
+    let ids = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let keys = match read_string_array(&mut env, &lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let stars = match read_long_array(&mut env, &starred) {
+        Ok(values) => values.into_iter().map(|value| value != 0).collect::<Vec<_>>(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected = match read_long_array(&mut env, &selected_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let selected_keys = match read_string_array(&mut env, &selected_lookup_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let indices = widget_factory_contact_indices(
+        &ids, &keys, &stars, &selected, &selected_keys, filter_favorites != 0, max_contacts
+    );
+    write_int_array(&mut env, &indices)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetRecentContactResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    mixed_ids: JLongArray,
+    valid_unknown_numbers: JLongArray,
+    contact_ids: JLongArray,
+    used_contact_ids: JLongArray,
+    filter_recents: jint,
+    show_unknown_numbers: jint,
+    max_tiles: jint,
+    initial_count: jint,
+) -> jintArray {
+    let mixed = match read_long_array(&mut env, &mixed_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let valid_unknown = match read_long_array(&mut env, &valid_unknown_numbers) {
+        Ok(values) => values.into_iter().map(|value| value != 0).collect::<Vec<_>>(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contacts = match read_long_array(&mut env, &contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let used = match read_long_array(&mut env, &used_contact_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let indices = recent_widget_contact_indices(
+        &mixed,
+        &valid_unknown,
+        &contacts,
+        &used,
+        filter_recents != 0,
+        show_unknown_numbers != 0,
+        max_tiles,
+        initial_count,
+    );
+    write_int_array(&mut env, &indices)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetCallTypeResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    contact_id: jlong,
+    is_unknown_with_phone: jint,
+    phone_norm: JString,
+    number_keys: JObjectArray,
+    number_ids: JLongArray,
+    call_type_keys: JObjectArray,
+    call_type_values: jni::objects::JIntArray,
+) -> jint {
+    let norm: String = match env.get_string(&phone_norm) {
+        Ok(value) => value.into(),
+        Err(_) => return i32::MIN,
+    };
+    let number_keys = match read_string_array(&mut env, &number_keys) {
+        Ok(values) => values,
+        Err(_) => return i32::MIN,
+    };
+    let number_ids = match read_long_array(&mut env, &number_ids) {
+        Ok(values) => values,
+        Err(_) => return i32::MIN,
+    };
+    let call_type_keys = match read_string_array(&mut env, &call_type_keys) {
+        Ok(values) => values,
+        Err(_) => return i32::MIN,
+    };
+    let call_type_values = match read_int_array(&mut env, &call_type_values) {
+        Ok(values) => values,
+        Err(_) => return i32::MIN,
+    };
+    resolve_widget_call_type(
+        contact_id,
+        is_unknown_with_phone != 0,
+        &norm,
+        &number_keys,
+        &number_ids,
+        &call_type_keys,
+        &call_type_values,
+    )
+}
+
+/// Builds normalized numbers for widget tiles while preserving map and tile order.
+fn extract_tile_norms(
+    number_keys: &[String],
+    number_ids: &[i64],
+    tile_ids: &[i64],
+    tile_phone_numbers: &[String],
+) -> Vec<String> {
+    let tile_id_set: HashSet<i64> = tile_ids.iter().copied().collect();
+    let mut norms = Vec::new();
+
+    for (key, id) in number_keys.iter().zip(number_ids.iter()) {
+        if tile_id_set.contains(id) {
+            norms.push(key.clone());
+        }
+    }
+
+    for (id, phone_number) in tile_ids.iter().zip(tile_phone_numbers.iter()) {
+        if *id < 0 {
+            let norm = normalize_number(phone_number);
+            if !norm.trim().is_empty() {
+                norms.push(norm);
+            }
+        }
+    }
+
+    norms
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_WidgetTileNorms_extractNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    number_keys: JObjectArray,
+    number_ids: JLongArray,
+    tile_ids: JLongArray,
+    tile_phone_numbers: JObjectArray,
+) -> jobjectArray {
+    let keys = match read_string_array(&mut env, &number_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let ids = match read_long_array(&mut env, &number_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let contact_ids = match read_long_array(&mut env, &tile_ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let phones = match read_string_array(&mut env, &tile_phone_numbers) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_string_array(&mut env, &extract_tile_norms(&keys, &ids, &contact_ids, &phones))
+}
+
+
+/// Returns indices of the first recent call for each unknown normalized number.
+fn unknown_recent_call_indices(
+    norms: &[String],
+    dates: &[i64],
+    types: &[i32],
+    non_blank: &[i32],
+    known_norms: &[String],
+    row_count: usize,
+    limit: i32,
+) -> Vec<i32> {
+    if limit <= 0 {
+        return Vec::new();
+    }
+    let known: HashSet<&str> = known_norms.iter().map(String::as_str).collect();
+    let mut seen = HashSet::new();
+    let mut result = Vec::new();
+    let count = row_count.min(norms.len()).min(dates.len()).min(types.len()).min(non_blank.len());
+    for index in 0..count {
+        let norm = norms[index].as_str();
+        if non_blank[index] != 0 && !known.contains(norm) && seen.insert(norm) {
+            result.push(index as i32);
+            if result.len() >= limit as usize {
+                break;
+            }
+        }
+    }
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_UnknownRecentCallFilter_filterNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    numbers: JObjectArray,
+    norms: JObjectArray,
+    dates: JLongArray,
+    types: jni::objects::JIntArray,
+    non_blank: jni::objects::JIntArray,
+    known_norms: JObjectArray,
+    limit: jint,
+) -> jintArray {
+    let number_values = match read_string_array(&mut env, &numbers) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let normalized = match read_string_array(&mut env, &norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let date_values = match read_long_array(&mut env, &dates) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let type_values = match read_int_array(&mut env, &types) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let non_blank_values = match read_int_array(&mut env, &non_blank) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let known_values = match read_string_array(&mut env, &known_norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let indices = unknown_recent_call_indices(
+        &normalized,
+        &date_values,
+        &type_values,
+        &non_blank_values,
+        &known_values,
+        number_values.len(),
+        limit,
+    );
+    write_int_array(&mut env, &indices)
+}
+
+
+
+/// Selects first recent rows for known contacts and unknown normalized numbers.
+fn recent_mixed_call_indices(
+    norms: &[String], dates: &[i64], contact_ids: &[i64], valid_unknown: &[i32],
+    contact_cutoff: i64, unknown_cutoff: i64,
+    contacts_disabled: bool, unknown_disabled: bool, limit: i32,
+) -> Vec<i32> {
+    if limit <= 0 || (contacts_disabled && unknown_disabled) { return Vec::new(); }
+    let count = norms.len().min(dates.len()).min(contact_ids.len()).min(valid_unknown.len());
+    let mut seen_contacts = HashSet::new();
+    let mut seen_unknown_norms = HashSet::new();
+    let mut result = Vec::new();
+    for index in 0..count {
+        if result.len() >= limit as usize { break; }
+        let contact_id = contact_ids[index];
+        if contact_id != i64::MIN {
+            if contacts_disabled || (contact_cutoff > 0 && dates[index] < contact_cutoff) { continue; }
+            if seen_contacts.insert(contact_id) { result.push(index as i32); }
+        } else {
+            if unknown_disabled || valid_unknown[index] == 0
+                || (unknown_cutoff > 0 && dates[index] < unknown_cutoff) { continue; }
+            if seen_unknown_norms.insert(norms[index].as_str()) { result.push(index as i32); }
+        }
+    }
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_RecentMixedCallResolver_resolveNative(
+    mut env: JNIEnv, _class: JClass, norms: JObjectArray, dates: JLongArray,
+    contact_ids: JLongArray, valid_unknown: jni::objects::JIntArray,
+    contact_cutoff: jlong, unknown_cutoff: jlong, contacts_disabled: jint,
+    unknown_disabled: jint, limit: jint,
+) -> jintArray {
+    let norm_values = match read_string_array(&mut env, &norms) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
+    let date_values = match read_long_array(&mut env, &dates) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
+    let contact_values = match read_long_array(&mut env, &contact_ids) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
+    let valid_values = match read_int_array(&mut env, &valid_unknown) { Ok(v) => v, Err(_) => return std::ptr::null_mut() };
+    let indices = recent_mixed_call_indices(
+        &norm_values, &date_values, &contact_values, &valid_values,
+        contact_cutoff, unknown_cutoff, contacts_disabled != 0, unknown_disabled != 0, limit
+    );
+    write_int_array(&mut env, &indices)
+}
+
+/// Returns call-log row indices whose normalized numbers belong to the requested contact.
+fn call_stats_match_indices(call_norms: &[String], target_norms: &[String]) -> Vec<i32> {
+    let targets: HashSet<&str> = target_norms.iter().map(String::as_str).collect();
+    call_norms.iter().enumerate()
+        .filter_map(|(index, norm)| targets.contains(norm.as_str()).then_some(index as i32))
+        .collect()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallStatsCallFilter_filterNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    call_norms: JObjectArray,
+    target_norms: JObjectArray,
+) -> jintArray {
+    let calls = match read_string_array(&mut env, &call_norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let targets = match read_string_array(&mut env, &target_norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_int_array(&mut env, &call_stats_match_indices(&calls, &targets))
+}
+
+/// Aggregates already-matched call-log rows while preserving Kotlin Int/Long overflow behavior.
+fn aggregate_call_stats(dates: &[i64], durations: &[i64], types: &[i32]) -> [i64; 4] {
+    let count = dates.len().min(durations.len()).min(types.len());
+    let mut last_date = i64::MIN;
+    let mut total_calls = 0_i32;
+    let mut total_duration = 0_i64;
+    let mut last_call_type = 0_i32;
+
+    for index in 0..count {
+        if total_calls == 0 {
+            last_date = dates[index];
+            last_call_type = types[index];
+        }
+        total_calls = total_calls.wrapping_add(1);
+        total_duration = total_duration.wrapping_add(durations[index]);
+    }
+
+    [last_date, total_calls as i64, total_duration, last_call_type as i64]
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallStatsResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    dates: JLongArray,
+    durations: JLongArray,
+    types: jni::objects::JIntArray,
+) -> jlongArray {
+    let date_values = match read_long_array(&mut env, &dates) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let duration_values = match read_long_array(&mut env, &durations) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let type_values = match read_int_array(&mut env, &types) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    write_long_array(&mut env, Some(aggregate_call_stats(&date_values, &duration_values, &type_values).to_vec()))
+}
+
+/// Returns the first call-log row for each requested normalized number.
+fn last_call_type_indices(norms: &[String], types: &[i32], targets: &[String]) -> Vec<i32> {
+    let target_set: HashSet<&str> = targets.iter().map(String::as_str).collect();
+    let mut seen = HashSet::new();
+    let mut result = Vec::new();
+    for (index, norm) in norms.iter().enumerate().take(types.len()) {
+        if target_set.contains(norm.as_str()) && seen.insert(norm.as_str()) {
+            result.push(index as i32);
+            if seen.len() == target_set.len() {
+                break;
+            }
+        }
+    }
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_repository_LastCallTypeResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    norms: JObjectArray,
+    types: jni::objects::JIntArray,
+    targets: JObjectArray,
+) -> jintArray {
+    let normalized = match read_string_array(&mut env, &norms) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let call_types = match read_int_array(&mut env, &types) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let requested = match read_string_array(&mut env, &targets) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_int_array(&mut env, &last_call_type_indices(&normalized, &call_types, &requested))
+}
+
+/// Resolves the app locale using the existing English/Russian fallback rules.
+fn resolve_locale_code(language: &str, system_language: &str) -> &'static str {
+    match language {
+        "en" => "en",
+        "ru" => "ru",
+        _ if system_language == "ru" => "ru",
+        _ => "en",
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_util_NativeLocaleResolver_resolveNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    language: JString,
+    system_language: JString,
+) -> jstring {
+    let language: String = match env.get_string(&language) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let system_language: String = match env.get_string(&system_language) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(resolve_locale_code(&language, &system_language)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+/// Keeps the characters accepted by the existing messenger URI phone filters.
+fn sanitize_messenger_phone(phone: &str) -> String {
+    phone
+        .chars()
+        .filter(|character| character.is_ascii_digit() || *character == '+')
+        .collect()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_MessengerPhoneResolver_sanitizeNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    phone: JString,
+) -> jstring {
+    let phone: String = match env.get_string(&phone) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(sanitize_messenger_phone(&phone)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+/// Formats call duration with the same thresholds and signed remainder behavior as Kotlin.
+fn format_duration(seconds: i64) -> String {
+    let hours = seconds / 3600;
+    let minutes = (seconds / 60) % 60;
+    let remainder = seconds % 60;
+    if hours > 0 {
+        format!("{hours}h {minutes}m")
+    } else if minutes > 0 {
+        format!("{minutes}m {remainder}s")
+    } else {
+        format!("{remainder}s")
+    }
+}
+
+
+/// Parses persisted comma-separated contact IDs, ignoring invalid tokens.
+fn parse_selected_contact_ids(raw: &str) -> Vec<i64> {
+    raw.split(',').filter_map(|token| token.parse::<i64>().ok()).collect()
+}
+
+/// Matches Kotlin Char.isWhitespace and Char.isSpaceChar blank checks.
+fn is_kotlin_blank(value: &str) -> bool {
+    value.chars().all(|character| character.is_whitespace()
+        || matches!(character, '\u{00A0}' | '\u{2007}' | '\u{202F}'))
+}
+
+/// Parses URL-safe Base64 keys with Java-compatible UTF-8 replacement.
+fn parse_selected_contact_lookup_keys(raw: &str) -> Vec<String> {
+    if is_kotlin_blank(raw) { return Vec::new(); }
+    raw.split(',').filter_map(|token| {
+        let decoded = URL_SAFE.decode(token)
+            .or_else(|_| URL_SAFE_NO_PAD.decode(token)).ok()?;
+        let value = String::from_utf8_lossy(&decoded).into_owned();
+        if is_kotlin_blank(&value) { None } else { Some(value) }
+    }).collect()
+}
+
+/// Serializes selected contact IDs using the existing comma-separated storage format.
+fn serialize_contact_ids(ids: &[i64]) -> String {
+    ids.iter().map(|id| id.to_string()).collect::<Vec<_>>().join(",")
+}
+
+ 
+/// Serializes lookup keys using URL-safe Base64 without padding.
+fn serialize_lookup_keys(keys: &[String]) -> String {
+    keys.iter()
+        .map(|key| URL_SAFE_NO_PAD.encode(key.as_bytes()))
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactIds_parseNative(
+    mut env: JNIEnv, _class: JClass, raw: JString,
+) -> jlongArray {
+    let input: String = match env.get_string(&raw) {
+        Ok(value) => value.into(), Err(_) => return std::ptr::null_mut(),
+    };
+    write_long_array(&mut env, Some(parse_selected_contact_ids(&input)))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactLookupKeys_parseNative(
+    mut env: JNIEnv, _class: JClass, raw: JString,
+) -> jobjectArray {
+    let input: String = match env.get_string(&raw) {
+        Ok(value) => value.into(), Err(_) => return std::ptr::null_mut(),
+    };
+    let values = parse_selected_contact_lookup_keys(&input);
+    write_string_array(&mut env, &values)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactLookupKeys_serializeNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    keys: JObjectArray,
+) -> jstring {
+    let values = match read_string_array(&mut env, &keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(serialize_lookup_keys(&values)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_data_preferences_NativeSelectedContactIds_serializeNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    ids: JLongArray,
+) -> jstring {
+    let values = match read_long_array(&mut env, &ids) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match env.new_string(serialize_contact_ids(&values)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_viewmodel_UpdatedSelectionLookupKeys_mergeNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    visible_keys: JObjectArray,
+    old_visible_keys: JObjectArray,
+    saved_keys: JObjectArray,
+) -> jobjectArray {
+    let visible = match read_string_array(&mut env, &visible_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let old_visible = match read_string_array(&mut env, &old_visible_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let saved = match read_string_array(&mut env, &saved_keys) {
+        Ok(values) => values,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    write_string_array(&mut env, &merge_updated_lookup_keys(&visible, &old_visible, &saved))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_toxictrace_nexusconnect_widget_CallDurationFormatter_formatNative(
+    mut env: JNIEnv,
+    _class: JClass,
+    seconds: jlong,
+) -> jstring {
+    match env.new_string(format_duration(seconds)) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{sanitize_messenger_phone, count_existing_selected_ids, filter_existing_contact_ids, resolve_locale_code, format_duration, recent_mixed_call_indices, recent_widget_contact_indices, aggregate_call_stats, call_stats_match_indices, build_contact_display_order, build_photo_cache_plan, extract_tile_norms, frequent_contact_order, frequent_contact_indices, last_call_type_indices, lookup_keys_for_ids, merge_updated_lookup_keys, move_selection, normalize_number, widget_factory_contact_indices, resolve_lookup_ids, resolve_widget_call_type, serialize_contact_ids, serialize_lookup_keys, parse_selected_contact_ids, parse_selected_contact_lookup_keys, toggle_selection, trim_selection, unknown_recent_call_indices, widget_favorite_indices};
+
+
+    #[test]
+    fn updated_selection_lookup_keys_keep_visible_order_and_append_unresolved_keys() {
+        let visible = vec!["new-a".into(), "new-b".into()];
+        let old_visible = vec!["old-a".into(), "old-b".into()];
+        let saved = vec!["old-a".into(), "missing".into(), "old-b".into(), "missing".into()];
+        assert_eq!(
+            merge_updated_lookup_keys(&visible, &old_visible, &saved),
+            vec!["new-a", "new-b", "missing"]
+        );
+    }
+
+    #[test]
+    fn updated_selection_lookup_keys_remove_duplicates_without_reordering() {
+        let visible = vec!["same".into(), "same".into(), "new".into()];
+        let old_visible = vec!["old".into()];
+        let saved = vec!["new".into(), "extra".into(), "extra".into()];
+        assert_eq!(
+            merge_updated_lookup_keys(&visible, &old_visible, &saved),
+            vec!["same", "new", "extra"]
+        );
+    }
+
+    #[test]
+    fn updated_selection_lookup_keys_handle_empty_inputs() {
+        assert!(merge_updated_lookup_keys(&[], &[], &[]).is_empty());
+        assert_eq!(
+            merge_updated_lookup_keys(&[], &["gone".into()], &["gone".into(), "orphan".into()]),
+            vec!["orphan"]
+        );
+    }
+
+    #[test]
+    fn recent_mixed_calls_preserve_order_and_deduplicate_contacts_and_unknowns() {
+        let norms = vec!["a".into(), "x".into(), "a".into(), "y".into(), "x".into()];
+        assert_eq!(recent_mixed_call_indices(&norms, &[50,40,30,20,10], &[7,i64::MIN,7,i64::MIN,i64::MIN], &[1;5], 0,0,false,false,10), vec![0,1,3]);
+    }
+
+    #[test]
+    fn recent_mixed_calls_apply_independent_cutoffs_and_disabled_groups() {
+        let norms = vec!["known".into(), "unknown".into(), "known2".into(), "unknown2".into()];
+        let ids = vec![1,i64::MIN,2,i64::MIN];
+        assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],60,40,false,false,10), vec![0,1,3]);
+        assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],0,0,true,false,10), vec![1,3]);
+        assert_eq!(recent_mixed_call_indices(&norms,&[100,100,50,50],&ids,&[1;4],0,0,false,true,10), vec![0,2]);
+    }
+
+    #[test]
+    fn recent_mixed_calls_ignore_invalid_unknown_numbers_and_respect_limit() {
+        let norms = vec!["".into(),"-1".into(),"-2".into(),"valid".into(),"later".into()];
+        assert_eq!(recent_mixed_call_indices(&norms,&[5;5],&[i64::MIN;5],&[0,0,0,1,1],0,0,false,false,1), vec![3]);
+        assert!(recent_mixed_call_indices(&norms,&[5;5],&[i64::MIN;5],&[1;5],0,0,false,false,0).is_empty());
+    }
+
+    #[test]
+    fn recent_mixed_calls_handle_mismatched_arrays_and_both_groups_disabled() {
+        assert_eq!(recent_mixed_call_indices(&["a".into(),"b".into()],&[2],&[1,i64::MIN],&[1,1],0,0,false,false,10), vec![0]);
+        assert!(recent_mixed_call_indices(&["a".into()],&[1],&[1],&[1],0,0,true,true,10).is_empty());
+    }
+
+    #[test]
+    fn call_stats_filter_preserves_call_log_order_and_all_matching_rows() {
+        let calls = vec!["other".into(), "1234567".into(), "7654321".into(), "1234567".into()];
+        let targets = vec!["7654321".into(), "1234567".into()];
+        assert_eq!(call_stats_match_indices(&calls, &targets), vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn call_stats_filter_ignores_duplicate_targets_and_handles_empty_inputs() {
+        let calls = vec!["a".into(), "b".into(), "a".into()];
+        assert_eq!(call_stats_match_indices(&calls, &["a".into(), "a".into()]), vec![0, 2]);
+        assert!(call_stats_match_indices(&calls, &[]).is_empty());
+        assert!(call_stats_match_indices(&[], &["a".into()]).is_empty());
+    }
+
+    #[test]
+    fn call_stats_filter_matches_empty_normalized_numbers_when_requested() {
+        assert_eq!(call_stats_match_indices(&["".into(), "123".into()], &["".into()]), vec![0]);
+    }
+
+    #[test]
+    fn aggregate_call_stats_uses_first_row_and_sums_all_matches() {
+        assert_eq!(
+            aggregate_call_stats(&[300, 200, 100], &[5, 7, 11], &[3, 1, 2]),
+            [300, 3, 23, 3]
+        );
+    }
+
+    #[test]
+    fn aggregate_call_stats_handles_empty_and_mismatched_inputs() {
+        assert_eq!(aggregate_call_stats(&[], &[], &[]), [i64::MIN, 0, 0, 0]);
+        assert_eq!(aggregate_call_stats(&[10, 20], &[4], &[2, 1]), [10, 1, 4, 2]);
+        assert_eq!(aggregate_call_stats(&[10], &[4, 6], &[2, 1]), [10, 1, 4, 2]);
+    }
+
+    #[test]
+    fn aggregate_call_stats_preserves_integer_overflow() {
+        assert_eq!(
+            aggregate_call_stats(&[1, 2], &[i64::MAX, 1], &[1, 2]),
+            [1, 2, i64::MIN, 1]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_order_sorts_by_call_count() {
+        assert_eq!(
+            frequent_contact_order(&[10, 20, 10, 30, 10, 20], &[1, 1, 2, 2, 1, 2]),
+            vec![10, 20, 30]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_order_preserves_first_seen_order_for_ties() {
+        assert_eq!(
+            frequent_contact_order(&[30, 20, 10, 20, 30, 10], &[1, 1, 1, 2, 2, 2]),
+            vec![30, 20, 10]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_order_ignores_missed_and_unmatched_calls() {
+        assert_eq!(
+            frequent_contact_order(&[10, 20, 10, 30], &[3, 1, 2, 5]),
+            vec![20, 10]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_order_handles_empty_and_mismatched_inputs() {
+        assert_eq!(frequent_contact_order(&[], &[]), Vec::<i64>::new());
+        assert_eq!(frequent_contact_order(&[7, 8], &[1]), vec![7]);
+        assert_eq!(frequent_contact_order(&[7], &[1, 2]), vec![7]);
+    }
+
+    #[test]
+    fn toggle_adds_contact_at_end() {
+        assert_eq!(toggle_selection(&[1, 2], 3, 4), Some(vec![1, 2, 3]));
+    }
+
+    #[test]
+    fn toggle_removes_selected_contact_without_changing_other_order() {
+        assert_eq!(toggle_selection(&[1, 2, 3], 2, 3), Some(vec![1, 3]));
+    }
+
+    #[test]
+    fn toggle_rejects_addition_when_at_capacity() {
+        assert_eq!(toggle_selection(&[1, 2], 3, 2), None);
+    }
+
+    #[test]
+    fn toggle_allows_removal_when_at_capacity() {
+        assert_eq!(toggle_selection(&[1, 2], 2, 2), Some(vec![1]));
+    }
+
+    #[test]
+    fn toggle_rejects_addition_for_zero_or_negative_capacity() {
+        assert_eq!(toggle_selection(&[], 1, 0), None);
+        assert_eq!(toggle_selection(&[], 1, -1), None);
+    }
+
+    #[test]
+    fn toggle_removes_only_the_first_duplicate() {
+        assert_eq!(toggle_selection(&[1, 2, 1], 1, 3), Some(vec![2, 1]));
+    }
+
+    #[test]
+    fn move_swaps_contact_up_one_position() {
+        assert_eq!(move_selection(&[1, 2, 3], 2, -1), Some(vec![2, 1, 3]));
+    }
+
+    #[test]
+    fn move_swaps_contact_down_one_position() {
+        assert_eq!(move_selection(&[1, 2, 3], 2, 1), Some(vec![1, 3, 2]));
+    }
+
+    #[test]
+    fn move_rejects_invalid_directions() {
+        assert_eq!(move_selection(&[1, 2], 1, 0), None);
+        assert_eq!(move_selection(&[1, 2], 1, 2), None);
+    }
+
+    #[test]
+    fn move_rejects_missing_ids_and_boundary_moves() {
+        assert_eq!(move_selection(&[1, 2], 9, -1), None);
+        assert_eq!(move_selection(&[1, 2], 1, -1), None);
+        assert_eq!(move_selection(&[1, 2], 2, 1), None);
+    }
+
+    #[test]
+    fn move_rejects_empty_selection() {
+        assert_eq!(move_selection(&[], 1, 1), None);
+    }
+
+    #[test]
+    fn move_uses_first_matching_duplicate() {
+        assert_eq!(move_selection(&[1, 2, 1], 1, 1), Some(vec![2, 1, 1]));
+    }
+
+    #[test]
+    fn trim_selection_keeps_all_ids_within_capacity() {
+        assert_eq!(trim_selection(&[4, 8], 3), vec![4, 8]);
+    }
+
+    #[test]
+    fn trim_selection_limits_ids_and_preserves_order() {
+        assert_eq!(trim_selection(&[4, 8, 2], 2), vec![4, 8]);
+    }
+
+    #[test]
+    fn trim_selection_returns_empty_for_zero_or_negative_capacity() {
+        assert_eq!(trim_selection(&[4, 8], 0), Vec::<i64>::new());
+        assert_eq!(trim_selection(&[4, 8], -1), Vec::<i64>::new());
+    }
+
+    #[test]
+    fn trim_selection_keeps_empty_selection_empty() {
+        assert_eq!(trim_selection(&[], 12), Vec::<i64>::new());
+    }
+
+
+
+
+    #[test]
+    fn photo_cache_plan_reuses_unchanged_cached_photos() {
+        let result = build_photo_cache_plan(
+            &[1, 2],
+            &["uri-1".into(), "uri-2".into()],
+            &[true, true],
+            &[1, 2],
+            &[1, 2],
+            &["uri-1".into(), "uri-2".into()],
+        );
+        assert_eq!(result[0..3], [2, 0, 0]);
+        assert_eq!(result.len(), 5);
+    }
+
+    #[test]
+    fn photo_cache_plan_reloads_missing_bitmaps_and_changed_uris() {
+        let result = build_photo_cache_plan(
+            &[1, 2],
+            &["new-uri".into(), "uri-2".into()],
+            &[true, true],
+            &[2],
+            &[1, 2],
+            &["old-uri".into(), "uri-2".into()],
+        );
+        assert_eq!(result[0..3], [2, 1, 1]);
+        assert!(result[3..5].contains(&1));
+        assert!(result[3..5].contains(&2));
+        assert_eq!(result[6], 0);
+    }
+
+    #[test]
+    fn photo_cache_plan_excludes_blank_and_missing_photos_and_deleted_ids() {
+        let result = build_photo_cache_plan(
+            &[1, 2, 3],
+            &["uri-1".into(), "   ".into(), "".into()],
+            &[true, false, false],
+            &[1, 2, 3, 4],
+            &[1, 2, 3, 4],
+            &["uri-1".into(), "uri-2".into(), "uri-3".into(), "uri-4".into()],
+        );
+        assert_eq!(result[0..3], [1, 0, 0]);
+        assert_eq!(result[3], 1);
+        assert_eq!(result.len(), 4);
+    }
+
+    #[test]
+    fn photo_cache_plan_preserves_contact_load_order_and_duplicate_id_semantics() {
+        let result = build_photo_cache_plan(
+            &[7, 7, 8],
+            &["old-uri".into(), "new-uri".into(), "uri-8".into()],
+            &[true, true, true],
+            &[7, 8],
+            &[7, 8],
+            &["cached-uri".into(), "uri-8".into()],
+        );
+        assert_eq!(result[0..3], [2, 1, 2]);
+        assert!(result[3..5].contains(&7));
+        assert!(result[3..5].contains(&8));
+        assert_eq!(result[5], 7);
+        assert_eq!(result[6..8], [0, 1]);
+    }
+
+    #[test]
+    fn photo_cache_plan_handles_mismatched_input_lengths_without_panicking() {
+        let result = build_photo_cache_plan(
+            &[1, 2],
+            &["uri-1".into()],
+            &[true, true],
+            &[],
+            &[],
+            &[],
+        );
+        assert_eq!(result[0..3], [1, 1, 1]);
+        assert_eq!(result[3], 1);
+        assert_eq!(result[4], 1);
+        assert_eq!(result[5], 0);
+    }
+
+    #[test]
+    fn contact_display_order_keeps_selected_ids_in_saved_order() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2, 3, 4], &[3, 1], &[true; 4], true),
+            vec![2, 0, 1, 3]
+        );
+    }
+
+    #[test]
+    fn contact_display_order_filters_only_unselected_contacts() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2, 3, 4], &[3], &[false, true, false, false], false),
+            vec![2, 1]
+        );
+    }
+
+    #[test]
+    fn contact_display_order_skips_missing_selected_ids() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2, 3, 4], &[99, 2], &[true; 4], true),
+            vec![1, 0, 2, 3]
+        );
+    }
+
+    #[test]
+    fn contact_display_order_uses_last_contact_for_duplicate_ids() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2, 1, 3], &[1], &[true; 4], true),
+            vec![2, 1, 3]
+        );
+    }
+
+    #[test]
+    fn contact_display_order_preserves_repeated_selected_ids() {
+        assert_eq!(
+            build_contact_display_order(&[1, 2], &[2, 2], &[true; 2], true),
+            vec![1, 1, 0]
+        );
+    }
+
+    #[test]
+    fn resolve_lookup_ids_preserves_saved_order_and_skips_missing_keys() {
+        let keys = vec!["key-b".to_string(), "missing".to_string(), "key-a".to_string()];
+        let ids = vec![4553, 7001];
+        let contact_keys = vec!["key-a".to_string(), "key-b".to_string()];
+        assert_eq!(resolve_lookup_ids(&keys, &ids, &contact_keys), vec![7001, 4553]);
+    }
+
+    #[test]
+    fn resolve_lookup_ids_uses_last_contact_for_duplicate_lookup_key() {
+        let keys = vec!["same".to_string()];
+        let ids = vec![10, 20];
+        let contact_keys = vec!["same".to_string(), "same".to_string()];
+        assert_eq!(resolve_lookup_ids(&keys, &ids, &contact_keys), vec![20]);
+    }
+
+    #[test]
+    fn resolve_lookup_ids_removes_duplicate_resolved_ids() {
+        let keys = vec!["first".to_string(), "second".to_string()];
+        let ids = vec![42, 42];
+        let contact_keys = vec!["first".to_string(), "second".to_string()];
+        assert_eq!(resolve_lookup_ids(&keys, &ids, &contact_keys), vec![42]);
+    }
+
+    #[test]
+    fn lookup_keys_for_ids_preserves_selected_order_and_missing_placeholders() {
+        let ids = vec![7001, 9999, 4553];
+        let contact_ids = vec![4553, 7001];
+        let keys = vec!["key-a".to_string(), "key-b".to_string()];
+        assert_eq!(
+            lookup_keys_for_ids(&ids, &contact_ids, &keys),
+            vec!["key-b".to_string(), "".to_string(), "key-a".to_string()]
+        );
+    }
+
+    #[test]
+    fn lookup_keys_for_ids_uses_last_contact_for_duplicate_id() {
+        let ids = vec![7];
+        let contact_ids = vec![7, 7];
+        let keys = vec!["old-key".to_string(), "new-key".to_string()];
+        assert_eq!(lookup_keys_for_ids(&ids, &contact_ids, &keys), vec!["new-key".to_string()]);
+    }
+
+    #[test]
+    fn normalize_removes_the_same_ascii_formatting_characters() {
+        assert_eq!(normalize_number("+1 (234) 567-8901"), "5678901");
+    }
+
+    #[test]
+    fn normalize_keeps_only_the_last_seven_remaining_characters() {
+        assert_eq!(normalize_number("12.34-56(78)+90"), "4567890");
+    }
+
+    #[test]
+    fn normalize_preserves_short_and_empty_values() {
+        assert_eq!(normalize_number(" 123 "), "123");
+        assert_eq!(normalize_number(""), "");
+    }
+
+    #[test]
+    fn normalize_removes_java_regex_ascii_whitespace() {
+        assert_eq!(normalize_number("\t12\n34\u{000B}56\u{000C}78\r90"), "4567890");
+    }
+
+    #[test]
+    fn widget_favorites_resolve_lookup_keys_in_saved_order_and_deduplicate_ids() {
+        let ids = [10, 20, 10, 30];
+        let keys = vec!["a".into(), "b".into(), "c".into(), "d".into()];
+        let selected_keys = vec!["c".into(), "a".into(), "c".into(), "missing".into()];
+        assert_eq!(widget_favorite_indices(&ids, &keys, &[20], &selected_keys, 10), vec![2]);
+    }
+
+    #[test]
+    fn widget_favorites_use_ids_only_when_lookup_keys_are_empty() {
+        assert_eq!(
+            widget_favorite_indices(&[10, 20, 30], &["a".into(), "b".into(), "c".into()], &[30, 99, 10], &[], 10),
+            vec![2, 0]
+        );
+        assert!(widget_favorite_indices(&[10, 20], &["a".into(), "b".into()], &[10], &["missing".into()], 10).is_empty());
+    }
+
+    #[test]
+    fn widget_favorites_preserve_first_match_and_respect_capacity() {
+        assert_eq!(
+            widget_favorite_indices(&[10, 20, 10, 30], &["a".into(), "b".into(), "c".into(), "d".into()], &[], &["c".into(), "d".into()], 1),
+            vec![2]
+        );
+        assert!(widget_favorite_indices(&[10], &["a".into()], &[10], &[], 0).is_empty());
+    }
+
+    #[test]
+    fn frequent_contact_indices_preserve_order_and_exclude_base_contacts() {
+        assert_eq!(
+            frequent_contact_indices(&[3, 2, 4, 3], &[1, 2, 3, 4], &[1, 2], 4),
+            vec![2, 3]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_indices_use_first_matching_contact_and_deduplicate_ids() {
+        assert_eq!(
+            frequent_contact_indices(&[7, 7, 8], &[7, 7, 8], &[], 3),
+            vec![0, 2]
+        );
+    }
+
+    #[test]
+    fn frequent_contact_indices_respect_remaining_capacity() {
+        assert_eq!(
+            frequent_contact_indices(&[2, 3, 4], &[1, 2, 3, 4], &[1, 9], 3),
+            vec![1]
+        );
+        assert!(frequent_contact_indices(&[2], &[1, 2], &[1, 9], 2).is_empty());
+    }
+
+    #[test]
+    fn frequent_contact_indices_handle_missing_ids_and_empty_inputs() {
+        assert!(frequent_contact_indices(&[9], &[1, 2], &[], 4).is_empty());
+        assert!(frequent_contact_indices(&[], &[1, 2], &[], 4).is_empty());
+        assert!(frequent_contact_indices(&[1], &[], &[], 4).is_empty());
+    }
+
+
+    #[test]
+    fn widget_factory_prefers_lookup_keys_and_preserves_repeated_first_matches() {
+        let ids = [10, 20, 30];
+        let keys = vec!["a".into(), "b".into(), "a".into()];
+        assert_eq!(
+            widget_factory_contact_indices(&ids, &keys, &[false; 3], &[20], &["a".into(), "missing".into(), "a".into()], false, 5),
+            vec![0, 0]
+        );
+    }
+
+    #[test]
+    fn widget_factory_uses_ids_only_when_lookup_keys_are_empty() {
+        assert_eq!(
+            widget_factory_contact_indices(&[10, 20, 10], &["a".into(), "b".into(), "c".into()], &[false; 3], &[10, 99, 20], &[], false, 5),
+            vec![0, 1]
+        );
+    }
+
+    #[test]
+    fn widget_factory_filters_favorites_in_contact_order() {
+        assert_eq!(
+            widget_factory_contact_indices(&[1, 2, 3, 4], &["a".into(), "b".into(), "c".into(), "d".into()], &[false, true, true, false], &[], &[], true, 5),
+            vec![1, 2]
+        );
+    }
+
+    #[test]
+    fn widget_factory_defaults_to_contact_order_and_respects_capacity() {
+        assert_eq!(
+            widget_factory_contact_indices(&[1, 2, 3, 4], &["a".into(), "b".into(), "c".into(), "d".into()], &[false; 4], &[], &[], false, 2),
+            vec![0, 1]
+        );
+        assert!(widget_factory_contact_indices(&[1, 2], &["a".into(), "b".into()], &[false; 2], &[], &[], false, 0).is_empty());
+    }
+
+    #[test]
+    fn recent_widget_contacts_keep_recent_order_and_exclude_missing_or_used_contacts() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[3, 2, 99, 3, -1],
+                &[false; 5],
+                &[1, 2, 3],
+                &[1, 2],
+                true,
+                false,
+                6,
+                2,
+            ),
+            vec![0]
+        );
+    }
+
+    #[test]
+    fn recent_widget_contacts_include_valid_unknown_numbers_in_order() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[-1, -2, -3, 7],
+                &[true, false, true, false],
+                &[7],
+                &[],
+                true,
+                true,
+                5,
+                0,
+            ),
+            vec![0, 2, 3]
+        );
+    }
+
+    #[test]
+    fn recent_widget_contacts_respect_filters_and_remaining_capacity() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[7, -1, 8],
+                &[false, true, false],
+                &[7, 8],
+                &[],
+                false,
+                true,
+                3,
+                1,
+            ),
+            vec![1]
+        );
+        assert!(recent_widget_contact_indices(
+            &[7, -1],
+            &[false, true],
+            &[7],
+            &[],
+            true,
+            true,
+            2,
+            2,
+        ).is_empty());
+    }
+
+    #[test]
+    fn recent_widget_contacts_do_not_deduplicate_unknown_numbers() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[-1, -2],
+                &[true, true],
+                &[],
+                &[],
+                false,
+                true,
+                4,
+                0,
+            ),
+            vec![0, 1]
+        );
+    }
+
+    #[test]
+    fn recent_widget_contacts_handle_mismatched_flags_and_non_positive_capacity() {
+        assert_eq!(
+            recent_widget_contact_indices(
+                &[-1, -2],
+                &[true],
+                &[],
+                &[],
+                false,
+                true,
+                4,
+                0,
+            ),
+            vec![0]
+        );
+        assert!(recent_widget_contact_indices(
+            &[-1],
+            &[true],
+            &[],
+            &[],
+            false,
+            true,
+            0,
+            0,
+        ).is_empty());
+    }
+
+    #[test]
+    fn widget_call_type_resolver_uses_unknown_phone_norm_directly() {
+        assert_eq!(
+            resolve_widget_call_type(-1, true, "1234567", &[], &[], &["1234567".into()], &[3]),
+            3
+        );
+        assert_eq!(
+            resolve_widget_call_type(-1, true, "missing", &[], &[], &["1234567".into()], &[3]),
+            i32::MIN
+        );
+    }
+
+    #[test]
+    fn widget_call_type_resolver_uses_newest_call_across_all_contact_numbers() {
+        let number_keys = vec!["first".into(), "second".into(), "third".into()];
+        let number_ids = vec![7, 7, 8];
+        // CallLog results are ordered newest first, independently of contact-number order.
+        let call_keys = vec!["second".into(), "third".into(), "first".into()];
+        let call_values = vec![2, 3, 1];
+        assert_eq!(
+            resolve_widget_call_type(7, false, "", &number_keys, &number_ids, &call_keys, &call_values),
+            2
+        );
+    }
+
+    #[test]
+    fn widget_call_type_resolver_handles_missing_and_mismatched_arrays() {
+        assert_eq!(
+            resolve_widget_call_type(7, false, "", &["a".into()], &[], &["a".into()], &[2]),
+            i32::MIN
+        );
+        assert_eq!(
+            resolve_widget_call_type(7, false, "", &["a".into()], &[7], &["b".into()], &[2]),
+            i32::MIN
+        );
+    }
+
+    #[test]
+    fn widget_tile_norms_preserve_map_order_and_include_only_tile_contacts() {
+        assert_eq!(
+            extract_tile_norms(
+                &["norm-a".into(), "norm-b".into(), "norm-c".into()],
+                &[10, 20, 30],
+                &[30, 10, -1],
+                &["".into(), "".into(), "+1 (234) 567-8901".into()],
+            ),
+            vec!["norm-a", "norm-c", "5678901"]
+        );
+    }
+
+    #[test]
+    fn widget_tile_norms_preserve_duplicate_keys_and_unknown_tile_order() {
+        assert_eq!(
+            extract_tile_norms(
+                &["same".into(), "same".into()],
+                &[7, 7],
+                &[7, -2, -3, 8],
+                &["".into(), "12-34-567".into(), "   ".into(), "999".into()],
+            ),
+            vec!["same", "same", "1234567"]
+        );
+    }
+
+    #[test]
+    fn widget_tile_norms_handle_empty_and_mismatched_inputs() {
+        assert_eq!(extract_tile_norms(&[], &[], &[], &[]), Vec::<String>::new());
+        assert_eq!(
+            extract_tile_norms(&["keep".into(), "ignored".into()], &[1], &[1], &[]),
+            vec!["keep"]
+        );
+    }
+
+
+    #[test]
+    fn unknown_recent_calls_exclude_known_blank_and_duplicate_numbers() {
+        let norms = vec!["known".into(), "unknown-a".into(), "unknown-a".into(), "unknown-b".into(), "blank".into()];
+        assert_eq!(
+            unknown_recent_call_indices(&norms, &[5, 4, 3, 2, 1], &[1, 2, 3, 4, 5], &[1, 1, 1, 1, 0], &["known".into()], 5, 20),
+            vec![1, 3]
+        );
+    }
+
+    #[test]
+    fn unknown_recent_calls_respect_limit_and_input_order() {
+        let norms = vec!["a".into(), "b".into(), "c".into()];
+        assert_eq!(
+            unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 3, 2),
+            vec![0, 1]
+        );
+    }
+
+    #[test]
+    fn unknown_recent_calls_handle_non_positive_limits_and_mismatched_arrays() {
+        let norms = vec!["a".into(), "b".into(), "c".into()];
+        assert_eq!(
+            unknown_recent_call_indices(&norms, &[3, 2], &[1, 2, 3], &[1, 1, 1], &[], 3, 10),
+            vec![0, 1]
+        );
+        assert!(unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 3, 0).is_empty());
+        assert_eq!(
+            unknown_recent_call_indices(&norms, &[3, 2, 1], &[1, 2, 3], &[1, 1, 1], &[], 2, 10),
+            vec![0, 1]
+        );
+    }
+
+    #[test]
+    fn last_call_type_indices_keep_latest_row_for_each_requested_number() {
+        let norms = vec!["a".into(), "b".into(), "a".into(), "c".into()];
+        let types = vec![3, 2, 1, 5];
+        assert_eq!(last_call_type_indices(&norms, &types, &["a".into(), "c".into(), "b".into()]), vec![0, 1, 3]);
+    }
+
+    #[test]
+    fn last_call_type_indices_ignore_unrequested_and_duplicate_targets() {
+        let norms = vec!["x".into(), "b".into(), "a".into(), "b".into()];
+        let types = vec![1, 5, 2, 3];
+        assert_eq!(last_call_type_indices(&norms, &types, &["b".into(), "b".into(), "a".into()]), vec![1, 2]);
+    }
+
+    #[test]
+    fn last_call_type_indices_handle_empty_and_mismatched_inputs() {
+        assert!(last_call_type_indices(&[], &[], &["a".into()]).is_empty());
+        assert!(last_call_type_indices(&["a".into()], &[], &["a".into()]).is_empty());
+        assert_eq!(last_call_type_indices(&["a".into(), "b".into()], &[4], &["a".into(), "b".into()]), vec![0]);
+    }
+
+
+    #[test]
+    fn selected_contact_ids_parsing_preserves_order_duplicates_and_signed_values() {
+        assert_eq!(parse_selected_contact_ids("42,+7,-9,42"), vec![42, 7, -9, 42]);
+    }
+
+    #[test]
+    fn selected_contact_ids_parsing_ignores_invalid_empty_and_overflow_tokens() {
+        assert_eq!(parse_selected_contact_ids("42,nope,,9223372036854775808,-9223372036854775809,7"), vec![42, 7]);
+        assert!(parse_selected_contact_ids("").is_empty());
+        assert!(parse_selected_contact_ids(" , ").is_empty());
+    }
+
+    #[test]
+    fn selected_lookup_keys_parsing_accepts_padded_and_unpadded_tokens() {
+        assert_eq!(parse_selected_contact_lookup_keys("dmFsaWQ,dHJhaWxpbmc="),
+            vec!["valid".to_string(), "trailing".to_string()]);
+    }
+
+    #[test]
+    fn selected_lookup_keys_parsing_ignores_invalid_and_blank_tokens() {
+        assert_eq!(parse_selected_contact_lookup_keys("%%%,,IA,ICAg,dmFsaWQ"),
+            vec!["valid".to_string()]);
+        assert!(parse_selected_contact_lookup_keys("").is_empty());
+        assert!(parse_selected_contact_lookup_keys(" \u{00A0} ").is_empty());
+    }
+
+    #[test]
+    fn selected_lookup_keys_parsing_replaces_invalid_utf8_like_java() {
+        assert_eq!(parse_selected_contact_lookup_keys("_w"), vec!["�".to_string()]);
+    }
+
+    #[test]
+    fn selected_contact_ids_serialization_preserves_order_and_duplicates() {
+        assert_eq!(serialize_contact_ids(&[42, 7, 42]), "42,7,42");
+    }
+
+    #[test]
+    fn selected_contact_ids_serialization_handles_empty_and_negative_values() {
+        assert_eq!(serialize_contact_ids(&[]), "");
+        assert_eq!(serialize_contact_ids(&[-7, 0, 15]), "-7,0,15");
+    }
+
+    #[test]
+    fn selected_contact_ids_serialization_handles_long_boundaries() {
+        assert_eq!(
+            serialize_contact_ids(&[i64::MIN, i64::MAX]),
+            format!("{},{}", i64::MIN, i64::MAX)
+        );
+    }
+
+    #[test]
+    fn normalize_preserves_non_ascii_digits() {
+        assert_eq!(normalize_number("+１２３-４５６７８"), "２３４５６７８");
+    }
+    #[test]
+    fn selected_lookup_keys_serialization_preserves_url_safe_base64_format() {
+        let keys = vec![
+            "0r7-abc:person,one".to_string(),
+            "lookup/key_two".to_string(),
+            "another-key".to_string(),
+            "ключ".to_string(),
+        ];
+        assert_eq!(
+            serialize_lookup_keys(&keys),
+            "MHI3LWFiYzpwZXJzb24sb25l,bG9va3VwL2tleV90d28,YW5vdGhlci1rZXk,0LrQu9GO0Yc"
+        );
+    }
+
+    #[test]
+    fn selected_lookup_keys_serialization_returns_empty_for_empty_input() {
+        assert_eq!(serialize_lookup_keys(&[]), "");
+    }
+
+    #[test]
+    fn messenger_phone_sanitization_preserves_ascii_digits_and_plus_signs() {
+        assert_eq!(sanitize_messenger_phone(" +1 (234)-56.7# ext 89 "), "+123456789");
+        assert_eq!(sanitize_messenger_phone("++12+34"), "++12+34");
+    }
+
+    #[test]
+    fn messenger_phone_sanitization_removes_non_ascii_digits() {
+        assert_eq!(sanitize_messenger_phone("+１２３٤٥٦"), "+");
+        assert_eq!(sanitize_messenger_phone(""), "");
+    }
+
+    #[test]
+    fn locale_resolution_honors_explicit_language_over_system_language() {
+        assert_eq!(resolve_locale_code("en", "ru"), "en");
+        assert_eq!(resolve_locale_code("ru", "en"), "ru");
+    }
+
+    #[test]
+    fn locale_resolution_uses_russian_only_for_russian_system_language() {
+        assert_eq!(resolve_locale_code("system", "ru"), "ru");
+        assert_eq!(resolve_locale_code("system", "en"), "en");
+        assert_eq!(resolve_locale_code("unknown", "fr"), "en");
+        assert_eq!(resolve_locale_code("", ""), "en");
+    }
+
+    #[test]
+    fn format_duration_matches_kotlin_thresholds() {
+        assert_eq!(format_duration(0), "0s");
+        assert_eq!(format_duration(59), "59s");
+        assert_eq!(format_duration(60), "1m 0s");
+        assert_eq!(format_duration(3_599), "59m 59s");
+        assert_eq!(format_duration(3_600), "1h 0m");
+        assert_eq!(format_duration(3_661), "1h 1m");
+    }
+
+    #[test]
+    fn format_duration_preserves_negative_remainder_behavior() {
+        assert_eq!(format_duration(-1), "-1s");
+        assert_eq!(format_duration(-61), "-1s");
+        assert_eq!(format_duration(i64::MIN), "-8s");
+    }
+
+    #[test]
+    fn selected_contact_count_counts_only_existing_ids_and_preserves_duplicates() {
+        assert_eq!(count_existing_selected_ids(&[7, 2, 7, 99, 3], &[3, 7, 7]), 3);
+    }
+
+    #[test]
+    fn selected_contact_count_handles_empty_and_missing_ids() {
+        assert_eq!(count_existing_selected_ids(&[], &[1, 2]), 0);
+        assert_eq!(count_existing_selected_ids(&[1, 2], &[]), 0);
+        assert_eq!(count_existing_selected_ids(&[8, 9], &[1, 2]), 0);
+    }
+
+    #[test]
+    fn filter_existing_contact_ids_preserves_saved_order_and_duplicates() {
+        assert_eq!(
+            filter_existing_contact_ids(&[7, 2, 7, 99, 3], &[3, 7, 7]),
+            vec![7, 7, 3]
+        );
+    }
+
+    #[test]
+    fn filter_existing_contact_ids_handles_empty_and_missing_ids() {
+        assert!(filter_existing_contact_ids(&[], &[1, 2]).is_empty());
+        assert!(filter_existing_contact_ids(&[1, 2], &[]).is_empty());
+        assert_eq!(filter_existing_contact_ids(&[8, 9], &[1, 2]), Vec::<i64>::new());
+    }
+
+}

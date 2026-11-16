@@ -5,6 +5,7 @@ import android.net.Uri
 import com.toxictrace.nexusconnect.data.model.*
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
 import com.toxictrace.nexusconnect.data.preferences.SelectedContactLookupKeys
+import com.toxictrace.nexusconnect.data.preferences.SelectedContactIds
 import org.json.JSONObject
 import java.io.*
 import java.text.SimpleDateFormat
@@ -55,7 +56,7 @@ object BackupManager {
             put("recentsDays",        settings.recentsDays)
             put("showCallLogButton",  settings.showCallLogButton)
             put("callLogAppPackage",  settings.callLogAppPackage)
-            put("selectedContactIds", selectedIds.joinToString(","))
+            put("selectedContactIds", SelectedContactIds.serialize(selectedIds))
             put("selectedContactLookupKeys", SelectedContactLookupKeys.serialize(selectedLookupKeys))
         }.toString(2)
     }
@@ -88,8 +89,7 @@ object BackupManager {
             showCallLogButton  = o.optBoolean("showCallLogButton", false),
             callLogAppPackage  = o.optString("callLogAppPackage", "")
         )
-        val ids = o.optString("selectedContactIds", "")
-            .split(",").mapNotNull { it.toLongOrNull() }
+        val ids = SelectedContactIds.parse(o.optString("selectedContactIds", ""))
         val lookupKeys = SelectedContactLookupKeys.parse(o.optString("selectedContactLookupKeys", ""))
         return Triple(settings, ids, lookupKeys)
     }
@@ -100,25 +100,25 @@ object BackupManager {
         return SecretKeySpec(bytes, "AES")
     }
 
-    private fun encrypt(data: String): ByteArray {
+    internal fun encrypt(data: String): ByteArray {
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.ENCRYPT_MODE, deriveKey())
         return cipher.iv + cipher.doFinal(data.toByteArray(Charsets.UTF_8))
     }
 
-    private fun decrypt(data: ByteArray): String {
+    internal fun decrypt(data: ByteArray): String {
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.DECRYPT_MODE, deriveKey(), IvParameterSpec(data.copyOfRange(0, 16)))
         return String(cipher.doFinal(data.copyOfRange(16, data.size)), Charsets.UTF_8)
     }
 
-    private fun packZip(payload: ByteArray): ByteArray {
+    internal fun packZip(payload: ByteArray): ByteArray {
         val baos = ByteArrayOutputStream()
         ZipOutputStream(baos).use { it.putNextEntry(ZipEntry(ZIP_ENTRY)); it.write(payload); it.closeEntry() }
         return baos.toByteArray()
     }
 
-    private fun unpackZip(data: ByteArray): ByteArray {
+    internal fun unpackZip(data: ByteArray): ByteArray {
         ZipInputStream(ByteArrayInputStream(data)).use { zip ->
             if (zip.nextEntry?.name == ZIP_ENTRY) return zip.readBytes()
         }

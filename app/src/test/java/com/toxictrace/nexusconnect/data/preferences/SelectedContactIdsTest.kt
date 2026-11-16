@@ -4,34 +4,27 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class SelectedContactIdsTest {
-    @Test
-    fun parsesOrderedIds() {
+    @Test fun parsesOrderedIds() {
         assertEquals(listOf(42L, 7L, 99L), SelectedContactIds.parse("42,7,99"))
     }
 
-    @Test
-    fun emptyStringProducesEmptyList() {
+    @Test fun emptyStringProducesEmptyList() {
         assertEquals(emptyList<Long>(), SelectedContactIds.parse(""))
     }
 
-    @Test
-    fun ignoresInvalidTokensAndKeepsValidOrder() {
+    @Test fun ignoresInvalidTokensAndKeepsValidOrder() {
         assertEquals(listOf(42L, -7L, 99L), SelectedContactIds.parse("42,nope,-7,,99"))
     }
 
-    @Test
-    fun serializationPreservesOrderAndDuplicates() {
-        assertEquals("42,7,42", SelectedContactIds.serialize(listOf(42L, 7L, 42L)))
+    @Test fun preservesDuplicatesAndAcceptsExplicitPositiveSign() {
+        assertEquals(listOf(7L, 7L, -2L), SelectedContactIds.parse("+7,7,-2"))
     }
 
-    @Test
-    fun emptyListSerializesToEmptyString() {
-        assertEquals("", SelectedContactIds.serialize(emptyList()))
+    @Test fun serializesIdsInExistingCommaSeparatedFormat() {
+        assertEquals("4,7,-2", SelectedContactIds.serialize(listOf(4L, 7L, -2L)))
     }
 
-    @Test
-    fun serializedIdsCanBeParsedBackWithoutChangingOrder() {
-        val ids = listOf(15L, 3L, 81L)
-        assertEquals(ids, SelectedContactIds.parse(SelectedContactIds.serialize(ids)))
+    @Test fun ignoresOverflowAndWhitespaceTokens() {
+        assertEquals(listOf(1L), SelectedContactIds.parse("9223372036854775808, 1,1"))
     }
 }

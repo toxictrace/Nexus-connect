@@ -47,8 +47,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val appsLoading = MutableStateFlow(true)
 
     val selectedCount: StateFlow<Int> = combine(_selectedIds, _allContacts) { ids, all ->
-        val allIds = all.map { it.id }.toSet()
-        ids.count { it in allIds }
+        SelectedContactCount.count(ids, all)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val displayContacts: StateFlow<List<Contact>> = combine(
@@ -174,7 +173,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     _selectedLookupKeys.value = mappedKeys
                     _selectedIds.value = if (mappedKeys.isNotEmpty()) {
                         ContactLookupResolver.resolveIds(mappedKeys, contacts)
-                    } else savedIds.filter { id -> contacts.any { it.id == id } }
+                    } else ContactLookupResolver.filterExistingIds(savedIds, contacts)
                     if (mappedKeys.isNotEmpty()) settingsRepo.saveSelectedContactLookupKeys(mappedKeys)
                 }
                 AppLogger.i("MainViewModel", "reconcileSelection: savedIds=${savedIds.size} lookupKeys=${savedKeys.size} mapped=${_selectedLookupKeys.value.size} visible=${_selectedIds.value.size}")
@@ -186,8 +185,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val contacts = _allContacts.value
         val visibleKeys = ContactLookupResolver.lookupKeysForIds(updatedIds, contacts)
         val oldVisibleKeys = ContactLookupResolver.lookupKeysForIds(_selectedIds.value, contacts).toSet()
-        val unresolvedKeys = _selectedLookupKeys.value.filter { it !in oldVisibleKeys }
-        return (visibleKeys + unresolvedKeys).distinct()
+        return UpdatedSelectionLookupKeys.merge(visibleKeys, oldVisibleKeys, _selectedLookupKeys.value)
     }
 
     fun toggleContactSelection(contactId: Long) {

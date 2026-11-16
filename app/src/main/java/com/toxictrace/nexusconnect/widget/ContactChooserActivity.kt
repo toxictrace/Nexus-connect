@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
+import com.toxictrace.nexusconnect.util.NativePhoneNumber
 import com.toxictrace.nexusconnect.ui.theme.NexusConnectTheme
 import java.text.SimpleDateFormat
 import java.util.*
@@ -143,7 +144,7 @@ class ContactChooserActivity : ComponentActivity() {
         if (phone.isBlank() && contactId <= 0) return CallStats(null, 0, 0L, 0)
         val norms = mutableSetOf<String>()
         if (phone.isNotBlank()) {
-            norms.add(phone.replace(Regex("[\\s\\-().+]"), "").takeLast(7))
+            norms.add(NativePhoneNumber.normalize(phone))
         }
         if (contactId > 0) {
             try {
@@ -157,7 +158,7 @@ class ContactChooserActivity : ComponentActivity() {
                     val ni = it.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER)
                     while (it.moveToNext()) {
                         val n = it.getString(ni) ?: continue
-                        norms.add(n.replace(Regex("[\\s\\-().+]"), "").takeLast(7))
+                        norms.add(NativePhoneNumber.normalize(n))
                     }
                 }
             } catch (_: Exception) {}
@@ -170,22 +171,34 @@ class ContactChooserActivity : ComponentActivity() {
                     CallLog.Calls.DURATION, CallLog.Calls.TYPE),
                 null, null, "${CallLog.Calls.DATE} DESC"
             ) ?: return CallStats(null, 0, 0L, 0)
-            var lastDate: Long? = null; var lastType = 0
-            var total = 0; var dur = 0L
+            val callNorms = mutableListOf<String>()
+            val allDates = mutableListOf<Long>()
+            val allDurations = mutableListOf<Long>()
+            val allTypes = mutableListOf<Int>()
             cursor.use {
                 val ni = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val di = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
                 val ui = it.getColumnIndexOrThrow(CallLog.Calls.DURATION)
                 val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
                 while (it.moveToNext()) {
-                    val n = it.getString(ni)?.replace(Regex("[\\s\\-().+]"), "")?.takeLast(7) ?: continue
-                    if (n in norms) {
-                        if (lastDate == null) { lastDate = it.getLong(di); lastType = it.getInt(ti) }
-                        total++; dur += it.getLong(ui)
-                    }
+                    val n = it.getString(ni)?.let { number -> NativePhoneNumber.normalize(number) } ?: continue
+                    callNorms.add(n)
+                    allDates.add(it.getLong(di))
+                    allDurations.add(it.getLong(ui))
+                    allTypes.add(it.getInt(ti))
                 }
             }
-            CallStats(lastDate, total, dur, lastType)
+            val matchedIndices = CallStatsCallFilter.filter(callNorms, norms.toList())
+            val dates = matchedIndices.map { allDates[it] }
+            val durations = matchedIndices.map { allDurations[it] }
+            val types = matchedIndices.map { allTypes[it] }
+            val resolved = CallStatsResolver.resolve(dates, durations, types)
+            CallStats(
+                lastCallDate = resolved[0].takeUnless { it == Long.MIN_VALUE },
+                totalCalls = resolved[1].toInt(),
+                totalDurationSec = resolved[2],
+                lastCallType = resolved[3].toInt()
+            )
         } catch (e: Exception) { CallStats(null, 0, 0L, 0) }
     }
     private fun isInstalled(pkg: String): Boolean {
@@ -211,7 +224,7 @@ class ContactChooserActivity : ComponentActivity() {
 
     private fun openViber(phone: String, pkg: String) {
         val effectivePkg = pkg.ifBlank { "com.viber.voip" }
-        val c = phone.replace(Regex("[^+\\d]"), "").trimStart('+')
+        val c = MessengerPhoneResolver.sanitize(phone).trimStart('+')
         // viber://chat?number=XXXXXXXXXXX (without +, with country code)
         val chatIntent = Intent(Intent.ACTION_VIEW, Uri.parse("viber://chat?number=$c")).apply {
             setPackage(effectivePkg)
@@ -229,12 +242,12 @@ class ContactChooserActivity : ComponentActivity() {
     }
 
     private fun buildWhatsAppUri(phone: String): Uri {
-        val c = phone.replace(Regex("[^+\\d]"), "")
+        val c = MessengerPhoneResolver.sanitize(phone)
         return Uri.parse("whatsapp://send?phone=$c")
     }
 
     private fun buildTelegramUri(phone: String): Uri {
-        val c = phone.replace(Regex("[^+\\d]"), "")
+        val c = MessengerPhoneResolver.sanitize(phone)
         return Uri.parse("tg://resolve?phone=$c")
     }
 }
@@ -320,7 +333,7 @@ private fun ChooserSheet(
                             horizontalArrangement = Arrangement.SpaceEvenly) {
                             StatItem(Icons.Default.Call, stats.totalCalls.toString(), stringResource(R.string.calls))
                             VerticalDivider(modifier = Modifier.height(44.dp))
-                            StatItem(Icons.Default.AccessTime, formatDuration(stats.totalDurationSec), stringResource(R.string.total_time))
+                            StatItem(Icons.Default.AccessTime, CallDurationFormatter.format(stats.totalDurationSec), stringResource(R.string.total_time))
                             VerticalDivider(modifier = Modifier.height(44.dp))
                             StatItem(
                                 icon = when (stats.lastCallType) {
@@ -405,13 +418,6 @@ private fun CallOption(icon: ImageVector, label: String, sublabel: String, color
         Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.outline,
             modifier = Modifier.size(20.dp))
     }
-}
-
-private fun formatDuration(seconds: Long): String {
-    val h = TimeUnit.SECONDS.toHours(seconds)
-    val m = TimeUnit.SECONDS.toMinutes(seconds) % 60
-    val s = seconds % 60
-    return when { h > 0 -> "${h}h ${m}m"; m > 0 -> "${m}m ${s}s"; else -> "${s}s" }
 }
 
 private fun formatDate(ts: Long, todayLabel: String = "Today"): String {

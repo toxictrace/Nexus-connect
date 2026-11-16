@@ -19,6 +19,7 @@ import com.toxictrace.nexusconnect.R
 import com.toxictrace.nexusconnect.data.model.Contact
 import com.toxictrace.nexusconnect.data.preferences.WidgetPrefs
 import com.toxictrace.nexusconnect.util.AppLogger
+import com.toxictrace.nexusconnect.util.NativePhoneNumber
 import com.toxictrace.nexusconnect.data.repository.ContactsRepository
 
 class ContactWidgetProvider : AppWidgetProvider() {
@@ -107,19 +108,18 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val remaining = maxTiles - baseContacts.size
             if (remaining <= 0 || !WidgetPrefs.getFilterFrequent(context)) return baseContacts
 
-            val frequentContacts = mutableListOf<Contact>()
-            val usedIds = baseContacts.map { it.id }.toMutableSet()
-
             val callLogRepo = com.toxictrace.nexusconnect.data.repository.CallLogRepository(context)
             val numberMap = buildNumberToIdMap(context, allContacts)
-
-            callLogRepo.getFrequentContactIds(numberMap, 50).forEach { id ->
-                if (frequentContacts.size >= remaining) return@forEach
-                val contact = allContacts.firstOrNull { it.id == id } ?: return@forEach
-                if (usedIds.add(contact.id)) {
-                    frequentContacts.add(contact)
-                }
-            }
+            val frequentIds = callLogRepo.getFrequentContactIds(numberMap, 50)
+            val frequentIndices = WidgetFrequentContactResolver.resolve(
+                frequentIds,
+                allContacts,
+                baseContacts,
+                maxTiles
+            )
+            val frequentContacts = frequentIndices
+                .map { allContacts.getOrNull(it) }
+                .filterNotNull()
 
             return (baseContacts + frequentContacts).take(maxTiles)
         }
@@ -230,7 +230,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             val callIconStyle = WidgetPrefs.getCallIconStyle(context)
             val glass = callIconStyle == "GLASS"
 
-            val callType = getCallTypeForContact(contact, callTypeMap, numberMap)
+            val callType = WidgetCallTypeResolver.resolve(contact, callTypeMap, numberMap)
 
             val iconRes = when (callType) {
                 android.provider.CallLog.Calls.INCOMING_TYPE -> if (glass) R.drawable.call_incoming_glass else R.drawable.call_incoming
@@ -248,22 +248,9 @@ class ContactWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        private fun getCallTypeForContact(
-            contact: Contact,
-            callTypeMap: Map<String, Int>,
-            numberMap: Map<String, Long>
-        ): Int? {
-            return if (contact.id < 0 && contact.phoneNumber != null) {
-                val norm = contact.phoneNumber.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
-                callTypeMap[norm]
-            } else {
-                val contactNorms = numberMap.entries.filter { it.value == contact.id }.map { it.key }
-                contactNorms.firstNotNullOfOrNull { callTypeMap[it] }
-            }
-        }
 
         private fun setupClickHandler(views: RemoteViews, context: Context, tileId: Int, contact: Contact) {
-            val intent = Intent(context, ContactWidgetProvider::class.java).apply {
+            val intent = Intent(context, WidgetActionReceiver::class.java).apply {
                 action = ACTION_CONTACT_CLICK
                 putExtra(EXTRA_CONTACT_ID, contact.id)
                 putExtra(EXTRA_CONTACT_PHONE, contact.phoneNumber ?: "")
@@ -284,7 +271,7 @@ class ContactWidgetProvider : AppWidgetProvider() {
             if (callLogBtnId != 0) {
                 if (showCallLogBtn) {
                     views.setViewVisibility(callLogBtnId, View.VISIBLE)
-                    val callLogIntent = Intent(context, ContactWidgetProvider::class.java).apply {
+                    val callLogIntent = Intent(context, WidgetActionReceiver::class.java).apply {
                         action = ACTION_OPEN_CALL_LOG
                     }
                     val callLogPi = PendingIntent.getBroadcast(
@@ -315,34 +302,21 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     while (it.moveToNext()) {
                         val id = it.getLong(idIdx)
                         val num = it.getString(numIdx) ?: continue
-                        val norm = num.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                        val norm = NativePhoneNumber.normalize(num)
                         if (norm.isNotBlank()) numberMap[norm] = id
                     }
                 }
             } catch (e: Exception) {
                 allContacts.filter { it.phoneNumber != null }.forEach {
-                    val norm = it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+                    val norm = NativePhoneNumber.normalize(it.phoneNumber!!)
                     numberMap[norm] = it.id
                 }
             }
             return numberMap
         }
 
-        private fun extractTileNorms(tileContacts: List<Contact>, numberMap: Map<String, Long>): List<String> {
-            val norms = mutableListOf<String>()
-            val tileContactIds = tileContacts.map { it.id }.toSet()
-
-            numberMap.entries
-                .filter { it.value in tileContactIds }
-                .map { it.key }
-                .forEach { norms.add(it) }
-
-            tileContacts.filter { it.id < 0 && it.phoneNumber != null }.forEach {
-                val norm = it.phoneNumber!!.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
-                if (norm.isNotBlank()) norms.add(norm)
-            }
-            return norms
-        }
+        private fun extractTileNorms(tileContacts: List<Contact>, numberMap: Map<String, Long>): List<String> =
+            WidgetTileNorms.build(tileContacts, numberMap)
 
         // Keep the original buildWidgetContacts for now (can be refactored later)
         private fun buildWidgetContacts(
@@ -361,16 +335,12 @@ class ContactWidgetProvider : AppWidgetProvider() {
                 )
             }
             // [Original logic from previous version - kept for compatibility]
-            val result = mutableListOf<Contact>()
-            val usedIds = mutableSetOf<Long>()
-
-            if (filterFavorites && selectedLookupKeys.isNotEmpty()) {
-                selectedLookupKeys.mapNotNull { key -> allContacts.firstOrNull { it.lookupKey == key } }
-                    .forEach { contact -> if (usedIds.add(contact.id)) result.add(contact) }
-            } else if (filterFavorites && selectedIds.isNotEmpty()) {
-                selectedIds.mapNotNull { id -> allContacts.firstOrNull { it.id == id } }
-                    .forEach { contact -> if (usedIds.add(contact.id)) result.add(contact) }
+            val result = if (filterFavorites) {
+                WidgetFavoriteResolver.resolve(allContacts, selectedIds, selectedLookupKeys, maxTiles).toMutableList()
+            } else {
+                mutableListOf()
             }
+            val usedIds = result.map { it.id }.toMutableSet()
 
             if (result.size >= maxTiles) return result.take(maxTiles)
 
@@ -386,15 +356,23 @@ class ContactWidgetProvider : AppWidgetProvider() {
                     unknownDays = if (WidgetPrefs.getShowUnknownNumbers(context)) unknownDays else -1,
                     limit = maxTiles
                 )
+                val showUnknownNumbers = WidgetPrefs.getShowUnknownNumbers(context)
+                val selectedIndices = WidgetRecentContactResolver.resolve(
+                    mixed = mixed,
+                    allContactIds = allContacts.map { it.id }.toLongArray(),
+                    usedContactIds = usedIds.toLongArray(),
+                    filterRecents = filterRecents,
+                    showUnknownNumbers = showUnknownNumbers,
+                    maxTiles = maxTiles,
+                    initialCount = result.size
+                )
                 var unknownCount = 1
-                mixed.forEach { (id, phone) ->
-                    if (result.size >= maxTiles) return result.take(maxTiles)
+                selectedIndices.forEach { index ->
+                    val (id, phone) = mixed[index]
                     if (id > 0) {
-                        if (!filterRecents) return@forEach
-                        val c = allContacts.firstOrNull { it.id == id } ?: return@forEach
-                        if (usedIds.add(c.id)) result.add(c)
+                        val contact = allContacts.firstOrNull { it.id == id } ?: return@forEach
+                        if (usedIds.add(contact.id)) result.add(contact)
                     } else {
-                        if (!WidgetPrefs.getShowUnknownNumbers(context)) return@forEach
                         if (phone.isNullOrBlank()) return@forEach
                         val unknownContact = Contact(
                             id = -(unknownCount++).toLong(),
@@ -431,37 +409,5 @@ class ContactWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         Log.d(TAG, "onReceive action=${intent.action}")
-        if (intent.action == ACTION_OPEN_CALL_LOG) {
-            AppLogger.i(TAG, "open call log")
-            val preferredPkg = WidgetPrefs.getCallLogAppPackage(context)
-            if (preferredPkg.isNotBlank()) {
-                val launchIntent = context.packageManager.getLaunchIntentForPackage(preferredPkg)
-                if (launchIntent != null) {
-                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    AppLogger.i(TAG, "open call log: launching preferred package $preferredPkg directly")
-                    context.startActivity(launchIntent)
-                    return
-                } else {
-                    AppLogger.w(TAG, "open call log: preferred package $preferredPkg not launchable, falling back")
-                }
-            }
-            val i = Intent(Intent.ACTION_VIEW).apply {
-                type = "vnd.android.cursor.dir/calls"
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            if (i.resolveActivity(context.packageManager) != null) {
-                context.startActivity(i)
-            } else {
-                val fallback = Intent(Intent.ACTION_DIAL).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(fallback)
-            }
-        }
-        if (intent.action == ACTION_CONTACT_CLICK) {
-            val id = intent.getLongExtra(EXTRA_CONTACT_ID, -1L)
-            val phone = intent.getStringExtra(EXTRA_CONTACT_PHONE)
-            val name = intent.getStringExtra(EXTRA_CONTACT_NAME)
-            Log.d(TAG, "Click: $name id=$id")
-            ContactActionHandler.handle(context, id, phone, name)
-        }
     }
 }

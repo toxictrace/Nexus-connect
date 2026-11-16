@@ -4,8 +4,17 @@ import com.toxictrace.nexusconnect.data.model.AppTheme
 import com.toxictrace.nexusconnect.data.model.AvatarIdentity
 import com.toxictrace.nexusconnect.data.model.ClickAction
 import com.toxictrace.nexusconnect.data.preferences.WidgetSettings
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.ByteArrayOutputStream
+import java.util.Base64
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 
 class BackupManagerTest {
 
@@ -41,7 +50,12 @@ class BackupManagerTest {
         val selectedIds = listOf(41L, 7L, 9001L)
         val selectedLookupKeys = listOf("lookup:first", "lookup,second")
 
-        val json = BackupManager.settingsToJson(original, selectedIds, selectedLookupKeys)
+        // JVM tests cannot load the Android Rust JNI library.
+        // The encoded value is covered by Rust serialization tests.
+        val json = JSONObject(BackupManager.settingsToJson(original, emptyList(), emptyList()))
+            .put("selectedContactIds", selectedIds.joinToString(","))
+            .put("selectedContactLookupKeys", "bG9va3VwOmZpcnN0,bG9va3VwLHNlY29uZA")
+            .toString(2)
         val (restored, restoredIds, restoredLookupKeys) = BackupManager.jsonToSettings(json)
 
         assertEquals(original.copy(backupFolderUri = ""), restored)
@@ -72,5 +86,135 @@ class BackupManagerTest {
         assertEquals("", restored.callLogAppPackage)
         assertEquals(listOf(12L, 5L), restoredIds)
         assertEquals(emptyList<String>(), restoredLookupKeys)
+    }
+
+    @Test
+    fun backupJsonKeepsVersionThreePortableSchema() {
+        val json = JSONObject(
+            BackupManager.settingsToJson(WidgetSettings(), emptyList(), emptyList())
+        )
+
+        assertEquals(3, json.getInt("version"))
+        assertEquals(
+            setOf(
+                "version",
+                "columns",
+                "tileHeightDp",
+                "maxContacts",
+                "filterFavorites",
+                "filterRecents",
+                "filterFrequent",
+                "clickAction",
+                "hapticFeedback",
+                "theme",
+                "dynamicColors",
+                "accentColorIndex",
+                "avatarIdentity",
+                "customAvatarUri",
+                "showUnknownNumbers",
+                "unknownNumbersDays",
+                "messengerWhatsApp",
+                "messengerViber",
+                "messengerTelegram",
+                "showCallTypeIcon",
+                "callIconStyle",
+                "language",
+                "recentsDays",
+                "showCallLogButton",
+                "callLogAppPackage",
+                "selectedContactIds",
+                "selectedContactLookupKeys"
+            ),
+            json.keySet()
+        )
+        assertFalse(json.has("backupFolderUri"))
+    }
+
+    @Test
+    fun malformedEnumsAndSelectedIdsUseExistingFallbackRules() {
+        val json = """
+            {
+              "version": 3,
+              "clickAction": "UNKNOWN_ACTION",
+              "theme": "UNKNOWN_THEME",
+              "avatarIdentity": "UNKNOWN_AVATAR",
+              "selectedContactIds": "10,invalid,-2,9223372036854775808",
+              "selectedContactLookupKeys": "bG9va3Vw,bad!"
+            }
+        """.trimIndent()
+
+        val (restored, ids, lookupKeys) = BackupManager.jsonToSettings(json)
+
+        assertEquals(ClickAction.SHOW_DIALOG, restored.clickAction)
+        assertEquals(AppTheme.LIGHT, restored.theme)
+        assertEquals(AvatarIdentity.DEFAULT, restored.avatarIdentity)
+        assertEquals(listOf(10L, -2L), ids)
+        assertEquals(listOf("lookup"), lookupKeys)
+    }
+
+    @Test
+    fun zipRoundTripPreservesTheSettingsEntryAndPayloadBytes() {
+        val payload = "Nexus backup payload\u0000with UTF-8: резервная копия".toByteArray(Charsets.UTF_8)
+
+        val archive = BackupManager.packZip(payload)
+        val zip = ZipInputStream(archive.inputStream())
+        val entry = zip.use {
+            val first = it.nextEntry
+            val bytes = it.readBytes()
+            first?.name to bytes
+        }
+
+        assertEquals("settings.json", entry.first)
+        assertEquals(payload.toList(), entry.second.toList())
+        assertEquals(payload.toList(), BackupManager.unpackZip(archive).toList())
+    }
+
+    @Test
+    fun zipReaderRejectsAnArchiveWithoutTheExpectedSettingsEntry() {
+        val output = ByteArrayOutputStream()
+        ZipOutputStream(output).use { zip ->
+            zip.putNextEntry(ZipEntry("other.json"))
+            zip.write("{}".toByteArray(Charsets.UTF_8))
+            zip.closeEntry()
+        }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            BackupManager.unpackZip(output.toByteArray())
+        }
+    }
+
+    @Test
+    fun legacyEncryptedBackupFixtureDecryptsWithTheExistingFormat() {
+        val encrypted = Base64.getDecoder().decode(
+            "AAECAwQFBgcICQoLDA0OD5riTtZ18eAPc8ZJ4kZ1tvnjBLRogzVrThJyAZXG43MshpR8kgxHonidEPJTx/ilw0jg8qYVsxQjfg0te+FKFpU="
+        )
+
+        assertEquals(
+            """{"version":3,"columns":4,"selectedContactIds":"41,7"}""",
+            BackupManager.decrypt(encrypted)
+        )
+    }
+
+
+    @Test
+    fun legacyEncryptedBackupFixtureLoadsThroughTheZipContainer() {
+        val legacyArchive = Base64.getDecoder().decode(
+            "UEsDBBQAAAAIAAAAIVi7anIHVQAAAFAAAAANAAAAc2V0dGluZ3MuanNvbgFQAK//AAECAwQFBgcICQoLDA0OD5riTtZ18eAPc8ZJ4kZ1tvnjBLRogzVrThJyAZXG43MshpR8kgxHonidEPJTx/ilw0jg8qYVsxQjfg0te+FKFpVQSwECFAMUAAAACAAAACFYu2pyB1UAAABQAAAADQAAAAAAAAAAAAAAgAEAAAAAc2V0dGluZ3MuanNvblBLBQYAAAAAAQABADsAAACAAAAAAAA="
+        )
+
+        assertEquals(
+            """{"version":3,"columns":4,"selectedContactIds":"41,7"}""",
+            BackupManager.decrypt(BackupManager.unpackZip(legacyArchive))
+        )
+    }
+
+    @Test
+    fun encryptionRoundTripPreservesUtf8AndUsesIvPrefixedCiphertext() {
+        val plaintext = """{"version":3,"label":"резервная копия"}"""
+        val encrypted = BackupManager.encrypt(plaintext)
+
+        assertEquals(0, (encrypted.size - 16) % 16)
+        assertTrue(encrypted.size > 16)
+        assertEquals(plaintext, BackupManager.decrypt(encrypted))
     }
 }

@@ -3,6 +3,7 @@ package com.toxictrace.nexusconnect.data.repository
 import android.content.Context
 import android.provider.CallLog
 import android.util.Log
+import com.toxictrace.nexusconnect.util.NativePhoneNumber
 
 class CallLogRepository(private val context: Context) {
 
@@ -15,7 +16,8 @@ class CallLogRepository(private val context: Context) {
      * Matches call log numbers against contacts map.
      */
     fun getFrequentContactIds(numberToContactId: Map<String, Long>, limit: Int = 50): List<Long> {
-        val freq = mutableMapOf<Long, Int>()
+        val matchedContactIds = mutableListOf<Long>()
+        val matchedCallTypes = mutableListOf<Int>()
         try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -29,22 +31,23 @@ class CallLogRepository(private val context: Context) {
                 val typeIdx = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
                 while (it.moveToNext()) {
                     val number = it.getString(numIdx) ?: continue
-                    val type   = it.getInt(typeIdx)
+                    val type = it.getInt(typeIdx)
                     // Count outgoing + incoming (not missed)
                     if (type == CallLog.Calls.OUTGOING_TYPE || type == CallLog.Calls.INCOMING_TYPE) {
                         val norm = normalizeNum(number)
                         val contactId = numberToContactId[norm] ?: continue
-                        freq[contactId] = (freq[contactId] ?: 0) + 1
+                        matchedContactIds.add(contactId)
+                        matchedCallTypes.add(type)
                     }
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "getFrequentContactIds: ${e.message}")
         }
-        return freq.entries
-            .sortedByDescending { it.value }
-            .take(limit)
-            .map { it.key }
+        return FrequentContactOrder.order(
+            matchedContactIds.toLongArray(),
+            matchedCallTypes.toIntArray()
+        ).take(limit)
     }
 
     /**
@@ -104,8 +107,11 @@ class CallLogRepository(private val context: Context) {
         val cutoff = if (days > 0)
             System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L
         else 0L
-        val seen = mutableSetOf<String>()
-        val result = mutableListOf<Triple<String, Long, Int>>()
+        val numbers = mutableListOf<String>()
+        val norms = mutableListOf<String>()
+        val dates = mutableListOf<Long>()
+        val types = mutableListOf<Int>()
+        val nonBlank = mutableListOf<Boolean>()
         return try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -115,20 +121,29 @@ class CallLogRepository(private val context: Context) {
                 "${CallLog.Calls.DATE} DESC"
             ) ?: return emptyList()
             cursor.use {
-                val numIdx  = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val numIdx = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val dateIdx = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
                 val typeIdx = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
-                while (it.moveToNext() && result.size < limit) {
+                while (it.moveToNext()) {
                     val number = it.getString(numIdx) ?: continue
-                    val norm = normalizeNum(number)
-                    // Unknown = not in contacts AND not seen yet
-                    if (norm !in numberToContactId && norm !in seen && number.isNotBlank()) {
-                        seen.add(norm)
-                        result.add(Triple(number, it.getLong(dateIdx), it.getInt(typeIdx)))
-                    }
+                    numbers.add(number)
+                    norms.add(normalizeNum(number))
+                    dates.add(it.getLong(dateIdx))
+                    types.add(it.getInt(typeIdx))
+                    nonBlank.add(number.isNotBlank())
                 }
             }
-            result
+            UnknownRecentCallFilter.filter(
+                numbers,
+                norms,
+                dates,
+                types,
+                nonBlank,
+                numberToContactId.keys.toList(),
+                limit
+            ).map { index ->
+                Triple(numbers[index], dates[index], types[index])
+            }
         } catch (e: Exception) {
             Log.e(TAG, "getUnknownRecentCalls: ${e.message}")
             emptyList()
@@ -142,7 +157,9 @@ class CallLogRepository(private val context: Context) {
     fun getLastCallTypes(phoneNumbers: List<String>): Map<String, Int> {
         if (phoneNumbers.isEmpty()) return emptyMap()
         val normSet = phoneNumbers.map { normalizeNum(it) }.toSet()
-        val result = mutableMapOf<String, Int>()
+        val normalizedNumbers = mutableListOf<String>()
+        val callTypes = mutableListOf<Int>()
+        val foundNorms = mutableSetOf<String>()
         return try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -153,12 +170,16 @@ class CallLogRepository(private val context: Context) {
             cursor.use {
                 val ni = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
-                while (it.moveToNext() && result.size < normSet.size) {
+                while (it.moveToNext() && foundNorms.size < normSet.size) {
                     val norm = normalizeNum(it.getString(ni) ?: continue)
-                    if (norm in normSet && norm !in result) {
-                        result[norm] = it.getInt(ti)
-                    }
+                    normalizedNumbers.add(norm)
+                    callTypes.add(it.getInt(ti))
+                    if (norm in normSet) foundNorms.add(norm)
                 }
+            }
+            val result = linkedMapOf<String, Int>()
+            LastCallTypeResolver.resolve(normalizedNumbers, callTypes, normSet.toList()).forEach { index ->
+                result[normalizedNumbers[index]] = callTypes[index]
             }
             result
         } catch (e: Exception) {
@@ -170,8 +191,8 @@ class CallLogRepository(private val context: Context) {
 
     fun getLastCallTypesByNorm(norms: List<String>): Map<String, Int> {
         if (norms.isEmpty()) return emptyMap()
-        val normSet = norms.toSet()
-        val result = mutableMapOf<String, Int>()
+        val normalizedNumbers = mutableListOf<String>()
+        val callTypes = mutableListOf<Int>()
         return try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -182,12 +203,15 @@ class CallLogRepository(private val context: Context) {
             cursor.use {
                 val ni = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val ti = it.getColumnIndexOrThrow(CallLog.Calls.TYPE)
-                while (it.moveToNext() && result.size < normSet.size) {
-                    val norm = normalizeNum(it.getString(ni) ?: continue)
-                    if (norm in normSet && norm !in result) {
-                        result[norm] = it.getInt(ti)
-                    }
+                while (it.moveToNext()) {
+                    val number = it.getString(ni) ?: continue
+                    normalizedNumbers.add(normalizeNum(number))
+                    callTypes.add(it.getInt(ti))
                 }
+            }
+            val result = linkedMapOf<String, Int>()
+            LastCallTypeResolver.resolve(normalizedNumbers, callTypes, norms.distinct()).forEach { index ->
+                result[normalizedNumbers[index]] = callTypes[index]
             }
             result
         } catch (e: Exception) {
@@ -214,7 +238,6 @@ class CallLogRepository(private val context: Context) {
         val now = System.currentTimeMillis()
         val contactCutoff = if (contactDays > 0) now - contactDays * 24 * 60 * 60 * 1000L else 0L
         val unknownCutoff = if (unknownDays > 0) now - unknownDays * 24 * 60 * 60 * 1000L else 0L
-        // Use the broader cutoff for the query, filter individually
         val queryCutoff = when {
             contactDays == -1 && unknownDays == -1 -> return emptyList()
             contactDays == -1 -> unknownCutoff
@@ -222,10 +245,11 @@ class CallLogRepository(private val context: Context) {
             contactDays == 0 || unknownDays == 0 -> 0L
             else -> minOf(contactCutoff, unknownCutoff)
         }
-        val seenContacts = linkedSetOf<Long>()
-        val seenUnknownNorms = linkedSetOf<String>()
-        val result = mutableListOf<Pair<Long, String?>>()
-        var unknownIdx = 1
+        val norms = mutableListOf<String>()
+        val dates = mutableListOf<Long>()
+        val contactIds = mutableListOf<Long>()
+        val validUnknown = mutableListOf<Int>()
+        val numbers = mutableListOf<String>()
         try {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -235,34 +259,36 @@ class CallLogRepository(private val context: Context) {
                 "${CallLog.Calls.DATE} DESC"
             ) ?: return emptyList()
             cursor.use {
-                val numIdx  = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val numIdx = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
                 val dateIdx = it.getColumnIndexOrThrow(CallLog.Calls.DATE)
-                while (it.moveToNext() && result.size < limit) {
+                while (it.moveToNext()) {
                     val number = it.getString(numIdx) ?: continue
-                    val date = it.getLong(dateIdx)
                     val norm = normalizeNum(number)
-                    val contactId = numberToContactId[norm]
-                    if (contactId != null) {
-                        if (contactDays == -1) continue
-                        if (contactCutoff > 0 && date < contactCutoff) continue
-                        if (seenContacts.add(contactId)) {
-                            result.add(Pair(contactId, null))
-                        }
-                    } else if (number.isNotBlank() && number != "-1" && number != "-2") {
-                        if (unknownDays == -1) continue
-                        if (unknownCutoff > 0 && date < unknownCutoff) continue
-                        if (seenUnknownNorms.add(norm)) {
-                            result.add(Pair(-(unknownIdx++).toLong(), number))
-                        }
-                    }
+                    norms.add(norm)
+                    dates.add(it.getLong(dateIdx))
+                    contactIds.add(numberToContactId[norm] ?: Long.MIN_VALUE)
+                    numbers.add(number)
+                    validUnknown.add(if (number.isNotBlank() && number != "-1" && number != "-2") 1 else 0)
                 }
             }
         } catch (e: Exception) {
+            // Preserve rows collected before a cursor failure, as the original implementation did.
             Log.e(TAG, "getRecentMixed: ${e.message}")
         }
-        return result
+        val selectedIndices = RecentMixedCallResolver.resolve(
+            norms, dates, contactIds, validUnknown,
+            contactCutoff, unknownCutoff,
+            contactDays == -1, unknownDays == -1, limit
+        )
+        var unknownIdx = 1L
+        return selectedIndices.mapNotNull { index ->
+            if (index !in numbers.indices) return@mapNotNull null
+            val contactId = contactIds[index]
+            if (contactId != Long.MIN_VALUE) Pair(contactId, null)
+            else Pair(-unknownIdx++, numbers[index])
+        }
     }
 
     private fun normalizeNum(number: String): String =
-        number.replace(Regex("[\\s\\-().+]"), "").takeLast(7)
+        NativePhoneNumber.normalize(number)
 }

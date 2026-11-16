@@ -39,7 +39,6 @@ fun ContactsScreen(viewModel: MainViewModel) {
     val context       = LocalContext.current
     val contacts      by viewModel.displayContacts.collectAsState()
     val allContacts   by viewModel.allContacts.collectAsState()
-    val selectedCount by viewModel.selectedCount.collectAsState()
     val searchQuery   by viewModel.searchQuery.collectAsState()
     val photoCache    by viewModel.photoCache.collectAsState()
 
@@ -138,7 +137,7 @@ fun ContactsScreen(viewModel: MainViewModel) {
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 contentPadding = PaddingValues(
                     top = 4.dp,
-                    bottom = if (selectedCount > 0) 88.dp else 16.dp
+                    bottom = 16.dp
                 )
             ) {
                 if (selected.isNotEmpty()) {
@@ -186,40 +185,6 @@ fun ContactsScreen(viewModel: MainViewModel) {
             }
         }
 
-        if (selectedCount > 0) {
-            val settings by viewModel.settings.collectAsState()
-            val maxAllowed = settings.columns * settings.tileHeightDp.coerceIn(3, 6)
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter),
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 8.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        stringResource(R.string.selected_count, selectedCount, maxAllowed),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Button(
-                        onClick = { viewModel.applyAndUpdateWidget() },
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Icon(Icons.Default.Refresh, null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text(stringResource(R.string.update_widget))
-                    }
-                }
-            }
-        }
     }
 }
 
